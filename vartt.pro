@@ -11,3 +11,6 @@ SOURCES += main.cpp \
 HEADERS += \
     tensor.h \
     utils.h
+
+
+LIBS += -llapacke -larmadillo

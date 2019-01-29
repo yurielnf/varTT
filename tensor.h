@@ -77,13 +77,37 @@ public:
     {
         VecProd(data,size(),c);
     }
+    void operator+=(const Tensor& t2)
+    {
+        if (size()!=t2.size())
+            throw std::invalid_argument("Tensor::operator-=");
 
+        VecPlusInplace(data,t2.data,size());
+    }
     void operator-=(const Tensor& t2)
     {
         if (size()!=t2.size())
             throw std::invalid_argument("Tensor::operator-=");
 
         VecMinusInplace(data,t2.data,size());
+    }
+
+    Tensor operator-() const
+    {
+        Tensor y=*this;
+        VecNegativeInplace(y.data,size());
+    }
+    Tensor operator*(T c) const
+    {
+        Tensor y=*this;
+        y*=c;
+        return y;
+    }
+    Tensor operator+(const Tensor& t2) const
+    {
+        Tensor y=*this;
+        y+=t2;
+        return y;
     }
     Tensor operator-(const Tensor& t2) const
     {
@@ -93,7 +117,49 @@ public:
     }
 
 
+    Tensor ReShape(int splitPos) const
+    {
+        vector<int> dim2(2);
+        dim2[0]=std::accumulate(&dim[0],&dim[splitPos],1,std::multiplies<int>());
+        dim2[1]=std::accumulate(dim.begin()+splitPos,dim.end(),1,std::multiplies<int>());
+        return Tensor(data,dim2);
+    }
+    Tensor ReShape(vector<int> splitPos) const
+    {
+        vector<int> dim2(splitPos.size()+1);
+        uint p=0,i;
+        for(i=0;i<splitPos.size();i++)
+        {
+            dim2[i]=std::accumulate(&dim[p],&dim[splitPos[i]],1,std::multiplies<int>());
+            p=dim[splitPos[i]];
+        }
+        dim2[i]=std::accumulate(dim.begin()+p,dim.end(),1,std::multiplies<int>());
+        return Tensor(data,dim2);
+    }
+
+    Tensor operator*(const Tensor& t2) const
+    {
+        vector<int> dim_r;
+        for(int i=0;i<dim.size()-1;i++)
+            dim_r.push_back( dim[i] );
+        for(int i=1;i<t2.dim.size();i++)
+            dim_r.push_back( t2.dim[i] );
+        Tensor r(dim_r);
+
+        Tensor m1=this->ReShape(dim.size()-1);  //Matrix operation
+        Tensor m2=t2.ReShape(1);
+        Tensor mr=r.ReShape(dim.size()-1);
+        MatMul(m1.data,m2.data,mr.data,m1.dim[0],m1.dim[1],m2.dim[1]);
+
+        return r;
+    }
+
+    friend T Dot(const Tensor& t1,const Tensor& t2)
+    {
+        return VecDot(t1.data,t2.data,t1.size());
+    }
 };
+
 
 
 

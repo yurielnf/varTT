@@ -12,16 +12,17 @@ using std::vector;
 template<class T>
 struct Tensor
 {
-    vector<int> dim;
-    T* data=nullptr;
+    vector<int> const dim;
+private:
+    vector<T> vd;
+public:
+     T* const data=nullptr;
 
     Tensor() {}
     Tensor(const vector<int>& dim)
-        :dim(dim),vd(Prod(dim))
-    {
-        data=vd.data();
-    }
-
+        :dim(dim),vd(Prod(dim)),data(vd.data()) {}
+    Tensor(const T* data, const vector<int>& dim)
+        :dim(dim),data(data) {}
 
     void FillZeros()
     {
@@ -72,7 +73,7 @@ struct Tensor
         return t.Norm();
     }
 
-    void operator*=(double c)
+    void operator*=(T c)
     {
         VecProd(data,size(),c);
     }
@@ -91,8 +92,7 @@ struct Tensor
         return y;
     }
 
-private:
-    vector<T> vd;
+
 };
 
 

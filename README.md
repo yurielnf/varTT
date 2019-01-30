@@ -4,7 +4,7 @@ Variational tensor train (or tree tensor)
 
 ### External dependencies
 
-- Armadillo
+- [Armadillo](https://gitlab.com/conradsnicta/armadillo-code)
 
 ### Getting started
 

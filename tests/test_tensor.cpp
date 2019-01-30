@@ -1,4 +1,4 @@
-#include "../tensor.h"
+#include <tensor.h>
 #include<iostream>
 #include"catch.hpp"
 

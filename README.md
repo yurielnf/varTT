@@ -8,7 +8,7 @@ Variational tensor train (or tree tensor)
 
 ### Getting started
 
-We are using the `qmake` build system to to build this project
+We are using the [`qmake`](http://doc.qt.io/archives/qt-4.8/qmake-manual.html) build system to to build this project
 
 ```
 $ qmake

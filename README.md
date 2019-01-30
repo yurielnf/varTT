@@ -1,29 +1,26 @@
 # varTT
 
-Variational tensor train (or tree tensor)
+Variational optimization for tensor train (or tree tensor)
 
 ### External dependencies
 
-- [Armadillo](https://gitlab.com/conradsnicta/armadillo-code)
+- [armadillo](https://gitlab.com/conradsnicta/armadillo-code)
+- lapacke
+- blas
 
 ### Getting started
 
-We are using the [`qmake`](http://doc.qt.io/archives/qt-4.8/qmake-manual.html) build system to to build this project
+This project can be edited and build using the [`qtcreator`](https://github.com/qt-creator) IDE.
 
-```
-$ qmake
-```
 
 ### Running the test suite
 
-To build the tests run
+The tests are in the tests/ folder
 
 ```
 $ make tests
 ```
 
-then you can run the test using
+### Examples
 
-```
-$ build test.x
-```
+Several example codes are provided.

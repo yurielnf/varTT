@@ -1,8 +1,13 @@
-#include <tensor.h>
+#include "tensor.h"
 #include<iostream>
 #include"catch.hpp"
 
 using namespace std;
+
+TEST_CASE( "hola mundo", "[hola]" )
+{
+    REQUIRE( true );
+}
 
 TEST_CASE( "tensor level 1", "[tensor]" )
 {

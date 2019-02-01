@@ -14,7 +14,7 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     Tensor<double> t({2,3,2});
     SECTION( "size" )
     {
-        REQUIRE( t.size() == 2*3*2 );
+        REQUIRE( t.size == 2*3*2 );
     }
     SECTION( "fill" )
     {
@@ -36,7 +36,7 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         Tensor<double> t2(t1.dim);
         t2.Load("t1.txt");
         t2.Save("t2.txt");
-        for(int i=0;i<t1.size();i++)
+        for(int i=0;i<t1.size;i++)
             REQUIRE( t1.data[i]==t2.data[i] );
     }
     SECTION( "operator-/Norm" )

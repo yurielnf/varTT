@@ -5,41 +5,44 @@
 #include<random>
 #include<iostream>
 #include<fstream>
-#include"utils.h"
+#include<array>
 
-using std::vector;
+#include"utils.h"
+#include"index.h"
 
 template<class T>
 struct Tensor
 {
-    vector<int> const dim;
+    const Index  dim;
+    const int size=0;
 private:
-    vector<T> vd;
+    std::vector<T> vd;
 public:
      T* const data=nullptr;
 
     Tensor() {}
-    Tensor(const vector<int>& dim)
-        :dim(dim),vd(Prod(dim)),data(vd.data()) {}
-    Tensor(const T* data, const vector<int>& dim)
-        :dim(dim),data(data) {}
+    Tensor(const Index& dim)
+        :dim(dim),size(Prod(dim)),vd(size),data(vd.data()) {}
+    Tensor(const T* data, const Index& dim)
+        :dim(dim),size(Prod(dim)),data(data) {}
 
     void FillZeros()
     {
-        std::fill(data,data+size(),T(0));
+        std::fill(data,data+size,T(0));
     }
     void FillRandu()
     {
-        VecFillRandu(data,size() );
+        VecFillRandu(data,size );
     }
 
-    int size() const {  return Prod(dim);   }
 
-    T& operator[](const vector<int>& id)
+    int rank() const { return dim.size();}
+
+    T& operator[](const Index& id)
     {
         return data[Offset(id,dim)];
     }
-    const T& operator[](const vector<int>& id) const
+    const T& operator[](const Index& id) const
     {
         return data[Offset(id,dim)];
     }
@@ -48,7 +51,7 @@ public:
     {
         for(int x:dim) out<<x<<" ";
         out<<"\n";
-        VecSave(data,size(),out);
+        VecSave(data,size,out);
     }
     void Save(std::string filename) const
     {
@@ -57,20 +60,11 @@ public:
     void Load(std::istream& in)
     {
         for(int x:dim) in>>x;
-        VecLoad(data,size(),in);
+        VecLoad(data,size,in);
     }
     void Load(std::string filename)
     {
         std::ifstream in(filename);  Load(in);
-    }
-
-    double Norm() const
-    {
-        return VecNorm(data,size());
-    }
-    friend double Norm(const Tensor& t)
-    {
-        return t.Norm();
     }
 
     void operator*=(T c)
@@ -86,10 +80,10 @@ public:
     }
     void operator-=(const Tensor& t2)
     {
-        if (size()!=t2.size())
+        if (dim!=t2.dim)
             throw std::invalid_argument("Tensor::operator-=");
 
-        VecMinusInplace(data,t2.data,size());
+        VecMinusInplace(data,t2.data,size);
     }
 
     Tensor operator-() const
@@ -119,44 +113,58 @@ public:
 
     Tensor ReShape(int splitPos) const
     {
-        vector<int> dim2(2);
-        dim2[0]=std::accumulate(&dim[0],&dim[splitPos],1,std::multiplies<int>());
-        dim2[1]=std::accumulate(dim.begin()+splitPos,dim.end(),1,std::multiplies<int>());
-        return Tensor(data,dim2);
+        auto dim_v=SplitIndex(dim,splitPos);
+        return Tensor(data, { Prod(dim_v[0]), Prod(dim_v[1])} );
     }
-    Tensor ReShape(vector<int> splitPos) const
+    Tensor ReShape(std::vector<int> splitPos) const
     {
-        vector<int> dim2(splitPos.size()+1);
-        uint p=0,i;
-        for(i=0;i<splitPos.size();i++)
-        {
-            dim2[i]=std::accumulate(&dim[p],&dim[splitPos[i]],1,std::multiplies<int>());
-            p=dim[splitPos[i]];
-        }
-        dim2[i]=std::accumulate(dim.begin()+p,dim.end(),1,std::multiplies<int>());
-        return Tensor(data,dim2);
+        auto dim_v=SplitIndex(dim,splitPos);
+        Index dimr(dim_v.size());
+        for(int i=0;i<dim_v.size();i++)
+            dimr[i]=Prod(dim_v[i]);
+        return Tensor(data, dimr );
     }
 
-    Tensor operator*(const Tensor& t2) const
+    friend std::ostream& operator<<(std::ostream& out,const Tensor& M)
     {
-        vector<int> dim_r;
-        for(int i=0;i<dim.size()-1;i++)
-            dim_r.push_back( dim[i] );
-        for(int i=1;i<t2.dim.size();i++)
-            dim_r.push_back( t2.dim[i] );
-        Tensor r(dim_r);
-
-        Tensor m1=this->ReShape(dim.size()-1);  //Matrix operation
-        Tensor m2=t2.ReShape(1);
-        Tensor mr=r.ReShape(dim.size()-1);
-        MatMul(m1.data,m2.data,mr.data,m1.dim[0],m1.dim[1],m2.dim[1]);
-
-        return r;
+        M.Save(out); return out;
     }
-
+    friend std::istream& operator>>(std::istream& in,Tensor& t)
+    {
+        t.Load(in); return in;
+    }
     friend T Dot(const Tensor& t1,const Tensor& t2)
     {
         return VecDot(t1.data,t2.data,t1.size());
+    }
+    friend double Norm(const Tensor& t)
+    {
+        return VecNorm(t.data,t.size);
+    }
+    friend void Multiply(const Tensor& t1,const Tensor& t2, Tensor& t3)
+    {
+        Index dim_r=IndexMul(t1.dim,t2.dim);
+        if (dim_r!=t3.dim)
+            throw std::invalid_argument("Tensor:: Multiply() incompatible dimensions");
+
+        Tensor m1=t1.ReShape(t1.dim.size()-1);  //Matrix operation
+        Tensor m2=t2.ReShape(1);
+        Tensor m3=t3.ReShape(t1.dim.size()-1);
+        MatMul(m1.data,m2.data,m3.data,m1.dim[0],m1.dim[1],m2.dim[1]);
+    }
+
+    friend std::array<Tensor,2> EigenDecomposition(const Tensor& t,int splitPos)
+    {
+        auto mt=t.ReShape(splitPos);
+        if (mt.dim[0]!=mt.dim[1])
+            throw std::invalid_argument("Tensor:: EigenDecomposition non-square matrix");
+        auto dim_v=SplitIndex(t.dim,splitPos);
+        dim_v[0].push_back(mt.dim[0]);    //evec dimension
+        std::array<Tensor,2> res;
+        res[0]=Tensor(dim_v[0]);          //evec
+        res[1]=Tensor({mt.dim[0]});       //eval
+        MatFullDiag(mt.data,mt.dim[0],res[0].data,res[1].data);
+        return res;
     }
 };
 

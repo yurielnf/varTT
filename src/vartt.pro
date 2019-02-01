@@ -3,9 +3,11 @@ CONFIG = staticlib c++11
 
 SOURCES +=\
     utils.cpp \
-    tensor.cpp
+    tensor.cpp \
+    index.cpp
 
 HEADERS += \
     tensor.h \
-    utils.h
+    utils.h \
+    index.h
 

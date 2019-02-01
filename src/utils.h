@@ -7,10 +7,6 @@
 #include<iomanip>
 #include<iostream>
 
-int Prod(std::vector<int> dim, int pos);
-inline int Prod(std::vector<int> dim) {return Prod(dim,dim.size());}
-int Offset(std::vector<int> id, std::vector<int> dim);
-
 template<class T>
 void VecFillRandu(T *vec, int nelem)
 {
@@ -80,8 +76,10 @@ T VecDot(T* vec1,const T* vec2,int n)
     return s;
 }
 
-void MatMul(double *mat1, double *mat2, double *result, int nrow1, int ncol1, int ncol2);
+//---------------------------------- Matrix -----------------------
 
+void MatMul(double* const mat1, double* const mat2, double *result, int nrow1, int ncol1, int ncol2);
+void MatFullDiag(double * const X, int n, double *evec, double *eval);
 
 
 

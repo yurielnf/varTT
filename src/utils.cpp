@@ -5,27 +5,18 @@
 using namespace std;
 using namespace arma;
 
-int Prod(std::vector<int> dim, int pos)
+void MatMul(double* const mat1, double* const mat2, double *result, int nrow1, int ncol1, int ncol2)
 {
-    return accumulate(dim.begin(),dim.begin()+pos,1,multiplies<int>());
-}
-
-int Offset(std::vector<int> id, std::vector<int> dim)
-{
-    int sum=0,prod=1;
-    for(uint i=0;i<id.size();i++)
-    {
-        sum+=id[i]*prod;
-        prod*=dim[i];
-    }
-    return sum;
-}
-
-
-void MatMul(double *mat1, double *mat2, double *result, int nrow1, int ncol1, int ncol2)
-{
-    mat m1(mat1,nrow1,ncol1,false);
+    const mat m1(mat1,nrow1,ncol1,false);
     mat m2(mat2,ncol1,ncol2,false);
     mat res(result,nrow1,ncol2,false);
     res=m1*m2;
+}
+
+void MatFullDiag(double* const X,int n,double *evec,double *eval)
+{
+    const mat mX(X,n,n,false);
+    mat mevec(evec,n,n,false);
+    vec meval(eval,n,false);
+    eig_sym(meval,mevec,mX);
 }

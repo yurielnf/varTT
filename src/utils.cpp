@@ -21,9 +21,9 @@ void MatFullDiag(double* const X,int n,double *evec,double *eval)
     eig_sym(meval,mevec,mX);
 }
 
-void MatSVD(double * const X, int m,int n,double *U,double *S,double *V)
+void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V)
 {
-    const mat mX(X,m,n,false);
+    const mat mX((double* const)X,m,n,false);
     int ns=std::min(m,n);
     mat mU(U,m,ns,false);
     vec vS(S,ns);

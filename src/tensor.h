@@ -30,6 +30,8 @@ struct Tensor
     Tensor(const Index& dim,const  Container& v)
         :dim(dim),v(v) {}
 
+    int Rank() const {return dim.size();}
+
     void FillZeros()
     {
         for(T& x:v) x=0;
@@ -91,6 +93,7 @@ struct Tensor
     {
         Tensor y=*this;
         VecNegativeInplace(y.v.data(),v.size());
+        return y;
     }
     Tensor operator*(T c) const
     {
@@ -116,27 +119,26 @@ struct Tensor
         auto dim_v=SplitIndex(dim,splitPos);
         return TensorReShape<T>({ Prod(dim_v[0]), Prod(dim_v[1])}, v);
     }
-
     TensorReShapeC<T> ReShape(int splitPos) const
     {
         auto dim_v=SplitIndex(dim,splitPos);
         return TensorReShapeC<T>({ Prod(dim_v[0]), Prod(dim_v[1])}, v);
     }
-//    TensorReShape<T> ReShape(std::vector<int> splitPos)
-//    {
-//        auto dim_v=SplitIndex(dim,splitPos);
-//        Index dimr(dim_v.size());
-//        for(int i=0;i<dim_v.size();i++)
-//            dimr[i]=Prod(dim_v[i]);
-//        return TensorReShape<T>(dimr,v);
-//    }
-    TensorReShape<T> ReShape(std::vector<int> splitPos) const
+    TensorReShape<T> ReShape(std::vector<int> splitPos)
     {
         auto dim_v=SplitIndex(dim,splitPos);
         Index dimr(dim_v.size());
         for(int i=0;i<dim_v.size();i++)
             dimr[i]=Prod(dim_v[i]);
         return TensorReShape<T>(dimr,v);
+    }
+    TensorReShapeC<T> ReShape(std::vector<int> splitPos) const
+    {
+        auto dim_v=SplitIndex(dim,splitPos);
+        Index dimr(dim_v.size());
+        for(int i=0;i<dim_v.size();i++)
+            dimr[i]=Prod(dim_v[i]);
+        return TensorReShapeC<T>(dimr,v);
     }
 
     Tensor operator*(const Tensor& t2) const
@@ -178,9 +180,9 @@ struct Tensor
         if (dim_r!=t3.dim)
             throw std::invalid_argument("Tensor:: Multiply() incompatible dimensions");
 
-        auto m1=t1.ReShape(t1.dim.size()-1);  //Matrix operation
+        auto m1=t1.ReShape(t1.Rank()-1);  //Matrix operation
         auto m2=t2.ReShape(1);
-        auto m3=t3.ReShape(t1.dim.size()-1);
+        auto m3=t3.ReShape(t1.Rank()-1);
         MatMul(m1.v.data(),m2.v.data(),m3.v.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
     }
 
@@ -197,18 +199,17 @@ struct Tensor
         MatFullDiag(mt.data(),n,evec.data(),eval.data());
         return {evec,eval};
     }
-    friend std::array<Tensor,3> SVDDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
+    friend std::vector<Tensor> SVDDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
     {
         auto mt=t.ReShape(splitPos);
         int n=std::min(mt.dim[0],mt.dim[1]);
-        Index dimU, dimV;
-        std::tie(dimU,dimV)=SplitIndex(t.dim,splitPos);
-        dimU.push_back(n);    //U dimension
-        dimV.push_back(n);    //V dimension
-        auto U=Tensor(dimU);
+        auto dimUV=SplitIndex(t.dim,splitPos);
+        dimUV[0].push_back(n);    //U dimension
+        dimUV[1].push_back(n);    //V dimension
+        auto U=Tensor(dimUV[0]);
         auto S=Tensor({n});
-        auto V=Tensor(dimV);
-        MatSVD(mt.data(),mt.dim[0],mt.dim[1],U.data(),S.data(),V.data());
+        auto V=Tensor(dimUV[1]);
+        MatSVD(mt.v.data(),mt.dim[0],mt.dim[1],U.v.data(),S.v.data(),V.v.data());
         return {U,S,V};
     }
 

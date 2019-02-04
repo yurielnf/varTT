@@ -62,6 +62,13 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         auto dt=t-t;
         REQUIRE( Norm(dt)<1e-16 );
     }
+    SECTION( "operator+" )
+    {
+        t.FillRandu();
+        auto t2=-t;
+        auto dt2=t2+t;
+        REQUIRE( Norm(dt2)<1e-16 );
+    }
     SECTION( "matrix multiplication" )
     {
         TensorD t2=t*t;

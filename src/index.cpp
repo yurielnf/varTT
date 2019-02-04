@@ -20,6 +20,8 @@ vector<Index> SplitIndex(Index dim,int splitPos)
         dim_v[0].push_back(dim[i]);
     for(int i=splitPos;i<dim.size();i++)
         dim_v[1].push_back(dim[i]);
+    for(auto& x:dim_v)
+        if (x.empty()) x.push_back({1});
     return dim_v;
 }
 
@@ -35,6 +37,8 @@ vector<Index> SplitIndex(Index dim,vector<int> splitPos)
     }
     for(uint i=p;i<dim.size();i++)
         dim_v[s].push_back(dim[i]);
+    if (dim_v.front().empty()) dim_v.front().push_back({1});
+    if (dim_v.back() .empty()) dim_v.back() .push_back({1});
     return dim_v;
 }
 

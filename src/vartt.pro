@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG = staticlib c++11
+CONFIG = staticlib c++14
 
 SOURCES +=\
     utils.cpp \

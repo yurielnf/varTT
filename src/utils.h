@@ -40,7 +40,7 @@ double VecNorm(const T* vec, int nelem)
 }
 
 template<class T>
-void VecProd(const T* vec, int n, T c)
+void VecProd(T* vec, int n, T c)
 {
     for(int i=0;i<n;i++)
         vec[i]*=c;
@@ -80,7 +80,7 @@ T VecDot(T* vec1,const T* vec2,int n)
 
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);
-void MatSVD(double * const X, int m,int n,double *U,double *S,double *V);
+void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V);
 
 
 #endif // UTILS_H

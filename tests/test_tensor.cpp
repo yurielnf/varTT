@@ -2,19 +2,17 @@
 #include<iostream>
 #include"catch.hpp"
 
-using namespace std;
+#include<armadillo>
 
-TEST_CASE( "hola mundo", "[hola]" )
-{
-    REQUIRE( true );
-}
+using namespace std;
+using namespace arma;
 
 TEST_CASE( "tensor level 1", "[tensor]" )
 {
-    Tensor<double> t({2,3,2});
+    TensorD t({2,3,2});
     SECTION( "size" )
     {
-        REQUIRE( t.size == 2*3*2 );
+        REQUIRE( t.v.size() == 2*3*2 );
     }
     SECTION( "fill" )
     {
@@ -33,15 +31,47 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         auto &t1=t;
         t1.FillRandu();
         t1.Save("t1.txt");
-        Tensor<double> t2(t1.dim);
+        TensorD t2(t1.dim);
         t2.Load("t1.txt");
         t2.Save("t2.txt");
-        for(int i=0;i<t1.size;i++)
-            REQUIRE( t1.data[i]==t2.data[i] );
+        REQUIRE( t1==t2 );
+    }
+    SECTION( "copy/operator=" )
+    {
+        t.FillRandu();
+        Tensor<double> t3(t.dim);
+        {
+            TensorD t2=t;
+            REQUIRE( t==t2 );
+            t3=t2;
+        }
+        REQUIRE( t==t3 );
+    }
+    SECTION( "ReShape" )
+    {
+        t.FillRandu();
+        auto t2=t.ReShape(2);
+        REQUIRE( t.v==t2.v );
+        REQUIRE( t2.dim==Index({6,2}) );
+        t2.v[10]=123;
+        REQUIRE( t.v[10]==123 );
     }
     SECTION( "operator-/Norm" )
     {
+        t.FillRandu();
         auto dt=t-t;
         REQUIRE( Norm(dt)<1e-16 );
+    }
+    SECTION( "matrix multiplication" )
+    {
+        TensorD t2=t*t;
+        REQUIRE( t2.dim==Index{2,3,3,2} );
+
+        mat A(t.v.data(),6,2);     // Checking result against armadillo
+        mat B(t.v.data(),2,6);
+        mat C=A*B;
+        vector<double> data(C.begin(),C.end());
+
+        REQUIRE( data==t2.v );
     }
 }

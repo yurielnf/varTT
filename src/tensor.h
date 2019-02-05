@@ -186,7 +186,8 @@ struct Tensor
 
     Tensor ContractCenter(const Tensor& t2) const
     {
-
+        Tensor t=IndexPermutation({0,2,1})*t2;  //check for rank 3 tensor and hence generalize using reshape
+        return t.IndexPermutation({0,2,1});
     }
 
     friend bool operator==(const Tensor& t1,const Tensor& t2)

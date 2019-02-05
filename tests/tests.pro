@@ -11,4 +11,5 @@ LIBS += -llapacke -larmadillo
 
 SOURCES +=\
     test_tensor.cpp \
-    test_main.cpp
+    test_main.cpp \
+    test_mps.cpp

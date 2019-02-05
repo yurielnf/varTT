@@ -25,9 +25,12 @@ inline int Prod(std::vector<int> dim)
 }
 
 int Offset(Index id, Index dim);
+Index ToIndex(int pos, Index dim);
 
 std::vector<Index> SplitIndex(Index dim,int splitPos);
 std::vector<Index> SplitIndex(Index dim,std::vector<int> splitPos);
+
+Index IndexReorder(const Index& dim, const std::vector<int>& posMap);
 
 Index IndexMul(const Index& dim1,const Index& dim2); // Dim resulting from matrix multiplication
 

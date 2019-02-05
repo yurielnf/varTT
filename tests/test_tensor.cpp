@@ -1,5 +1,5 @@
 #include "tensor.h"
-#include<iostream>
+//#include<iostream>
 #include"catch.hpp"
 
 #include<armadillo>
@@ -9,10 +9,12 @@ using namespace arma;
 
 TEST_CASE( "tensor level 1", "[tensor]" )
 {
-    TensorD t({2,3,2});
+    int d[]={2,3,2};
+    TensorD t({d[0],d[1],d[2]});
+    t.FillRandu();
     SECTION( "size" )
     {
-        REQUIRE( t.v.size() == 2*3*2 );
+        REQUIRE( t.v.size() == d[0]*d[1]*d[2] );
     }
     SECTION( "fill" )
     {
@@ -29,7 +31,6 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     SECTION( "save/load" )
     {
         auto &t1=t;
-        t1.FillRandu();
         t1.Save("t1.txt");
         TensorD t2(t1.dim);
         t2.Load("t1.txt");
@@ -38,7 +39,6 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     }
     SECTION( "copy/operator=" )
     {
-        t.FillRandu();
         Tensor<double> t3(t.dim);
         {
             TensorD t2=t;
@@ -49,7 +49,6 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     }
     SECTION( "ReShape" )
     {
-        t.FillRandu();
         auto t2=t.ReShape(2);
         REQUIRE( t.v==t2.v );
         REQUIRE( t2.dim==Index({6,2}) );
@@ -58,21 +57,29 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     }
     SECTION( "operator-/Norm" )
     {
-        t.FillRandu();
         auto dt=t-t;
         REQUIRE( Norm(dt)<1e-16 );
     }
     SECTION( "operator+" )
     {
-        t.FillRandu();
         auto t2=-t;
         auto dt2=t2+t;
         REQUIRE( Norm(dt2)<1e-16 );
     }
+    SECTION( "matrix transpose" )
+    {
+        TensorD t2=t.Transpose(1);
+        REQUIRE( t2.dim==Index{3,2,2} );
+        auto mt=t.ReShape(1);
+        auto mt2=t2.ReShape(t2.rank()-1);
+        for(int i=0;i<mt.dim[0];i++)
+            for(int j=0;j<mt.dim[1];j++)
+                REQUIRE( mt[{i,j}]==mt2[{j,i}] );
+    }
     SECTION( "matrix multiplication" )
     {
         TensorD t2=t*t;
-        REQUIRE( t2.dim==Index{2,3,3,2} );
+        REQUIRE( t2.dim==Index{d[0],d[1],d[1],d[2]} );
 
         mat A(t.v.data(),6,2);     // Checking result against armadillo
         mat B(t.v.data(),2,6);
@@ -81,4 +88,15 @@ TEST_CASE( "tensor level 1", "[tensor]" )
 
         REQUIRE( data==t2.v );
     }
+    SECTION( "matrix decomposition: svd" )
+    {
+        auto usvt=SVDecomposition(t,2);
+        REQUIRE( usvt[0].dim==Index{d[0],d[1],d[2]} );
+        REQUIRE( usvt[1].dim==Index{d[2],d[2]} );
+        REQUIRE( usvt[2].dim==Index{d[2],d[2]} );
+
+        auto x=usvt[0]*usvt[1]*usvt[2];
+        REQUIRE( Norm(x-t)<1e-15 );
+    }
+
 }

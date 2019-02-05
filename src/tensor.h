@@ -30,7 +30,7 @@ struct Tensor
     Tensor(const Index& dim,const  Container& v)
         :dim(dim),v(v) {}
 
-    int Rank() const {return dim.size();}
+    int rank() const {return dim.size();}
 
     void FillZeros()
     {
@@ -141,12 +141,52 @@ struct Tensor
         return TensorReShapeC<T>(dimr,v);
     }
 
+    Tensor DiagMat() const
+    {
+        int n=v.size();
+        Tensor t2({n,n});
+        t2.FillZeros();
+        for(int i=0;i<n;i++)
+            t2[{i,i}]=v[i];
+        return t2;
+    }
+
+    Tensor IndexPermutation(std::vector<int> posMap) const
+    {
+        Tensor t(IndexPermutation(dim,posMap));
+        for(int i=0;i<t.v.size();i++)
+        {
+            int im=Offset(IndexPermutation(ToIndex(i,dim),posMap),dim) ;
+            t.v[i]=v[im];
+        }
+        return t;
+    }
+
+    Tensor Transpose(int splitPos) const
+    {
+        auto dim_v=SplitIndex(dim,splitPos);
+        std::swap(dim_v[0],dim_v[1]);
+        Index dim2;
+        for(Index d:dim_v)
+            for(auto x:d)
+                dim2.push_back(x);
+        Tensor t2(dim2);
+        auto m1=ReShape(splitPos);
+        MatTranspose(m1.v.data(),t2.v.data(),m1.dim[0],m1.dim[1]);
+        return t2;
+    }
+
     Tensor operator*(const Tensor& t2) const
     {
         const Tensor &t1=*this;
         Tensor t3(IndexMul(t1.dim,t2.dim));
         Multiply(t1,t2,t3);
         return t3;
+    }
+
+    Tensor ContractCenter(const Tensor& t2) const
+    {
+
     }
 
     friend bool operator==(const Tensor& t1,const Tensor& t2)
@@ -180,9 +220,9 @@ struct Tensor
         if (dim_r!=t3.dim)
             throw std::invalid_argument("Tensor:: Multiply() incompatible dimensions");
 
-        auto m1=t1.ReShape(t1.Rank()-1);  //Matrix operation
+        auto m1=t1.ReShape(t1.rank()-1);  //Matrix operation
         auto m2=t2.ReShape(1);
-        auto m3=t3.ReShape(t1.Rank()-1);
+        auto m3=t3.ReShape(t1.rank()-1);
         MatMul(m1.v.data(),m2.v.data(),m3.v.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
     }
 
@@ -199,18 +239,18 @@ struct Tensor
         MatFullDiag(mt.data(),n,evec.data(),eval.data());
         return {evec,eval};
     }
-    friend std::vector<Tensor> SVDDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
+    friend std::vector<Tensor> SVDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
     {
         auto mt=t.ReShape(splitPos);
         int n=std::min(mt.dim[0],mt.dim[1]);
         auto dimUV=SplitIndex(t.dim,splitPos);
         dimUV[0].push_back(n);    //U dimension
         dimUV[1].push_back(n);    //V dimension
-        auto U=Tensor(dimUV[0]);
-        auto S=Tensor({n});
-        auto V=Tensor(dimUV[1]);
+        auto U=Tensor(dimUV[0]); U.FillZeros();
+        auto S=Tensor({n});      S.FillZeros();
+        auto V=Tensor(dimUV[1]); V.FillZeros();
         MatSVD(mt.v.data(),mt.dim[0],mt.dim[1],U.v.data(),S.v.data(),V.v.data());
-        return {U,S,V};
+        return {U,S.DiagMat(),V.Transpose(V.rank()-1)};
     }
 
 };

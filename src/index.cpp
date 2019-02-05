@@ -12,6 +12,16 @@ int Offset(Index id, Index dim)
     }
     return sum;
 }
+Index ToIndex(int pos,Index dim)
+{
+    Index id(dim.size());
+    for(int i=0;i<dim.size();i++)
+    {
+        id[i]=pos%dim[i];
+        pos/=dim[i];
+    }
+    return id;
+}
 
 vector<Index> SplitIndex(Index dim,int splitPos)
 {
@@ -42,9 +52,17 @@ vector<Index> SplitIndex(Index dim,vector<int> splitPos)
     return dim_v;
 }
 
+Index IndexReorder(const Index& dim, const std::vector<int> &posMap)
+{
+    Index dim2(dim.size());
+    for(int i=0;i<dim2.size();i++)
+        dim2[i]=dim[posMap[i]];
+    return dim2;
+}
+
 Index IndexMul(const Index& dim1,const Index& dim2) // Dim resulting from matrix multiplication
 {
-    if (dim1.back()!=dim1.front())
+    if (dim1.back()!=dim2.front())
         throw std::invalid_argument("Index:: IndexMul() incompatible dimensions");
 
     Index dim_r;

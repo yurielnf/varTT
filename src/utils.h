@@ -78,6 +78,7 @@ T VecDot(T* vec1,const T* vec2,int n)
 
 //---------------------------------- Matrix -----------------------
 
+void MatTranspose(const double*  X, double *result, int nrow, int ncol);
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);
 void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V);

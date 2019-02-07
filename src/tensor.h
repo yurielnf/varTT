@@ -6,6 +6,7 @@
 #include<iostream>
 #include<fstream>
 #include<array>
+#include<algorithm>
 
 #include"utils.h"
 #include"index.h"
@@ -13,7 +14,8 @@
 template<class T,class Container=std::vector<T>> struct Tensor;
 
 template<class T> using TensorReShape=Tensor<T, std::vector<T>& >;
-template<class T> using TensorReShapeC=Tensor<T, const std::vector< T>& >;
+template<class T> using TensorReShapeC=Tensor<T, const std::vector<T>& >;
+template<class T, class C> struct TensorNotation;
 
 using TensorD=Tensor<double>;
 
@@ -50,6 +52,11 @@ struct Tensor
         return v[Offset(id,dim)];
     }
 
+    TensorNotation<T,Container> operator()(std::string id)
+    {
+        return {*this,id};
+    }
+
     void Save(std::ostream& out) const
     {
         for(int x:dim) out<<x<<" ";
@@ -76,15 +83,15 @@ struct Tensor
     }
     void operator+=(const Tensor& t2)
     {
-        if (v.size()!=t2.v.size())
-            throw std::invalid_argument("Tensor::operator-=");
+        if (dim!=t2.dim)
+            throw std::invalid_argument("Tensor::operator-= incompatible");
 
         VecPlusInplace(v.data(),t2.v.data(),v.size());
     }
     void operator-=(const Tensor& t2)
     {
         if (dim!=t2.dim)
-            throw std::invalid_argument("Tensor::operator-=");
+            throw std::invalid_argument("Tensor::operator-=incompatible");
 
         VecMinusInplace(v.data(),t2.v.data(),v.size());
     }
@@ -151,15 +158,19 @@ struct Tensor
         return t2;
     }
 
-    Tensor IndexPermutation(std::vector<int> posMap) const
+    Tensor Reorder(std::vector<int> posMap) const
     {
-        Tensor t(IndexPermutation(dim,posMap));
-        for(int i=0;i<t.v.size();i++)
+        Tensor t(IndexReorder(dim,posMap));
+        for(uint i=0;i<v.size();i++)
         {
-            int im=Offset(IndexPermutation(ToIndex(i,dim),posMap),dim) ;
-            t.v[i]=v[im];
+            int im=Offset(IndexReorder(ToIndex(i,dim),posMap),t.dim) ;
+            t.v[im]=v[i];
         }
         return t;
+    }
+    Tensor Reorder(std::string ini,std::string fin) const
+    {
+        return Reorder(Permutation(ini,fin));
     }
 
     Tensor Transpose(int splitPos) const
@@ -186,8 +197,8 @@ struct Tensor
 
     Tensor ContractCenter(const Tensor& t2) const
     {
-        Tensor t=IndexPermutation({0,2,1})*t2;  //check for rank 3 tensor and hence generalize using reshape
-        return t.IndexPermutation({0,2,1});
+        Tensor t=Reorder({0,2,1})*t2;  //check for rank 3 tensor. After generalize using reshape
+        return t.Reorder({0,2,1});
     }
 
     friend bool operator==(const Tensor& t1,const Tensor& t2)
@@ -256,6 +267,26 @@ struct Tensor
 
 };
 
+template<class T, class C>
+struct TensorNotation
+{
+    Tensor<T,C>& t;
+    std::string id;
+
+
+    TensorNotation& operator=(const TensorNotation& tn)
+    {
+        t=tn.t.Reorder(tn.id,id);
+        return *this;
+    }
+    TensorNotation& operator*(const TensorNotation& tn)
+    {
+        auto idn=SortForMultiply(id,t.id);
+        t=tn.t.Reorder(Permutation(id,t.id));
+        return *this;
+    }
+
+};
 
 #include"tensor.cpp"   // implementations
 

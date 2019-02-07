@@ -55,8 +55,8 @@ vector<Index> SplitIndex(Index dim,vector<int> splitPos)
 Index IndexReorder(const Index& dim, const std::vector<int> &posMap)
 {
     Index dim2(dim.size());
-    for(int i=0;i<dim2.size();i++)
-        dim2[i]=dim[posMap[i]];
+    for(int i=0;i<dim.size();i++)
+        dim2[posMap[i]]=dim[i];
     return dim2;
 }
 
@@ -71,4 +71,42 @@ Index IndexMul(const Index& dim1,const Index& dim2) // Dim resulting from matrix
     for(int i=1;i<dim2.size();i++)
         dim_r.push_back( dim2[i] );
     return dim_r;
+}
+
+//-------------------------------------------- string manipulation ------------------------------
+
+bool ArePermutation(std::string str1,std::string str2)
+{
+    auto s1=str1; sort(s1.begin(),s1.end());
+    auto s2=str2; sort(s2.begin(),s2.end());
+    return s1==s2;
+}
+std::vector<int> Permutation(std::string ini,std::string fin)
+{
+    if (ini==fin) return {};
+    if (!ArePermutation(ini,fin))
+        throw std::invalid_argument("Permutation: str1,str2 is not a permutation");
+    std::vector<int> pos(ini.size());
+    for(uint i=0;i<ini.size();i++)
+        pos[i]=fin.find(ini[i]);
+    return pos;
+}
+std::array<std::string,2> SortForMultiply(std::string str1,std::string str2)
+{
+    auto s1=str1; sort(s1.begin(),s1.end());
+    auto s2=str2; sort(s2.begin(),s2.end());
+    std::string sc;
+    std::set_intersection(s1.begin(),s1.end(),
+                          s2.begin(),s2.end(),
+                          std::back_inserter(sc));
+    s1.clear();
+    for(int i=0;i<str1.size();i++)
+        if (sc.find(str1[i])==std::string::npos)
+            s1.push_back(str1[i]);
+    s1+=sc;
+    s2.clear(); s2+=sc;
+    for(int i=0;i<str2.size();i++)
+        if (sc.find(str2[i])==std::string::npos)
+            s2.push_back(str2[i]);
+    return {s1,s2};
 }

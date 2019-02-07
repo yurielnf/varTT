@@ -1,5 +1,4 @@
 #include "tensor.h"
-//#include<iostream>
 #include"catch.hpp"
 
 #include<armadillo>

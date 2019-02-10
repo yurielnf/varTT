@@ -55,6 +55,9 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         REQUIRE( t.v[10]==123 );
         auto t3=t2.ReShape(2).ReShape(1);
         REQUIRE( t3.dim==Index({12,1}) );
+        TensorD t4({6,2}); t4.FillZeros();
+        t4+=t2;
+        REQUIRE( t4==t2 );
     }
     SECTION( "operator-/Norm" )
     {

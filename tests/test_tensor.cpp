@@ -38,7 +38,7 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     }
     SECTION( "copy/operator=" )
     {
-        Tensor<double> t3(t.dim);
+        TensorD t3(t.dim);
         {
             TensorD t2=t;
             REQUIRE( t==t2 );
@@ -53,6 +53,8 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         REQUIRE( t2.dim==Index({6,2}) );
         t2.v[10]=123;
         REQUIRE( t.v[10]==123 );
+        auto t3=t2.ReShape(2).ReShape(1);
+        REQUIRE( t3.dim==Index({12,1}) );
     }
     SECTION( "operator-/Norm" )
     {

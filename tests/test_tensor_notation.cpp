@@ -9,11 +9,11 @@ TEST_CASE( "tensor notation", "[tnotation]" )
 {
     SECTION( "Indices are permutation" )
     {
-        REQUIRE(  ArePermutation("ijkl","ilkj") );
-        REQUIRE( !ArePermutation("ijkl","ilj") );
-        REQUIRE( !ArePermutation("ijkl","iljki") );
-        REQUIRE(  ArePermutation("ijkl","lkji") );
-        REQUIRE( !ArePermutation("ijkl","lkjig") );
+        REQUIRE( ArePermutation("ijkl","ilkj")==true );
+        REQUIRE( ArePermutation("ijkl","ilj")==false );
+        REQUIRE( ArePermutation("ijkl","iljki")==false );
+        REQUIRE( ArePermutation("ijkl","lkji")==true );
+        REQUIRE( ArePermutation("ijkl","lkjig")==false );
     }
     SECTION( "Indices permutation to vector of pos" )
     {
@@ -26,8 +26,8 @@ TEST_CASE( "tensor notation", "[tnotation]" )
     {
         TensorD t1({2,3,2}), t2;
         t1.FillRandu();
-        t2("jki")=t1("ijk");
-        REQUIRE( t2==t1.Transpose(1));
+        t2("nml")=t1("mln");            //t2=t1.Reorder("mln","nml");
+        REQUIRE( t2==t1.Transpose(2));
     }
 
 }

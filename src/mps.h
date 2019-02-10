@@ -39,12 +39,12 @@ public:
     }
     void Canonicalize()
     {
-        C=Tensor<double>({1,1},{1});
+        C=TensorD({1,1},{1});
         pos=-1;
         while(pos<length/2-1)
             SweepRight();
         auto cC=C;
-        C=Tensor<double>({1,1},{1});
+        C=TensorD({1,1},{1});
         pos=length-1;
         while(pos>length/2-1)
             SweepLeft();

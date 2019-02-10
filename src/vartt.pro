@@ -1,6 +1,7 @@
 TEMPLATE = lib
 CONFIG = staticlib c++14
 
+
 SOURCES +=\
     utils.cpp \
     tensor.cpp \

@@ -7,29 +7,32 @@
 #include<fstream>
 #include<array>
 #include<algorithm>
+#include<functional>
+#include<type_traits>
 
 #include"utils.h"
 #include"index.h"
 
-template<class T,class Container=std::vector<T>> struct Tensor;
+template<class Container=std::vector<double>> struct Tensor;
 
-template<class T> using TensorReShape=Tensor<T, std::vector<T>& >;
-template<class T> using TensorReShapeC=Tensor<T, const std::vector<T>& >;
-template<class T, class C> struct TensorNotation;
+//template<class T> using TensorReShape=Tensor<T, std::vector<T>& >;
+//template<class T> using TensorReShapeC=Tensor<T, const std::vector<T>& >;
+template<class C> struct TensorNotation;
 
-using TensorD=Tensor<double>;
+using TensorD=Tensor<std::vector<double>>;
 
 
-template<class T, class Container>
+template<typename C>
 struct Tensor
 {
     Index  dim;
-    Container v;
+    C v;
+    typedef typename std::decay<C>::type::value_type T;
 
     Tensor() {}
     Tensor(const Index& dim)
         :dim(dim),v(Prod(dim)) {}
-    Tensor(const Index& dim,const  Container& v)
+    Tensor(const Index& dim,const  C& v)
         :dim(dim),v(v) {}
 
     int rank() const {return dim.size();}
@@ -52,7 +55,7 @@ struct Tensor
         return v[Offset(id,dim)];
     }
 
-    TensorNotation<T,Container> operator()(std::string id)
+    TensorNotation<Tensor&> operator()(std::string id)
     {
         return {*this,id};
     }
@@ -121,32 +124,32 @@ struct Tensor
         return y;
     }
 
-    TensorReShape<T> ReShape(int splitPos)
+    Tensor<C&> ReShape(int splitPos)
     {
         auto dim_v=SplitIndex(dim,splitPos);
-        return TensorReShape<T>({ Prod(dim_v[0]), Prod(dim_v[1])}, v);
+        return {{ Prod(dim_v[0]), Prod(dim_v[1])}, v};
     }
-    TensorReShapeC<T> ReShape(int splitPos) const
+    Tensor<const C&> ReShape(int splitPos) const
     {
         auto dim_v=SplitIndex(dim,splitPos);
-        return TensorReShapeC<T>({ Prod(dim_v[0]), Prod(dim_v[1])}, v);
+        return {{ Prod(dim_v[0]), Prod(dim_v[1])}, v};
     }
-    TensorReShape<T> ReShape(std::vector<int> splitPos)
-    {
-        auto dim_v=SplitIndex(dim,splitPos);
-        Index dimr(dim_v.size());
-        for(int i=0;i<dim_v.size();i++)
-            dimr[i]=Prod(dim_v[i]);
-        return TensorReShape<T>(dimr,v);
-    }
-    TensorReShapeC<T> ReShape(std::vector<int> splitPos) const
-    {
-        auto dim_v=SplitIndex(dim,splitPos);
-        Index dimr(dim_v.size());
-        for(int i=0;i<dim_v.size();i++)
-            dimr[i]=Prod(dim_v[i]);
-        return TensorReShapeC<T>(dimr,v);
-    }
+//    Tensor<C&> ReShape(std::vector<int> splitPos)
+//    {
+//        auto dim_v=SplitIndex(dim,splitPos);
+//        Index dimr(dim_v.size());
+//        for(int i=0;i<dim_v.size();i++)
+//            dimr[i]=Prod(dim_v[i]);
+//        return TensorReShape<T>(dimr,v);
+//    }
+//    Tensor<const C&> ReShape(std::vector<int> splitPos) const
+//    {
+//        auto dim_v=SplitIndex(dim,splitPos);
+//        Index dimr(dim_v.size());
+//        for(int i=0;i<dim_v.size();i++)
+//            dimr[i]=Prod(dim_v[i]);
+//        return TensorReShapeC<T>(dimr,v);
+//    }
 
     Tensor DiagMat() const
     {
@@ -172,7 +175,6 @@ struct Tensor
     {
         return Reorder(Permutation(ini,fin));
     }
-
     Tensor Transpose(int splitPos) const
     {
         auto dim_v=SplitIndex(dim,splitPos);
@@ -193,12 +195,6 @@ struct Tensor
         Tensor t3(IndexMul(t1.dim,t2.dim));
         Multiply(t1,t2,t3);
         return t3;
-    }
-
-    Tensor ContractCenter(const Tensor& t2) const
-    {
-        Tensor t=Reorder({0,2,1})*t2;  //check for rank 3 tensor. After generalize using reshape
-        return t.Reorder({0,2,1});
     }
 
     friend bool operator==(const Tensor& t1,const Tensor& t2)
@@ -267,23 +263,28 @@ struct Tensor
 
 };
 
-template<class T, class C>
+template<class Tensor>
 struct TensorNotation
 {
-    Tensor<T,C>& t;
+    Tensor t;
     std::string id;
 
 
+    //auto Reorder(std::string fin) const { return t.Reorder(id,fin); }
     TensorNotation& operator=(const TensorNotation& tn)
     {
         t=tn.t.Reorder(tn.id,id);
         return *this;
     }
-    TensorNotation& operator*(const TensorNotation& tn)
+
+    TensorNotation operator*(const TensorNotation& tn)
     {
-        auto idn=SortForMultiply(id,t.id);
-        t=tn.t.Reorder(Permutation(id,t.id));
-        return *this;
+        auto ids=SortForMultiply(id,t.id);
+        auto t1=   t.Reorder(id   ,ids[0]);
+        auto t2=tn.t.Reorder(tn.id,ids[1]);
+        auto t3=t1*t2;
+        TensorNotation<std::remove_reference_t<Tensor>> tn3(t3,IndexMatMul);
+
     }
 
 };

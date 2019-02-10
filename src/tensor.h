@@ -283,7 +283,7 @@ struct TensorNotation
         auto t1=   t.Reorder(id   ,ids[0]);
         auto t2=tn.t.Reorder(tn.id,ids[1]);
         auto t3=t1*t2;
-        TensorNotation<std::remove_reference_t<Tensor>> tn3(t3,IndexMatMul);
+        return TensorNotation<std::remove_reference_t<Tensor>> tn3(t3,IndexMatMul);
 
     }
 

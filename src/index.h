@@ -39,7 +39,7 @@ Index IndexMul(const Index& dim1,const Index& dim2); // Dim resulting from matri
 
 bool ArePermutation(std::string str1,std::string str2);
 std::vector<int> Permutation(std::string str1,std::string str2);
-std::array<std::string,2> SortForMultiply(std::string str1,std::string str2);
+std::array<std::string,3> SortForMultiply(std::string str1,std::string str2);
 
 
 #endif // INDEX_H

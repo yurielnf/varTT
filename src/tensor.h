@@ -173,6 +173,7 @@ struct Tensor
     }
     Tensor Reorder(std::string ini,std::string fin) const
     {
+        if (ini==fin) return *this;
         return Reorder(Permutation(ini,fin));
     }
     Tensor Transpose(int splitPos) const
@@ -268,7 +269,12 @@ struct TensorNotation
 {
     Tensor t;
     std::string id;
-
+    TensorNotation(const Tensor& t, std::string id)
+        :t(t),id(id) {}
+    TensorNotation(const TensorNotation<typename std::remove_reference<Tensor>::type>& tn)
+        :t(tn.t),id(tn.id) {}
+    TensorNotation(TensorNotation<typename std::remove_reference<Tensor>::type>&& tn)
+        :t(tn.t),id(tn.id) {}
 
     //auto Reorder(std::string fin) const { return t.Reorder(id,fin); }
     TensorNotation& operator=(const TensorNotation& tn)
@@ -277,13 +283,14 @@ struct TensorNotation
         return *this;
     }
 
-    TensorNotation operator*(const TensorNotation& tn)
+    TensorNotation<typename std::remove_reference<Tensor>::type> operator*(const TensorNotation& tn)
     {
-        auto ids=SortForMultiply(id,t.id);
+        auto ids=SortForMultiply(id,tn.id);
         auto t1=   t.Reorder(id   ,ids[0]);
         auto t2=tn.t.Reorder(tn.id,ids[1]);
         auto t3=t1*t2;
-        return TensorNotation<std::remove_reference_t<Tensor>> tn3(t3,IndexMatMul);
+        auto tn3=TensorNotation<typename std::remove_reference<Tensor>::type>(t3,ids[2]);
+        return tn3;
 
     }
 

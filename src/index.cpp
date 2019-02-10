@@ -91,7 +91,7 @@ std::vector<int> Permutation(std::string ini,std::string fin)
         pos[i]=fin.find(ini[i]);
     return pos;
 }
-std::array<std::string,2> SortForMultiply(std::string str1,std::string str2)
+std::array<std::string,3> SortForMultiply(std::string str1,std::string str2)
 {
     auto s1=str1; sort(s1.begin(),s1.end());
     auto s2=str2; sort(s2.begin(),s2.end());
@@ -103,10 +103,10 @@ std::array<std::string,2> SortForMultiply(std::string str1,std::string str2)
     for(int i=0;i<str1.size();i++)
         if (sc.find(str1[i])==std::string::npos)
             s1.push_back(str1[i]);
-    s1+=sc;
-    s2.clear(); s2+=sc;
+
+    s2.clear();
     for(int i=0;i<str2.size();i++)
         if (sc.find(str2[i])==std::string::npos)
             s2.push_back(str2[i]);
-    return {s1,s2};
+    return {s1+sc,sc+s2,s1+s2};
 }

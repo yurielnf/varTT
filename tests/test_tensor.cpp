@@ -13,7 +13,7 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     t.FillRandu();
     SECTION( "size" )
     {
-        REQUIRE( t.v.size() == d[0]*d[1]*d[2] );
+        REQUIRE( t.size() == d[0]*d[1]*d[2] );
     }
     SECTION( "fill" )
     {
@@ -49,12 +49,12 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     SECTION( "ReShape" )
     {
         auto t2=t.ReShape(2);
-        REQUIRE( t.v==t2.v );
+        REQUIRE( t.vec()==t2.vec() );
         REQUIRE( t2.dim==Index({6,2}) );
-        t2.v[10]=123;
-        REQUIRE( t.v[10]==123 );
-        auto t3=t2.ReShape(2).ReShape(1);
-        REQUIRE( t3.dim==Index({12,1}) );
+        t2.vec()[10]=123;
+        REQUIRE( t.vec()[10]==123 );
+//        auto t3=t2.ReShape(2).ReShape(1);
+//        REQUIRE( t3.dim==Index({12,1}) );
     }
     SECTION( "operator-/Norm" )
     {
@@ -82,12 +82,12 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         TensorD t2=t*t;
         REQUIRE( t2.dim==Index{d[0],d[1],d[1],d[2]} );
 
-        mat A(t.v.data(),6,2);     // Checking result against armadillo
-        mat B(t.v.data(),2,6);
+        mat A(t.data(),6,2);     // Checking result against armadillo
+        mat B(t.data(),2,6);
         mat C=A*B;
         vector<double> data(C.begin(),C.end());
 
-        REQUIRE( data==t2.v );
+        REQUIRE( data==t2.vec() );
     }
     SECTION( "matrix decomposition: svd" )
     {

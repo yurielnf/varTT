@@ -34,19 +34,19 @@ TEST_CASE( "tensor notation", "[tnotation]" )
         t2("ijlm")=t1("ijk") * t1("klm");
 
         REQUIRE( t2.dim==Index{2,3,3,2} );
-        REQUIRE( t2.v==(t1*t1).v );
+        REQUIRE( t2.vec()==(t1*t1).vec() );
     }
     SECTION( "contraction and reorder" )
     {
         t2("lmij")=t1("ijk") * t1("klm");
 
         REQUIRE( t2.dim==Index{3,2,2,3} );
-        REQUIRE( t2.v==(t1*t1).Transpose(2).v );
+        REQUIRE( t2.vec()==(t1*t1).Transpose(2).vec() );
 
         t2("mlij")=t1("ijk") * t1("mlk");
 
         REQUIRE( t2.dim==Index{2,3,2,3} );
-        REQUIRE( t2.v==(t1*t1.Transpose(2)).Transpose(2).v );
+        REQUIRE( t2.vec()==(t1*t1.Transpose(2)).Transpose(2).vec() );
 
         t2("ikml")=t1("ijk") * t1("ljm");
 

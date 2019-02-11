@@ -13,6 +13,12 @@ void VecFillRandu(T *vec, int nelem)
     for(int i=0;i<nelem;i++)
         vec[i]=T(1.0*rand()/RAND_MAX);
 }
+template<class T>
+void VecFillZeros(T *vec, int nelem)
+{
+    for(int i=0;i<nelem;i++)
+        vec[i]=T(0);
+}
 
 template<class T>
 void VecSave(const T* vec, int nelem, std::ostream& out)
@@ -31,7 +37,7 @@ void VecLoad(T* vec, int nelem, std::istream& in)
 }
 
 template<class T>
-double VecNorm(const T* vec, int nelem)
+double VecNorm( T* const vec, int nelem)
 {
     double sum=0;
     for(int i=0;i<nelem;i++)

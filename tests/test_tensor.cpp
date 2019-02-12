@@ -51,10 +51,21 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         auto t2=t.ReShape(2);
         REQUIRE( t.vec()==t2.vec() );
         REQUIRE( t2.dim==Index({6,2}) );
-        t2.vec()[10]=123;
-        REQUIRE( t.vec()[10]==123 );
-//        auto t3=t2.ReShape(2).ReShape(1);
-//        REQUIRE( t3.dim==Index({12,1}) );
+        t2.data()[10]=123;
+        REQUIRE( t.data()[10]==123 );
+
+        auto t3=t2.ReShape(2).ReShape(1);
+        REQUIRE( t3.dim==Index({12,1}) );
+        t3.data()[10]=321;
+        REQUIRE( t.data()[10]==321 );
+
+        auto t5=t3;
+        t5[10]=456;
+        REQUIRE( t[10]==456 );
+
+        TensorD t6(t.dim); t6.FillZeros();
+        t6+=t;
+        REQUIRE( t6==t );
     }
     SECTION( "operator-/Norm" )
     {

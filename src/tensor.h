@@ -13,36 +13,41 @@
 #include"utils.h"
 #include"index.h"
 
-template<class T,class Container=std::vector<T>> class Tensor;
-template<class T,class C> class TensorRef;
-template<class T,class C> class TensorCRef;
-template<class T,class C> class TensorRef2;
+template<class T> class Tensor;
+template<class T> class TensorRef;
+template<class T> class TensorCRef;
+template<class T> class TensorRef2;
 template<class Tensor> struct TensorNotation;
 
 using TensorD=Tensor<double>;
 
 
-template<class T,class C>
+template<class T>
 struct Tensor
 {
+    typedef std::vector<T> C;
+
     Index  dim;
-    C dx;
+private:
+    int n=0;
+    std::vector<T> _vec;
+    T* mem=nullptr;
+public:
+    T* data() {return mem==nullptr?_vec.data():mem;}
+    const T* data() const {return mem==nullptr?_vec.data():mem;}
+    int size() const {return n;}
 
-//    virtual C& vec() {return dx;}
     C vec() const {return C(data(),data()+size());}
-
-    virtual T* data() {return dx.data();}
-    virtual const T*  data() const {return dx.data();}
-    virtual int size() const {return dx.size();}
-
-//    typedef typename std::decay<C>::type _C;
-//    typedef typename _C::value_type T;
 
     Tensor() {}
     Tensor(const Index& dim)
-        :dim(dim),dx(Prod(dim)) {}
-    Tensor(const Index& dim,const  C& v)
-        :dim(dim),dx(v) {}
+        :dim(dim),n(Prod(dim)),_vec(n) {}
+    Tensor(const Index& dim,const std::vector<T>& vec)
+        :dim(dim),n(Prod(dim)),_vec(vec)
+    {}
+    Tensor(const Index& dim,T* dat)
+        :dim(dim),n(Prod(dim)),mem(dat)
+    {}
 
     int rank() const {return dim.size();}
 
@@ -63,15 +68,23 @@ struct Tensor
     {
         return data()[Offset(id,dim)];
     }
+    T& operator[](int i)
+    {
+        return data()[i];
+    }
+    const T& operator[](int i) const
+    {
+        return data()[i];
+    }
 
     TensorNotation<Tensor&> operator()(std::string id)
     {
         return {*this,id};
     }
-//    TensorNotation<const Tensor&> operator()  (std::string id) const
-//    {
-//        return {*this,id};
-//    }
+    TensorNotation<const Tensor&> operator()  (std::string id) const
+    {
+        return {*this,id};
+    }
 
     void Save(std::ostream& out) const
     {
@@ -137,32 +150,34 @@ struct Tensor
         return y;
     }
 
-    TensorRef<T,C> ReShape(int splitPos)
+    Tensor<T> ReShape(int splitPos)
     {
         auto dim_v=SplitIndex(dim,splitPos);
-        return {{ Prod(dim_v[0]), Prod(dim_v[1])}, dx};
+        return {{ Prod(dim_v[0]), Prod(dim_v[1])}, data()};
     }
-    const TensorCRef<T,C> ReShape(int splitPos) const
+    Tensor<T> ReShape(int splitPos) const
     {
         auto dim_v=SplitIndex(dim,splitPos);
-        return {{ Prod(dim_v[0]), Prod(dim_v[1])}, dx};
+        return {{ Prod(dim_v[0]), Prod(dim_v[1])}, const_cast<T*>(data())};
     }
-//    Tensor<C&> ReShape(std::vector<int> splitPos)
-//    {
-//        auto dim_v=SplitIndex(dim,splitPos);
-//        Index dimr(dim_v.size());
-//        for(int i=0;i<dim_v.size();i++)
-//            dimr[i]=Prod(dim_v[i]);
-//        return TensorReShape<T>(dimr,v);
-//    }
-//    Tensor<const C&> ReShape(std::vector<int> splitPos) const
-//    {
-//        auto dim_v=SplitIndex(dim,splitPos);
-//        Index dimr(dim_v.size());
-//        for(int i=0;i<dim_v.size();i++)
-//            dimr[i]=Prod(dim_v[i]);
-//        return TensorReShapeC<T>(dimr,v);
-//    }
+    /*
+    Tensor<C&> ReShape(std::vector<int> splitPos)
+    {
+        auto dim_v=SplitIndex(dim,splitPos);
+        Index dimr(dim_v.size());
+        for(int i=0;i<dim_v.size();i++)
+            dimr[i]=Prod(dim_v[i]);
+        return TensorReShape<T>(dimr,v);
+    }
+    Tensor<const C&> ReShape(std::vector<int> splitPos) const
+    {
+        auto dim_v=SplitIndex(dim,splitPos);
+        Index dimr(dim_v.size());
+        for(int i=0;i<dim_v.size();i++)
+            dimr[i]=Prod(dim_v[i]);
+        return TensorReShapeC<T>(dimr,v);
+    }
+    */
 
     Tensor DiagMat() const
     {
@@ -198,7 +213,7 @@ struct Tensor
             for(auto x:d)
                 dim2.push_back(x);
         Tensor t2(dim2);
-        const auto m1=ReShape(splitPos);
+        auto m1=ReShape(splitPos);
         MatTranspose(m1.data(),t2.data(),m1.dim[0],m1.dim[1]);
         return t2;
     }
@@ -214,7 +229,7 @@ struct Tensor
 
     friend bool operator==(const Tensor& t1,const Tensor& t2) //esta mal
     {
-        return (t1.dim==t2.dim && t1.dx==t2.dx);
+        return ( t1.dim==t2.dim && t1.vec()==t2.vec() );
     }
     friend bool operator!=(const Tensor& t1,const Tensor& t2)
     {
@@ -242,8 +257,8 @@ struct Tensor
         if (dim_r!=t3.dim)
             throw std::invalid_argument("Tensor:: Multiply() incompatible dimensions");
 
-        const auto m1=t1.ReShape(t1.rank()-1);  //Matrix operation
-        const auto m2=t2.ReShape(1);
+        auto m1=t1.ReShape(t1.rank()-1);  //Matrix operation
+        auto m2=t2.ReShape(1);
         auto m3=t3.ReShape(t1.rank()-1);
         MatMul(m1.data(),m2.data(),m3.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
     }
@@ -262,7 +277,7 @@ struct Tensor
     }
     friend std::vector<Tensor> SVDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
     {
-        const auto mt=t.ReShape(splitPos);
+        auto mt=t.ReShape(splitPos);
         int n=std::min(mt.dim[0],mt.dim[1]);
         auto dimUV=SplitIndex(t.dim,splitPos);
         dimUV[0].push_back(n);    //U dimension
@@ -275,91 +290,32 @@ struct Tensor
     }
 };
 
-template<class T,class C>
-struct TensorRef2: public Tensor<T,C>
-{
-          T *mem=nullptr;
-    const T* const cmem=nullptr;
-    int n=0;
-
-    TensorRef2(const Index& dim,C& v)
-              :mem(v.data()),n(v.size()) {this->dim=dim;}
-    TensorRef2(const Index& dim,const C& v)
-              :cmem(v.data()),n(v.size()) {this->dim=dim;}
-
-    virtual double* data() {return mem;}
-    virtual const double* data() const {return cmem;}
-    virtual int size() const {return n;}
-};
-
-
-template<class T,class C>
-struct TensorRef: public Tensor<T,C>
-{
-    C& dr;
-
-    TensorRef(const Index& dim,C& v)
-              :dr(v) {this->dim=dim;}
-
-//    virtual C& vec() {return dr;}
-//    virtual const C& vec() const = delete;
-
-    virtual T* data() {return dr.data();}
-//    virtual const T* data() const {return vec().data();}
-    virtual int size() const {return dr.size();}
-
-private:
-//    virtual const C& vec() const {return this->dx;}
-    virtual const T* data() const {return nullptr;}
-
-};
-
-template<class T,class C>
-struct TensorCRef: public Tensor<T,C>
-{
-    const C& dr;
-    TensorCRef(const Index& dim,const C& v)
-              :dr(v) {this->dim=dim;}
-
-    virtual const C& vec() const {return dr;}
-
-//    virtual T* data() = delete;
-    virtual const T* data() const {return dr.data();}
-    virtual int size() const {return dr.size();}
-
-
-private:
-//    virtual C& vec() {return this->dx;}
-    virtual T* data() {return nullptr;}
-};
 
 template<class Tensor>
 struct TensorNotation
 {
+    typedef typename std::decay<Tensor>::type _Tensor;
+
     Tensor t;
     std::string id;
-    TensorNotation(const Tensor& t, std::string id)
-        :t(t),id(id) {}
-    TensorNotation(const TensorNotation<typename std::remove_reference<Tensor>::type>& tn)
-        :t(tn.t),id(tn.id) {}
-    TensorNotation(TensorNotation<typename std::remove_reference<Tensor>::type>&& tn)
-        :t(tn.t),id(tn.id) {}
 
-    //auto Reorder(std::string fin) const { return t.Reorder(id,fin); }
-    TensorNotation& operator=(const TensorNotation& tn)
+    TensorNotation(Tensor t,std::string id)
+        :t(t),id(id) {}
+
+    template<class Tensor2>
+    TensorNotation& operator=(const TensorNotation<Tensor2>& tn)
     {
         t=tn.t.Reorder(tn.id,id);
         return *this;
     }
-
-    TensorNotation<typename std::remove_reference<Tensor>::type> operator*(const TensorNotation& tn)
+    template<class Tensor2>
+    TensorNotation<_Tensor> operator*(const TensorNotation<Tensor2>& tn)
     {
         auto ids=SortForMultiply(id,tn.id);
         auto t1=   t.Reorder(id   ,ids[0]);
         auto t2=tn.t.Reorder(tn.id,ids[1]);
         auto t3=t1*t2;
-        auto tn3=TensorNotation<typename std::remove_reference<Tensor>::type>(t3,ids[2]);
-        return tn3;
+        return {t3, ids[2]};
     }
 };
 

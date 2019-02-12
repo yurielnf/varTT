@@ -22,8 +22,9 @@ TEST_CASE( "tensor notation", "[tnotation]" )
         REQUIRE( Permutation("ikl","lki")==vector<int>({2,1,0}) );
         REQUIRE( Permutation("ijk","jki")==vector<int>({2,0,1}) );
     }
-    TensorD t1({2,3,2}), t2;
-    t1.FillRandu();
+    TensorD t({2,3,2}), t2;
+    t.FillRandu();
+    const auto t1=t;
     SECTION( "matrix transpose" )
     {
         t2("nml")=t1("mln");            //t2=t1.Reorder("mln","nml");
@@ -35,6 +36,10 @@ TEST_CASE( "tensor notation", "[tnotation]" )
 
         REQUIRE( t2.dim==Index{2,3,3,2} );
         REQUIRE( t2.vec()==(t1*t1).vec() );
+
+        t2("ijln")=t1("ijk") * t1("klm") * t1.ReShape(1)("mn");
+        REQUIRE( t2.dim==Index{2,3,3,6} );
+        REQUIRE( t2.vec()==(t1*t1*t1.ReShape(1)).vec() );
     }
     SECTION( "contraction and reorder" )
     {

@@ -12,6 +12,16 @@ int Offset(Index id, Index dim)
     }
     return sum;
 }
+int Offset(Index id, Index dim,const std::vector<int>& posMap)
+{
+    int sum=0,prod=1;
+    for(uint i=0;i<id.size();i++)
+    {
+        sum+=id[posMap[i]]*prod;
+        prod*=dim[i];
+    }
+    return sum;
+}
 Index ToIndex(int pos,Index dim)
 {
     Index id(dim.size());
@@ -60,15 +70,17 @@ Index IndexReorder(const Index& dim, const std::vector<int> &posMap)
     return dim2;
 }
 
-Index IndexMul(const Index& dim1,const Index& dim2) // Dim resulting from matrix multiplication
+Index IndexMul(const Index& dim1,const Index& dim2,int nIdCommon) // Dim resulting from matrix multiplication
 {
-    if (dim1.back()!=dim2.front())
-        throw std::invalid_argument("Index:: IndexMul() incompatible dimensions");
+    for(int i=0;i<nIdCommon;i++)
+        if (dim1[dim1.size()-nIdCommon+i]!=dim2[i])
+            throw std::invalid_argument("Index:: IndexMul() incompatible dimensions");
+
 
     Index dim_r;
-    for(int i=0;i<dim1.size()-1;i++)
+    for(int i=0;i<dim1.size()-nIdCommon;i++)
         dim_r.push_back( dim1[i] );
-    for(int i=1;i<dim2.size();i++)
+    for(int i=nIdCommon;i<dim2.size();i++)
         dim_r.push_back( dim2[i] );
     return dim_r;
 }
@@ -91,7 +103,7 @@ std::vector<int> Permutation(std::string ini,std::string fin)
         pos[i]=fin.find(ini[i]);
     return pos;
 }
-std::array<std::string,3> SortForMultiply(std::string str1,std::string str2)
+std::array<std::string,4> SortForMultiply(std::string str1,std::string str2)
 {
     auto s1=str1; sort(s1.begin(),s1.end());
     auto s2=str2; sort(s2.begin(),s2.end());
@@ -108,5 +120,5 @@ std::array<std::string,3> SortForMultiply(std::string str1,std::string str2)
     for(int i=0;i<str2.size();i++)
         if (sc.find(str2[i])==std::string::npos)
             s2.push_back(str2[i]);
-    return {s1+sc,sc+s2,s1+s2};
+    return {s1+sc,sc+s2,s1+s2,sc};
 }

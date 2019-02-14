@@ -62,11 +62,11 @@ public:
 
     T& operator[](const Index& id)
     {
-        return data()[Offset(id,dim)];
+        return (*this)[Offset(id,dim)];
     }
     const T& operator[](const Index& id) const
     {
-        return data()[Offset(id,dim)];
+        return (*this)[Offset(id,dim)];
     }
     T& operator[](int i)
     {
@@ -192,10 +192,11 @@ public:
     Tensor Reorder(std::vector<int> posMap) const
     {
         Tensor t(IndexReorder(dim,posMap));
-        for(int i=0;i<size();i++)
+        for(int i=0;i<t.size();i++)
         {
-            int im=Offset(IndexReorder(ToIndex(i,dim),posMap),t.dim) ;
-            t.data()[im]=data()[i];
+//            int im=Offset(IndexReorder(ToIndex(i,dim),posMap),t.dim) ;
+            int im=Offset(ToIndex(i,t.dim),dim,posMap);
+            t[i]=(*this)[im];
         }
         return t;
     }
@@ -219,9 +220,18 @@ public:
     }
     Tensor operator*(const Tensor& t2) const
     {
-        const Tensor &t1=*this;
-        Tensor t3(IndexMul(t1.dim,t2.dim));
-        Multiply(t1,t2,t3);
+        return Multiply(t2,1);
+    }
+    Tensor Multiply(const Tensor& t2, int nIdCommon) const
+    {
+        const Tensor& t1=*this;
+        Index dim_r=IndexMul(t1.dim,t2.dim,nIdCommon);
+        Tensor t3(dim_r);
+
+        auto m1=t1.ReShape(t1.rank()-nIdCommon);  //Matrix operation
+        auto m2=t2.ReShape(nIdCommon);
+        auto m3=t3.ReShape(t1.rank()-nIdCommon);
+        MatMul(m1.data(),m2.data(),m3.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
         return t3;
     }
 
@@ -250,17 +260,6 @@ public:
     friend double Norm(const Tensor& t)
     {
         return VecNorm(t.data(),t.size());
-    }
-    friend void Multiply(const Tensor& t1,const Tensor& t2, Tensor& t3)
-    {
-        Index dim_r=IndexMul(t1.dim,t2.dim);
-        if (dim_r!=t3.dim)
-            throw std::invalid_argument("Tensor:: Multiply() incompatible dimensions");
-
-        auto m1=t1.ReShape(t1.rank()-1);  //Matrix operation
-        auto m2=t2.ReShape(1);
-        auto m3=t3.ReShape(t1.rank()-1);
-        MatMul(m1.data(),m2.data(),m3.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
     }
     friend std::array<Tensor,2> EigenDecomposition(const Tensor& t,int splitPos)
     {
@@ -314,7 +313,8 @@ struct TensorNotation
         auto ids=SortForMultiply(id,tn.id);
         auto t1=   t.Reorder(id   ,ids[0]);
         auto t2=tn.t.Reorder(tn.id,ids[1]);
-        auto t3=t1*t2;
+        int nc=ids[3].length();
+        auto t3=t1.Multiply(t2,nc);
         return {t3, ids[2]};
     }
 };

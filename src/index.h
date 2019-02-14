@@ -26,6 +26,7 @@ inline int Prod(std::vector<int> dim)
 }
 
 int Offset(Index id, Index dim);
+int Offset(Index id, Index dim, const std::vector<int> &posMap);
 Index ToIndex(int pos, Index dim);
 
 std::vector<Index> SplitIndex(Index dim,int splitPos);
@@ -33,13 +34,13 @@ std::vector<Index> SplitIndex(Index dim,std::vector<int> splitPos);
 
 Index IndexReorder(const Index& dim, const std::vector<int>& posMap);
 
-Index IndexMul(const Index& dim1,const Index& dim2); // Dim resulting from matrix multiplication
+Index IndexMul(const Index& dim1,const Index& dim2,int nIndCommon); // Dim resulting from matrix multiplication
 
 //-------------------------------------- string manipulation ------------------------------
 
 bool ArePermutation(std::string str1,std::string str2);
 std::vector<int> Permutation(std::string str1,std::string str2);
-std::array<std::string,3> SortForMultiply(std::string str1,std::string str2);
+std::array<std::string,4> SortForMultiply(std::string str1,std::string str2);
 
 
 #endif // INDEX_H

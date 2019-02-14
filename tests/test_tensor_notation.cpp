@@ -30,12 +30,23 @@ TEST_CASE( "tensor notation", "[tnotation]" )
         t2("nml")=t1("mln");            //t2=t1.Reorder("mln","nml");
         REQUIRE( t2==t1.Transpose(2));
     }
-    SECTION( "matrix multiplication" )
+    SECTION( "matrix multiplication one common index" )
     {
         t2("ijlm")=t1("ijk") * t1("klm");
 
         REQUIRE( t2.dim==Index{2,3,3,2} );
         REQUIRE( t2.vec()==(t1*t1).vec() );
+
+        t2("ijln")=t1("ijk") * t1("klm") * t1.ReShape(1)("mn");
+        REQUIRE( t2.dim==Index{2,3,3,6} );
+        REQUIRE( t2.vec()==(t1*t1*t1.ReShape(1)).vec() );
+    }
+    SECTION( "matrix multiplication multi-index in common" )
+    {
+        t2("il")=t1("ijk") * t1("ljk");
+
+        REQUIRE( t2.dim==Index{2,2} );
+        REQUIRE( t2.vec()==(t1.ReShape(1)*t1.ReShape(1).Transpose(1)).vec() );
 
         t2("ijln")=t1("ijk") * t1("klm") * t1.ReShape(1)("mn");
         REQUIRE( t2.dim==Index{2,3,3,6} );

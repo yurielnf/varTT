@@ -7,11 +7,11 @@ using namespace std;
 
 TEST_CASE("tensor notation", "[tnotation]") {
   SECTION("Indices are permutation") {
-    REQUIRE(ArePermutation("ijkl", "ilkj") == true);
-    REQUIRE(ArePermutation("ijkl", "ilj") == false);
-    REQUIRE(ArePermutation("ijkl", "iljki") == false);
-    REQUIRE(ArePermutation("ijkl", "lkji") == true);
-    REQUIRE(ArePermutation("ijkl", "lkjig") == false);
+    REQUIRE(is_permutation("ijkl", "ilkj") == true);
+    REQUIRE(is_permutation("ijkl", "ilj") == false);
+    REQUIRE(is_permutation("ijkl", "iljki") == false);
+    REQUIRE(is_permutation("ijkl", "lkji") == true);
+    REQUIRE(is_permutation("ijkl", "lkjig") == false);
   }
   SECTION("Indices permutation to vector of pos") {
     REQUIRE(Permutation("ijkl", "ilkj") == vector<int>({0, 3, 2, 1}));

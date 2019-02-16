@@ -83,7 +83,7 @@ Index IndexMul(const Index &dim1, const Index &dim2,
 //-------------------------------------------- string manipulation
 //------------------------------
 
-bool ArePermutation(std::string str1, std::string str2) {
+bool is_permutation(std::string str1, std::string str2) {
   auto s1 = str1;
   sort(s1.begin(), s1.end());
   auto s2 = str2;
@@ -94,7 +94,7 @@ bool ArePermutation(std::string str1, std::string str2) {
 std::vector<int> Permutation(std::string ini, std::string fin) {
   if (ini == fin)
     return {};
-  if (!ArePermutation(ini, fin))
+  if (!is_permutation(ini, fin))
     throw std::invalid_argument("Permutation: str1,str2 is not a permutation");
   std::vector<int> pos(ini.size());
   for (uint i = 0; i < ini.size(); i++)

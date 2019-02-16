@@ -11,9 +11,7 @@ TEST_CASE("tensor level 1", "[tensor]") {
   TensorD t({d[0], d[1], d[2]});
   t.FillRandu();
 
-  SECTION("size") { 
-    REQUIRE(t.size() == d[0] * d[1] * d[2]); 
-  }
+  SECTION("size") { REQUIRE(t.size() == d[0] * d[1] * d[2]); }
 
   SECTION("fill") {
     t.FillZeros();

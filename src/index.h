@@ -38,7 +38,7 @@ Index IndexMul(const Index& dim1,const Index& dim2,int nIndCommon); // Dim resul
 
 //-------------------------------------- string manipulation ------------------------------
 
-bool ArePermutation(std::string str1,std::string str2);
+bool is_permutation(std::string str1,std::string str2);
 std::vector<int> Permutation(std::string str1,std::string str2);
 std::array<std::string,4> SortForMultiply(std::string str1,std::string str2);
 

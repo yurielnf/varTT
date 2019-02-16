@@ -21,6 +21,10 @@ The tests are in the tests/ folder
 $ make tests
 ```
 
+### Code Style
+This project uses `clang-format` to autoformat the code and maintain a consisten style across the codebase.
+
+
 ### Examples
 
 Several example codes are provided.

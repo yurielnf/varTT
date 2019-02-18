@@ -20,6 +20,6 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
         op=sb.mps[1];
         REQUIRE( op.norm()== Approx(sqrt(1<<len)) );
         REQUIRE( Norm(op.C)==Approx(1) );
-//        REQUIRE( sb.value()==1 );
+        REQUIRE( sb.value()==1 );
     }
 }

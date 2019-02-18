@@ -38,27 +38,27 @@ class Superblock
         {
             Index dimC(mps.size(),1);
             TensorD C(dimC,{1});
-            b1[pos]=C*Transfer();
+            b1[pos]=C*Transfer(false);
         }
         else
-            b1[pos]=b1[pos-1]*Transfer();
+            b1[pos]=b1[pos-1]*Transfer(false);
     }
     void SweepLeft()
     {
-        if (pos==length-1)
+        SetPos(pos-1);
+        if (pos==length-2)
         {
             Index dimC(mps.size(),1);
             TensorD C(dimC,{1});
-            b2[pos]=Transfer()*C;
+            b2[pos+1]=Transfer(true)*C;
         }
         else
-            b2[pos]=Transfer()*b2[pos+1];
-        SetPos(pos-1);
+            b2[pos+1]=Transfer(true)*b2[pos+1];
     }
-    std::vector<const TensorD*> Transfer() const
+    std::vector<const TensorD*> Transfer(bool isB) const
     {
         std::vector<const TensorD*> transfer;
-        for(const MPS& x:mps) transfer.push_back(&x.M[pos]);
+        for(const MPS& x:mps) transfer.push_back(&x.M[pos+isB]);
         return transfer;
     }
     void SetPos(int p)

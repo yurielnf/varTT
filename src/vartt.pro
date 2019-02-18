@@ -6,11 +6,13 @@ SOURCES +=\
     utils.cpp \
     tensor.cpp \
     index.cpp \
-    mps.cpp
+    mps.cpp \
+    superblock.cpp
 
 HEADERS += \
     tensor.h \
     utils.h \
     index.h \
-    mps.h
+    mps.h \
+    superblock.h
 

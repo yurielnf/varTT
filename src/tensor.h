@@ -59,6 +59,12 @@ public:
     {
         VecFillRandu(data(),size());
     }
+    void FillEye(int splitPos)
+    {
+        auto mt=ReShape(splitPos);
+        if (mt.dim[0]!=mt.dim[1]) throw std::invalid_argument("FillEye");
+        MatFillEye(data(),mt.dim[0]);
+    }
 
     T& operator[](const Index& id)
     {
@@ -318,6 +324,32 @@ struct TensorNotation
         return {t3, ids[2]};
     }
 };
+
+
+//--------------------------------- other friends --------------------------------------
+
+template<class T>
+Tensor<T> operator*(const Tensor<T>& t,std::vector<const Tensor<T>*> transfer)
+{
+    Tensor<T> ts;
+    const Tensor<T> &t0=*transfer[0];
+    const Tensor<T> &t1=*transfer[1];
+    const Tensor<T> &t2=*transfer[2];
+    ts("IJK")=t0("ipI")*t("ijk")*t2("kqK")*t1("jpqJ");
+    return ts;
+}
+
+template<class T>
+Tensor<T> operator*(std::vector<const Tensor<T>*> transfer,const Tensor<T>& t)
+{
+    Tensor<T> ts;
+    const Tensor<T> &t0=*transfer[0];
+    const Tensor<T> &t1=*transfer[1];
+    const Tensor<T> &t2=*transfer[2];
+    ts("IJK")=t0("Ipi")*t("ijk")*t2("Kqk")*t1("Jpqj");
+    return ts;
+}
+
 
 
 #include"tensor.cpp"   // implementations

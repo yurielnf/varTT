@@ -44,13 +44,8 @@ TEST_CASE( "tensor notation", "[tnotation]" )
     SECTION( "matrix multiplication multi-index in common" )
     {
         t2("il")=t1("ijk") * t1("ljk");
-
         REQUIRE( t2.dim==Index{2,2} );
         REQUIRE( t2.vec()==(t1.ReShape(1)*t1.ReShape(1).Transpose(1)).vec() );
-
-        t2("ijln")=t1("ijk") * t1("klm") * t1.ReShape(1)("mn");
-        REQUIRE( t2.dim==Index{2,3,3,6} );
-        REQUIRE( t2.vec()==(t1*t1*t1.ReShape(1)).vec() );
     }
     SECTION( "contraction and reorder" )
     {
@@ -67,6 +62,9 @@ TEST_CASE( "tensor notation", "[tnotation]" )
         t2("ikml")=t1("ijk") * t1("ljm");
 
         REQUIRE( t2.dim==Index{2,2,2,2} );
+
+        t2("")=t1("ijk") * t1("ijk");
+        REQUIRE( sqrt(t2[0])==Norm(t1) );
     }
 
 }

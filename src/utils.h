@@ -83,7 +83,13 @@ T VecDot(T* vec1,const T* vec2,int n)
 }
 
 //---------------------------------- Matrix -----------------------
-
+template<class T>
+void MatFillEye(T *m, int n)
+{
+    VecFillZeros(m,n*n);
+    for(int i=0;i<n;i++)
+        m[i+i*n]=1;
+}
 void MatTranspose(const double*  X, double *result, int nrow, int ncol);
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);

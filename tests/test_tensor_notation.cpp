@@ -64,7 +64,7 @@ TEST_CASE( "tensor notation", "[tnotation]" )
         REQUIRE( t2.dim==Index{2,2,2,2} );
 
         t2("")=t1("ijk") * t1("ijk");
-        REQUIRE( sqrt(t2[0])==Norm(t1) );
+        REQUIRE( sqrt(t2[0])==Approx( Norm(t1) ) );
     }
 
 }

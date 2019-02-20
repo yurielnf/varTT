@@ -156,34 +156,34 @@ public:
         return y;
     }
 
-    Tensor<T> ReShape(int splitPos)
+    Tensor ReShape(int splitPos)
     {
         auto dim_v=SplitIndex(dim,splitPos);
         return {{ Prod(dim_v[0]), Prod(dim_v[1])}, data()};
     }
-    Tensor<T> ReShape(int splitPos) const
+    Tensor ReShape(int splitPos) const
     {
         auto dim_v=SplitIndex(dim,splitPos);
         return {{ Prod(dim_v[0]), Prod(dim_v[1])}, const_cast<T*>(data())};
     }
-    /*
-    Tensor<C&> ReShape(std::vector<int> splitPos)
+
+    Tensor ReShape(std::vector<int> splitPos)
     {
         auto dim_v=SplitIndex(dim,splitPos);
         Index dimr(dim_v.size());
-        for(int i=0;i<dim_v.size();i++)
+        for(uint i=0;i<dim_v.size();i++)
             dimr[i]=Prod(dim_v[i]);
-        return TensorReShape<T>(dimr,v);
+        return { dimr,data() };
     }
-    Tensor<const C&> ReShape(std::vector<int> splitPos) const
+    Tensor ReShape(std::vector<int> splitPos) const
     {
         auto dim_v=SplitIndex(dim,splitPos);
         Index dimr(dim_v.size());
-        for(int i=0;i<dim_v.size();i++)
+        for(uint i=0;i<dim_v.size();i++)
             dimr[i]=Prod(dim_v[i]);
-        return TensorReShapeC<T>(dimr,v);
+        return { dimr,const_cast<T*>(data()) };
     }
-    */
+
 
     Tensor DiagMat() const
     {
@@ -210,6 +210,14 @@ public:
     {
         if (ini==fin) return *this;
         return Reorder(Permutation(ini,fin));
+    }
+    Tensor t() const
+    {
+        Index dimr=dim;
+        std::swap(dimr.front(),dimr.back());
+        const Tensor A=ReShape({1,rank()-1});
+        return { dimr, A.Reorder("ijk","kji").vec() };
+//        R("kji")=A("ijk");                                            //<---- TODO
     }
     Tensor Transpose(int splitPos) const
     {
@@ -241,6 +249,40 @@ public:
         return t3;
     }
 
+    friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
+    {
+        if (t1.rank()!=t2.rank())
+            throw std::invalid_argument("TensorSum incompatible rank");
+        Tensor A=t1.ReShape({1,t1.rank()-1});
+        Tensor B=t2.ReShape({1,t1.rank()-1});
+        if (A.dim[1]!=B.dim[1])
+            throw std::invalid_argument("TensorSum incompatible inner index");
+        Index dimr=t1.dim;
+        dimr.front()=1;
+        dimr.back()=left ? A.dim.back()+B.dim.back() : A.dim.front()+B.dim.front();
+        Tensor tr(dimr);
+        std::copy_n(A.data(),A.size(),tr.data());
+        std::copy_n(B.data(),B.size(),tr.data()+A.size());
+        return left ? tr : tr.t();
+    }
+    friend Tensor DirectSum(const Tensor& t1,const Tensor& t2)
+    {
+        if (t1.rank()!=t2.rank())
+            throw std::invalid_argument("TensorSum incompatible rank");
+        Tensor A=t1.ReShape({1,t1.rank()-1});
+        Tensor B=t2.ReShape({1,t1.rank()-1});
+        if (A.dim[1]!=B.dim[1])
+            throw std::invalid_argument("TensorSum incompatible inner index");
+        Index dimr=t1.dim;
+        dimr.front()=A.dim.front()+B.dim.front();
+        dimr.back()=A.dim.back()+B.dim.back();
+        Tensor tr(dimr);
+        Tensor C=tr.ReShape({1,t1.rank()-1});
+        std::copy_n(A.data(),A.size(),C.data());
+        std::fill_n(C.data()+A.size(),A.size()+B.size(),T(0));
+        std::copy_n(B.data(),B.size(),C.data()+2*A.size()+B.size());
+        return tr;
+    }
     //---- friends ----
 
     friend bool operator==(const Tensor& t1,const Tensor& t2) //esta mal

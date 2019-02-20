@@ -4,8 +4,8 @@
 
 TEST_CASE( "mps canonization", "[mps]" )
 {
-    MPS x(20,3);
-    x.FillRandu({3,2,3});
+    MPS x(2,4);
+    x.FillRandu({4,2,4});
     SECTION( "initialization and compatibility" )
     {
         for(int i=0;i<2;i++)
@@ -25,6 +25,18 @@ TEST_CASE( "mps canonization", "[mps]" )
     SECTION( "norm" )
     {
         x.Canonicalize();
-        REQUIRE( Norm(x.C)==1 );
+        x.Normalize();
+        REQUIRE( x.norm() ==Approx(1) );
+        REQUIRE( Norm(x.C)==Approx(1) );
+    }
+    SECTION( "operators * +" )
+    {
+        x.Canonicalize(); x.Normalize();
+        MPS s=MPOIdentity(x.length,2);
+        double nr=1<<(x.length/2);
+        REQUIRE( s.norm()==Approx(nr) );
+        REQUIRE( (s*3).norm()==Approx(3*nr) );
+        s+=s;
+        REQUIRE( s.norm()==Approx(2*nr) );
     }
 }

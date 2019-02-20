@@ -36,3 +36,10 @@ void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V)
     mat mV(V,n,ns,false);
     svd_econ(mU, vS, mV, mX);
 }
+
+//void CubeTranspose(const double*  X, double *result, int d1, int d2,int d3)
+//{
+//    const cube mX((double* const)X,d1,d2,d3,false);
+//    cube res(result,d3,d2,d1,false);
+//    res=mX.t();
+//}

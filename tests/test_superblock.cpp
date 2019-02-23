@@ -10,16 +10,16 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
     {
         x.Canonicalize();
         x.Normalize();
-        REQUIRE( Norm(x.C) == Approx(1) );
+        REQUIRE( x.norm() == Approx(1) );
         auto op=MPOIdentity(len,2);
         op.Canonicalize();
         REQUIRE( op.norm()== Approx(sqrt(1<<len)) );
-        REQUIRE( Norm(op.C)==Approx(1) );
+//        REQUIRE( Norm(op.C)==Approx(1) );
         Superblock sb({x,op,x});
         sb.Canonicalize();
         op=sb.mps[1];
         REQUIRE( op.norm()== Approx(sqrt(1<<len)) );
-        REQUIRE( Norm(op.C)==Approx(1) );
+//        REQUIRE( Norm(op.C)==Approx(1) );
         REQUIRE( sb.value()==Approx(1) );
     }
 }

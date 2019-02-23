@@ -108,7 +108,18 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         REQUIRE( usvt[2].dim==Index{d[2],d[2]} );
 
         auto x=usvt[0]*usvt[1]*usvt[2];
-        REQUIRE( Norm(x-t)<1e-15 );
+        REQUIRE( Norm(x-t)/Norm(x)<1e-15 );
+        SECTION( "228" )
+        {
+            TensorD t({2,2,8}); t.FillRandu();
+            auto usvt=SVDecomposition(t,2);
+            REQUIRE( usvt[0].dim==Index{2,2,4} );
+            REQUIRE( usvt[1].dim==Index{4,4} );
+            REQUIRE( usvt[2].dim==Index{4,8} );
+
+            auto x=usvt[0]*usvt[1]*usvt[2];
+            REQUIRE( Norm(x-t)/Norm(t)<1e-15 );
+        }
     }
 
 }

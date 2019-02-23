@@ -41,21 +41,39 @@ public:
         }
         std::cout<<"\n";
     }
-    void Normalize() {norm_n=1;}
+    operator TensorD() const
+    {
+        TensorD tr=M[0]*pow(norm_n,length);
+        if (pos==0) tr=tr*C;
+        if (pos==-1) tr=C*tr;
+        for(int i=1;i<length;i++)
+        {
+            tr=tr*M[i];
+            if (i==pos) tr=tr*C;
+        }
+        return tr;
+    }
+    void Normalize() {norm_n=1;C*=1.0/Norm(C);}
     void Canonicalize()
     {
-        if (pos!=-1) M[pos]=M[pos]*C;
-        C=TensorD({1,1},{1});
-        pos=-1;
-        while(pos<(length+1)/2-1)
-            SweepRight();
-        auto cC=C;
-        C=TensorD({1,1},{1});
-        pos=length-1;
-        while(pos>length/2-1)
-            SweepLeft();
-        C=cC*C;
-        ExtractNorm(C);
+//        if (pos!=-1) M[pos]=M[pos]*C;
+//        C=TensorD({1,1},{1});
+//        pos=-1;
+        for(int i=0;i<3;i++)
+        {
+        SetPos(length-1);
+        SetPos(-1);
+        SetPos(length/2-1);
+        }
+//        while(pos<length/2-1)
+//            SweepRight();
+//        auto cC=C;
+//        C=TensorD({1,1},{1});
+//        pos=length-1;
+//        while(pos>length/2-1)
+//            SweepLeft();
+//        C=cC*C;
+//        ExtractNorm(C);
     }
     void SetPos(int p)
     {
@@ -64,7 +82,7 @@ public:
     }
     void SweepRight()
     {
-        if (pos>=length-1) return;
+        if (pos>length-1) return;
         pos++;
         auto psi=C*M[pos];
         ExtractNorm(psi);
@@ -85,8 +103,9 @@ public:
         pos--;
     }
 
-    double norm() const {
-        return pow(norm_n,length);
+    double norm() const
+    {
+        return pow(norm_n,length)*Norm(C);
     }
 
     void operator*=(double c)
@@ -111,9 +130,7 @@ public:
 
         mps1.C=DirectSum(mps1.C,mps2.C);
         mps1.norm_n=1;
-        mps1.PrintSizes();
         mps1.Canonicalize();
-        mps1.PrintSizes();
         //if ( mps1.NeedCompress() ) mps1.Compress();
     }
 
@@ -132,6 +149,7 @@ public:
         SetPos(length/2-1);
     }
 
+    int pos=-1;
 private:
     void ExtractNorm(TensorD& psi)
     {
@@ -140,11 +158,8 @@ private:
             throw std::logic_error("mps:ExtractNorm() null matrix");
         norm_n*=pow(nr,1.0/length);
         psi*=1.0/nr;
-
-        norm_n*=pow(Norm(C),1.0/length);
     }
 
-    int pos=-1;
     double norm_n=1;                //norm(MPS)^(1/n)
 
 };
@@ -170,13 +185,27 @@ typedef MPS MPO;
 
 //---------------------------- Helpers ---------------------------
 
-inline MPO MPOIdentity(int length, int d)
+inline MPO MPOIdentity(int length, int d=2)
 {
-    MPS Id(length,1);
-    Id.FillNone({1,d,d,1});
-    for(auto& x:Id.M) x.FillEye(2);
-    Id.Canonicalize();
-    return Id;
+    MPO O(length,1);
+    O.FillNone({1,d,d,1});
+    for(auto& x:O.M) x.FillEye(2);
+    O.Canonicalize();
+    return O;
+}
+inline MPO MPOEH(int length)
+{
+    MPO O(length,1);
+    O.FillNone({1,2,2,1});
+    std::vector<double> eh={1.3,-2,-1,0};
+    for(int i=0;i<O.length;i++)
+        if(i%2==0)
+            std::copy(eh.begin(),eh.end(),O.M[i].data());
+        else
+            O.M[i].FillEye(2);
+
+    O.Canonicalize();
+    return O;
 }
 
 #endif // MPS_H

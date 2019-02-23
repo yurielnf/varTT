@@ -183,7 +183,20 @@ public:
             dimr[i]=Prod(dim_v[i]);
         return { dimr,const_cast<T*>(data()) };
     }
-
+    Tensor Subtensor(int i)
+    {
+        Tensor A=ReShape(rank()-1);
+        Index dimr=dim;
+        dimr.pop_back();
+        return { dimr,data()+A.dim[0]*i };
+    }
+    Tensor Subtensor(int i) const
+    {
+        const Tensor A=ReShape(rank()-1);
+        Index dimr=dim;
+        dimr.pop_back();
+        return { dimr,const_cast<T*>( data()+A.dim[0]*i) };
+    }
 
     Tensor DiagMat() const
     {
@@ -249,38 +262,87 @@ public:
         return t3;
     }
 
+//    friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
+//    {
+//        if (t1.rank()!=t2.rank())
+//            throw std::invalid_argument("TensorSum incompatible rank");
+
+//        Tensor A=t1.ReShape({1,t1.rank()-1}).Reorder("ijk","ikj");
+//        Tensor B=t2.ReShape({1,t1.rank()-1}).Reorder("ijk","ikj");
+//        if (A.dim[2]!=B.dim[2])
+//            throw std::invalid_argument("TensorSum incompatible inner index");
+//        Index dimc=A.dim;
+//        dimc[0]=left ? 1 : A.dim[0]+B.dim[0];
+//        dimc[1]=left ? A.dim[1]+B.dim[1] : 1;
+//        Tensor C(dimc);
+//        for(int i=0;i<C.dim[2];i++)
+//        {
+//            Tensor As=A.Subtensor(i);
+//            Tensor Bs=B.Subtensor(i);
+//            Tensor Cs=C.Subtensor(i);
+//            std::copy_n(As.data(),As.size(),Cs.data());
+//            std::copy_n(Bs.data(),Bs.size(),Cs.data()+As.size());
+//        }
+
+//        Index dimr=t1.dim;
+//        dimr.front()=C.dim[0];
+//        dimr.back()=C.dim[1];
+//        return { dimr,C.Reorder("ikj","ijk").vec() };
+//    }
+
     friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
     {
         if (t1.rank()!=t2.rank())
             throw std::invalid_argument("TensorSum incompatible rank");
+
         Tensor A=t1.ReShape({1,t1.rank()-1});
         Tensor B=t2.ReShape({1,t1.rank()-1});
         if (A.dim[1]!=B.dim[1])
             throw std::invalid_argument("TensorSum incompatible inner index");
         Index dimr=t1.dim;
-        dimr.front()=1;
-        dimr.back()=left ? A.dim.back()+B.dim.back() : A.dim.front()+B.dim.front();
+        dimr.front()=left ? 1 : t1.dim.front()+t2.dim.front();
+        dimr.back()=left ? t1.dim.back()+t2.dim.back() : 1;
         Tensor tr(dimr);
-        std::copy_n(A.data(),A.size(),tr.data());
-        std::copy_n(B.data(),B.size(),tr.data()+A.size());
-        return left ? tr : tr.t();
+        Tensor C=tr.ReShape({1,t1.rank()-1});
+        C.FillZeros();
+        for(int i=0;i<A.dim[0];i++)
+            for(int j=0;j<A.dim[1];j++)
+                for(int k=0;k<A.dim[2];k++)
+                    C[{i,j,k}]=A[{i,j,k}];
+        for(int i=0;i<B.dim[0];i++)
+            for(int j=0;j<B.dim[1];j++)
+                for(int k=0;k<B.dim[2];k++)
+                    if (left)
+                        C[{i,j,k+A.dim[2]}]=B[{i,j,k}];
+                    else
+                        C[{i+A.dim[0],j,k}]=B[{i,j,k}];
+
+        return tr;
     }
     friend Tensor DirectSum(const Tensor& t1,const Tensor& t2)
     {
         if (t1.rank()!=t2.rank())
             throw std::invalid_argument("TensorSum incompatible rank");
+
         Tensor A=t1.ReShape({1,t1.rank()-1});
         Tensor B=t2.ReShape({1,t1.rank()-1});
         if (A.dim[1]!=B.dim[1])
             throw std::invalid_argument("TensorSum incompatible inner index");
         Index dimr=t1.dim;
-        dimr.front()=A.dim.front()+B.dim.front();
-        dimr.back()=A.dim.back()+B.dim.back();
+        dimr.front()=t1.dim.front()+t2.dim.front();
+        dimr.back()=t1.dim.back()+t2.dim.back();
         Tensor tr(dimr);
         Tensor C=tr.ReShape({1,t1.rank()-1});
-        std::copy_n(A.data(),A.size(),C.data());
-        std::fill_n(C.data()+A.size(),A.size()+B.size(),T(0));
-        std::copy_n(B.data(),B.size(),C.data()+2*A.size()+B.size());
+        C.FillZeros();
+        for(int i=0;i<A.dim[0];i++)
+            for(int j=0;j<A.dim[1];j++)
+                for(int k=0;k<A.dim[2];k++)
+                    C[{i,j,k}]=A[{i,j,k}];
+        for(int i=0;i<B.dim[0];i++)
+            for(int j=0;j<B.dim[1];j++)
+                for(int k=0;k<B.dim[2];k++)
+                    C[{i+A.dim[0],j,k+A.dim[2]}]=B[{i,j,k}];
+
         return tr;
     }
     //---- friends ----
@@ -328,12 +390,12 @@ public:
         int n=std::min(mt.dim[0],mt.dim[1]);
         auto dimUV=SplitIndex(t.dim,splitPos);
         dimUV[0].push_back(n);    //U dimension
-        dimUV[1].push_back(n);    //V dimension
+        dimUV[1].insert(dimUV[1].begin(),n);    //V dimension
         auto U=Tensor(dimUV[0]); U.FillZeros();
-        auto S=Tensor({n});      S.FillZeros();
-        auto V=Tensor(dimUV[1]); V.FillZeros();
-        MatSVD(mt.data(),mt.dim[0],mt.dim[1],U.data(),S.data(),V.data());
-        return {U,S.DiagMat(),V.Transpose(V.rank()-1)};
+        auto S=Tensor({n,n});      S.FillZeros();
+        auto Vt=Tensor(dimUV[1]); Vt.FillZeros();
+        MatSVD(mt.data(),mt.dim[0],mt.dim[1],U.data(),S.data(),Vt.data());
+        return {U,S,Vt};
     }
 };
 

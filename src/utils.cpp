@@ -7,7 +7,7 @@ using namespace arma;
 void MatTranspose(const double*  X, double *result, int nrow, int ncol)
 {
     const mat mX((double* const)X,nrow,ncol,false);
-    mat res(result,ncol,nrow,false);
+    mat res(result,ncol,nrow,false,true);
     res=mX.t();
 }
 
@@ -22,22 +22,32 @@ void MatMul(const double*  mat1, const double*  mat2, double *result, int nrow1,
 void MatFullDiag(double* const X,int n,double *evec,double *eval)
 {
     const mat mX(X,n,n,false);
-    mat mevec(evec,n,n,false);
+    mat mevec(evec,n,n,false,true);
     vec meval(eval,n,false);
     eig_sym(meval,mevec,mX);
 }
 
-void MatSVD(const double*  X, int m,int n,double *U,double *S,double *Vt)
+//void MatSVD(const double*  X, int m,int n,double *U,double *S,double *Vt)
+//{
+//    const mat mX((double* const)X,m,n,false);
+//    int ns=std::min(m,n);
+//    mat mU(U,m,ns,false);
+//    mat vS(S,ns,ns,false);
+//    mat mVt(Vt,ns,n,false),V;
+//    vec s;
+//    svd_econ(mU, s, V, mX);
+//    vS.diag()=s;
+//    mVt=V.t();
+//}
+
+void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V)
 {
     const mat mX((double* const)X,m,n,false);
     int ns=std::min(m,n);
-    mat mU(U,m,ns,false);
-    mat vS(S,ns,ns,false);
-    mat mVt(Vt,n,ns,false),V;
-    vec s;
-    svd_econ(mU, s, V, mX);
-    vS.diag()=s;
-    mVt=V.t();
+    mat mU(U,m,ns,false,true);
+    vec vS(S,ns,false,true);
+    mat mV(V,n,ns,false,true);
+    svd_econ(mU, vS, mV, mX);
 }
 
 //void CubeTranspose(const double*  X, double *result, int d1, int d2,int d3)

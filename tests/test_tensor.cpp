@@ -87,6 +87,17 @@ TEST_CASE( "tensor level 1", "[tensor]" )
         for(int i=0;i<mt.dim[0];i++)
             for(int j=0;j<mt.dim[1];j++)
                 REQUIRE( mt[{i,j}]==mt2[{j,i}] );
+        SECTION( "228" )
+        {
+            TensorD t({2,2,8}); t.FillRandu();
+            TensorD t2=t.Transpose(2);
+            REQUIRE( t2.dim==Index{8,2,2} );
+            auto mt=t.ReShape(2);
+            auto mt2=t2.ReShape(1);
+            for(int i=0;i<mt.dim[0];i++)
+                for(int j=0;j<mt.dim[1];j++)
+                    REQUIRE( mt[{i,j}]==mt2[{j,i}] );
+        }
     }
     SECTION( "matrix multiplication" )
     {

@@ -7,16 +7,22 @@
 
 class MPS
 {
-public:
+private:
     std::vector<TensorD> M;
+public:
     TensorD C;
-    int length,m;
-    double tol=1e-14;
+    int length, m, pos=0;
 
     MPS(int length, int m)
         :M(length),length(length),m(m)
+    {}
+    MPS(const std::vector<TensorD>& tensors,int m=0)
+        :M(tensors),length(tensors.size()),m(m)
     {
-        C=TensorD({1,1}, {1});
+        int n0=M[0].dim.back();
+        C=TensorD({n0,n0});
+        C.FillEye(1);
+        Canonicalize();
     }
     void FillNone(Index dim)
     {
@@ -25,12 +31,18 @@ public:
         Index dr=dim; dr.back()=1;
         M.front()=TensorD(dl);
         M.back ()=TensorD(dr);
+
+        int n0=M[0].dim.back();
+        C=TensorD({n0,n0});
+        C.FillEye(1);
     }
     void FillRandu(Index dim)
     {
         FillNone(dim);
         for(TensorD &x:M) x.FillRandu();
+        Canonicalize();
     }
+    const TensorD& at(int i) const { return M[i]; }
     void PrintSizes() const
     {
         for(TensorD t:M)
@@ -43,10 +55,9 @@ public:
     }
     operator TensorD() const
     {
-        TensorD tr=M[0]*pow(norm_n,length);
-        if (pos==0) tr=tr*C;
+        TensorD tr=TensorD({1,1},{1})*pow(norm_n,length);
         if (pos==-1) tr=C*tr;
-        for(int i=1;i<length;i++)
+        for(int i=0;i<length;i++)
         {
             tr=tr*M[i];
             if (i==pos) tr=tr*C;
@@ -56,53 +67,41 @@ public:
     void Normalize() {norm_n=1;C*=1.0/Norm(C);}
     void Canonicalize()
     {
-//        if (pos!=-1) M[pos]=M[pos]*C;
-//        C=TensorD({1,1},{1});
-//        pos=-1;
-        for(int i=0;i<3;i++)
-        {
-        SetPos(length-1);
-        SetPos(-1);
-        SetPos(length/2-1);
-        }
-//        while(pos<length/2-1)
-//            SweepRight();
+//        SetPos(0);
+//        SetPos(length/2-1);
 //        auto cC=C;
 //        C=TensorD({1,1},{1});
-//        pos=length-1;
-//        while(pos>length/2-1)
-//            SweepLeft();
+//        pos=length-2;
+//        SetPos(length/2-1);
 //        C=cC*C;
 //        ExtractNorm(C);
+        Sweep();
+    }
+    void SweepRight()
+    {
+        if (pos==length-1) return;
+        pos++;
+        auto psi= C*M[pos];
+        ExtractNorm(psi);
+        auto usvt=SVDecomposition(psi,psi.rank()-1);
+        M[pos]=usvt[0];
+        C=usvt[1]*usvt[2];
+    }
+    void SweepLeft()
+    {
+        if (pos<0) return;
+        auto psi= M[pos]*C ;
+        ExtractNorm(psi);
+        auto usvt=SVDecomposition(psi,1);
+        M[pos]=usvt[2];
+        C=usvt[0]*usvt[1];
+        pos--;
     }
     void SetPos(int p)
     {
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
-    void SweepRight()
-    {
-        if (pos>length-1) return;
-        pos++;
-        auto psi=C*M[pos];
-        ExtractNorm(psi);
-        auto usvt=SVDecomposition(psi,psi.rank()-1);
-        if (pos<length)
-            M[pos]=usvt[0];
-        C=usvt[1]*usvt[2];
-    }
-    void SweepLeft()
-    {
-        if (pos<0) return;
-        auto psi=M[pos]*C;
-        ExtractNorm(psi);
-        auto usvt=SVDecomposition(psi,1);
-        if (pos>=0)
-            M[pos]=usvt[2];
-        C=usvt[0]*usvt[1];
-        pos--;
-    }
-
     double norm() const
     {
         return pow(norm_n,length)*Norm(C);
@@ -131,7 +130,7 @@ public:
         mps1.C=DirectSum(mps1.C,mps2.C);
         mps1.norm_n=1;
         mps1.Canonicalize();
-        //if ( mps1.NeedCompress() ) mps1.Compress();
+        if ( mps1.NeedCompress() ) mps1.Sweep();
     }
 
     bool NeedCompress() const
@@ -141,20 +140,18 @@ public:
                 return true;
         return false;
     }
-    void Compress()
+    void Sweep()
     {
-        Canonicalize();
-        SetPos(length-2);
-        SetPos(0);
+        SetPos(length-1);
+        SetPos(-1);
         SetPos(length/2-1);
     }
 
-    int pos=-1;
 private:
     void ExtractNorm(TensorD& psi)
     {
         double nr=Norm(psi);
-        if (nr<tol)
+        if (nr==0)
             throw std::logic_error("mps:ExtractNorm() null matrix");
         norm_n*=pow(nr,1.0/length);
         psi*=1.0/nr;
@@ -185,26 +182,22 @@ typedef MPS MPO;
 
 //---------------------------- Helpers ---------------------------
 
-inline MPO MPOIdentity(int length, int d=2)
+inline MPO MPOIdentity(int length)
 {
-    MPO O(length,1);
-    O.FillNone({1,d,d,1});
-    for(auto& x:O.M) x.FillEye(2);
-    O.Canonicalize();
+    std::vector<TensorD> O(length);
+    std::vector<double> id={1,0,0,1};
+    for(auto& x:O) x=TensorD({1,2,2,1}, id);
     return O;
 }
 inline MPO MPOEH(int length)
 {
-    MPO O(length,1);
-    O.FillNone({1,2,2,1});
-    std::vector<double> eh={1.3,-2,-1,0};
-    for(int i=0;i<O.length;i++)
+    std::vector<TensorD> O(length);
+    std::vector<double> eh={1.3,-2,-1,0}, id={1,0,0,1};
+    for(uint i=0;i<O.size();i++)
         if(i%2==0)
-            std::copy(eh.begin(),eh.end(),O.M[i].data());
+            O[i]=TensorD({1,2,2,1}, eh);
         else
-            O.M[i].FillEye(2);
-
-    O.Canonicalize();
+            O[i]=TensorD({1,2,2,1}, id);
     return O;
 }
 

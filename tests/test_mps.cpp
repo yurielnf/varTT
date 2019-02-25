@@ -4,7 +4,7 @@
 
 TEST_CASE( "mps canonization", "[mps]" )
 {
-    MPS x(4,8);
+    MPS x(20,8);
     x.FillRandu({8,2,8});
     SECTION( "initialization and compatibility" )
     {
@@ -12,8 +12,9 @@ TEST_CASE( "mps canonization", "[mps]" )
         {
             x.PrintSizes();
             int m=1;
-            for(auto t:x.M)
+            for(int i=0;i<x.length;i++)
             {
+                auto t=x.at(i);
                 REQUIRE( t.dim[0]==m );
                 REQUIRE( t.dim[1]==2 );
                 REQUIRE( t.dim[2]<=x.m );
@@ -21,37 +22,36 @@ TEST_CASE( "mps canonization", "[mps]" )
             }            
         }
     }
-    SECTION( "Sweep")
+    SECTION( "Sweep, casting as tensor")
     {
+        MPS x(6,8);
+        x.FillRandu({8,2,8});
         TensorD tx=x;
-        while (x.pos<x.length-1)
+        while (x.pos<x.length-2)
         {
             x.SweepRight();
             TensorD tx2=x;
-            REQUIRE( Norm(tx-tx2)/Norm(tx) < x.tol );
+            REQUIRE( Norm(tx-tx2)/Norm(tx) < 1e-14 );
         }
-        while (x.pos>=0)
+        while (x.pos>0)
         {
             x.SweepLeft();
             TensorD tx2=x;
-            REQUIRE( Norm(tx-tx2)/Norm(tx) < x.tol );
+            REQUIRE( Norm(tx-tx2)/Norm(tx) < 1e-14 );
         }
         SECTION( "SetPos")
         {
             x.SetPos(x.length/2);
             TensorD tx2=x;
-            REQUIRE( Norm(tx-tx2)/Norm(tx) < x.tol );
+            REQUIRE( Norm(tx-tx2)/Norm(tx) < 1e-14 );
         }
         SECTION( "Canonicalize")
         {
             x.Canonicalize();
             TensorD tx2=x;
-            REQUIRE( Norm(tx-tx2)/Norm(tx) < x.tol );
+            REQUIRE( Norm(tx-tx2)/Norm(tx) < 1e-13 );
         }
     }
-
-
-
     SECTION( "norm" )
     {
         x.Canonicalize();
@@ -83,7 +83,7 @@ TEST_CASE( "mps canonization", "[mps]" )
         SECTION( "1 operator" )
         {
             MPO s=MPOIdentity(x.length);
-            double nr=1<<(x.length/2);
+            double nr=pow(2,x.length/2.);
             REQUIRE( s.norm()==Approx(nr) );
             REQUIRE( (s*3).norm()==Approx(3*nr) );
             s+=s;

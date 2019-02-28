@@ -90,4 +90,15 @@ TEST_CASE( "mps canonization", "[mps]" )
             REQUIRE( s.norm()==Approx(2*nr) );
         }
     }
+    SECTION( "MPSSum" )
+    {
+        MPO s=MPOIdentity(x.length);
+        double nr=pow(2,x.length/2.);
+        REQUIRE( s.norm()==Approx(nr) );
+        MPSSum sum(100);
+        for(int i=0;i<100;i++)
+            sum+=s;
+        REQUIRE( sum.toMPS().norm()==Approx(100*nr) );
+        sum.toMPS().PrintSizes();
+    }
 }

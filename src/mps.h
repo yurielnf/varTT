@@ -5,10 +5,13 @@
 #include<vector>
 #include"tensor.h"
 
+
+
 class MPS
 {
 private:
     std::vector<TensorD> M;
+    int vx=1;
 public:
     TensorD C;
     int length, m, pos=0;
@@ -45,7 +48,7 @@ public:
     const TensorD& at(int i) const { return M[i]; }
     void PrintSizes() const
     {
-        for(TensorD t:M)
+        for(const TensorD& t:M)
         {
             for(int x:t.dim)
                 std::cout<<" "<<x;
@@ -65,7 +68,7 @@ public:
         return tr;
     }
     void Normalize() {norm_n=1;C*=1.0/Norm(C);}
-    void Canonicalize()
+    MPS& Canonicalize()
     {
 //        SetPos(0);
 //        SetPos(length/2-1);
@@ -76,12 +79,20 @@ public:
 //        C=cC*C;
 //        ExtractNorm(C);
         Sweep();
+        return *this;
     }
+    void Sweep() { for(int i:SweepPosSec(length)) SetPos(i); }
+
+    TensorD ApplyC()
+    {
+        return vx==1 ? C*M[pos+1] : M[pos]*C;
+    }
+
     void SweepRight()
     {
-        if (pos==length-1) return;
-        pos++;
-        auto psi= C*M[pos];
+        if (pos==length-2) return;
+        TensorD psi=ApplyC();
+        if (vx==-1) vx=1; else pos++;
         ExtractNorm(psi);
         auto usvt=SVDecomposition(psi,psi.rank()-1);
         M[pos]=usvt[0];
@@ -89,16 +100,18 @@ public:
     }
     void SweepLeft()
     {
-        if (pos<0) return;
-        auto psi= M[pos]*C ;
+        if (pos==0) return;
+        TensorD psi=ApplyC();
+        if(vx==1) vx=-1; else pos--;
         ExtractNorm(psi);
         auto usvt=SVDecomposition(psi,1);
-        M[pos]=usvt[2];
+        M[pos+1]=usvt[2];
         C=usvt[0]*usvt[1];
-        pos--;
     }
     void SetPos(int p)
     {
+        if (pos<0 || pos>length-2)
+            throw std::invalid_argument("SB::SetPos out of range");
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
@@ -129,7 +142,6 @@ public:
 
         mps1.C=DirectSum(mps1.C,mps2.C);
         mps1.norm_n=1;
-        mps1.Canonicalize();
         if ( mps1.NeedCompress() ) mps1.Sweep();
     }
 
@@ -140,11 +152,16 @@ public:
                 return true;
         return false;
     }
-    void Sweep()
+    static std::vector<int> SweepPosSec(int length)
     {
-        SetPos(length-1);
-        SetPos(-1);
-        SetPos(length/2-1);
+        std::vector<int> pos;
+        for(int i=length/2-1;i<length-1;i++) //Right
+            pos.push_back(i);
+        for(int i=length-2;i>=0;i--)
+            pos.push_back(i);
+        for(int i=0;i<length/2;i++)
+            pos.push_back(i);
+        return pos;
     }
 
 private:
@@ -174,8 +191,12 @@ struct MPSSum
         v.push_back(mps);
         v.back().m=m;
     }
-    void operator+=(const MPSSum& s) { for(auto x:s.v) (*this)+=x; }
-    operator MPS() { return VecReduce(v.data(),v.size()); }
+//    void operator+=(const MPSSum& s) { for(auto x:s.v) (*this)+=x; }
+    MPS toMPS() const
+    {
+        auto vc=v;
+        return VecReduce(vc.data(),vc.size()).Canonicalize();
+    }
 };
 
 typedef MPS MPO;

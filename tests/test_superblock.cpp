@@ -3,7 +3,7 @@
 
 TEST_CASE( "superblock for mpo", "[superblock]" )
 {
-    int len=4, m=3;
+    int len=10, m=8;
     MPS x(len,m);
     x.FillRandu({m,2,m});
     SECTION( "<x|1|x>" )
@@ -18,6 +18,10 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
         op=sb.mps[1];
         REQUIRE( op.norm()== Approx(sqrt(1<<len)) );
         REQUIRE( Norm(op.C)==Approx(1) );
-        REQUIRE( sb.value()==Approx(1) );
+        for(int i=0;i<sb.length-1;i++)
+        {
+            sb.SetPos(i);
+            REQUIRE( sb.value()==Approx(1) );
+        }
     }
 }

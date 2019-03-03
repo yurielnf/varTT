@@ -14,4 +14,5 @@ SOURCES +=\
     test_main.cpp \
     test_mps.cpp \
     test_tensor_notation.cpp \
-    test_superblock.cpp
+    test_superblock.cpp \
+    test_dmrg_tight_binding.cpp

@@ -95,10 +95,10 @@ TEST_CASE( "mps canonization", "[mps]" )
         MPO s=MPOIdentity(x.length);
         double nr=pow(2,x.length/2.);
         REQUIRE( s.norm()==Approx(nr) );
-        MPSSum sum(100);
-        for(int i=0;i<100;i++)
+        MPSSum sum(20);
+        for(int i=0;i<20;i++)
             sum+=s;
-        REQUIRE( sum.toMPS().norm()==Approx(100*nr) );
+        REQUIRE( sum.toMPS().norm()==Approx(20*nr) );
         sum.toMPS().PrintSizes();
     }
 }

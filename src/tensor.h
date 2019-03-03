@@ -351,17 +351,31 @@ public:
         MatFullDiag(mt.data(),n,evec.data(),eval.data());
         return {evec,eval};
     }
-    friend std::vector<Tensor> SVDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
+//    friend std::vector<Tensor> SVDecomposition(const Tensor& t,int splitPos) //M=U*S*Vt
+//    {
+//        auto mt=t.ReShape(splitPos);
+//        int n=std::min(mt.dim[0],mt.dim[1]);
+//        auto dimUV=SplitIndex(t.dim,splitPos);
+//        dimUV[0].push_back(n);    //U dimension
+//        dimUV[1].push_back(n);    //V dimension
+//        auto U=Tensor(dimUV[0]);
+//        auto S=Tensor({n});
+//        auto V=Tensor(dimUV[1]);
+//        MatSVD(mt.data(),mt.dim[0],mt.dim[1],U.data(),S.data(),V.data());
+//        return {U,S.DiagMat(),V.Transpose(V.rank()-1)};
+//    }
+    friend std::vector<Tensor> Decomposition(const Tensor& t,int splitPos) //M=U*S*Vt
     {
         auto mt=t.ReShape(splitPos);
-        int n=std::min(mt.dim[0],mt.dim[1]);
+
+        auto usvt=MatSVD(mt.data(),mt.dim[0],mt.dim[1]);
+        int n=usvt[1].size();
         auto dimUV=SplitIndex(t.dim,splitPos);
         dimUV[0].push_back(n);    //U dimension
         dimUV[1].push_back(n);    //V dimension
-        auto U=Tensor(dimUV[0]);
-        auto S=Tensor({n});
-        auto V=Tensor(dimUV[1]);
-        MatSVD(mt.data(),mt.dim[0],mt.dim[1],U.data(),S.data(),V.data());
+        auto U=Tensor(dimUV[0],usvt[0]);
+        auto S=Tensor({n},usvt[1]);
+        auto V=Tensor(dimUV[1],usvt[2]);
         return {U,S.DiagMat(),V.Transpose(V.rank()-1)};
     }
 };
@@ -404,7 +418,10 @@ struct TensorNotation
 //--------------------------------- other friends --------------------------------------
 
 template<class T>
-Tensor<T> operator*(const Tensor<T>& t,std::vector<const Tensor<T>*> transfer)
+using TransferTensor=std::vector<const Tensor<T>*>;
+
+template<class T>
+Tensor<T> operator*(const Tensor<T>& t,TransferTensor<T> transfer)
 {
     Tensor<T> ts;
     const Tensor<T> &t0=*transfer[0];
@@ -415,7 +432,7 @@ Tensor<T> operator*(const Tensor<T>& t,std::vector<const Tensor<T>*> transfer)
 }
 
 template<class T>
-Tensor<T> operator*(std::vector<const Tensor<T>*> transfer,const Tensor<T>& t)
+Tensor<T> operator*(TransferTensor<T> transfer,const Tensor<T>& t)
 {
     Tensor<T> ts;
     const Tensor<T> &t0=*transfer[0];

@@ -40,15 +40,37 @@ void MatFullDiag(double* const X,int n,double *evec,double *eval)
 //    mVt=V.t();
 //}
 
-void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V)
+//void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V)
+//{
+//    const mat mX((double* const)X,m,n,false);
+//    int ns=std::min(m,n);
+//    mat mU(U,m,ns,false,true);
+//    vec vS(S,ns,false,true);
+//    mat mV(V,n,ns,false,true);
+//    svd_econ(mU, vS, mV, mX);
+//}
+
+vector<vector<double>> MatSVD(const double*  X, int n1,int n2,double tol)
 {
-    const mat mX((double* const)X,m,n,false);
-    int ns=std::min(m,n);
-    mat mU(U,m,ns,false,true);
-    vec vS(S,ns,false,true);
-    mat mV(V,n,ns,false,true);
-    svd_econ(mU, vS, mV, mX);
+    const mat mX((double* const)X,n1,n2,false);
+    mat U,V;
+    vec s;
+    svd_econ(U, s, V, mX);
+    tol=max( tol, s[0]*numeric_limits<double>::epsilon());
+    int D=s.size();
+    for(int i=0;i<D;i++)
+        if(i>0 && fabs(s[i])<tol) {D=i;break;}
+
+    vector<double> A(n1*D), c(D), B(n2*D);
+    mat Aa(A.data(),n1,D,false,true);
+    vec ca(c.data(),D,false,true);
+    mat Ba(B.data(),n2,D,false,true);
+    Aa=U.head_cols(D);
+    ca=s.head(D);
+    Ba=V.head_cols(D);
+    return {A,c,B};
 }
+
 
 //void CubeTranspose(const double*  X, double *result, int d1, int d2,int d3)
 //{

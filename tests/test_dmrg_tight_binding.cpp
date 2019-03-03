@@ -1,7 +1,13 @@
 #include"superblock.h"
 #include"catch.hpp"
 
-TEST_CASE( "superblock for mpo", "[superblock]" )
+
+int Square(int x)
+{
+    return x*x;
+}
+
+TEST_CASE( "dmrg tight-binding", "[dmrg_tb]" )
 {
     int len=10, m=8;
     MPS x(len,m);

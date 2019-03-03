@@ -89,7 +89,7 @@ void VecNegativeInplace(T* vec,int n)
 }
 
 template<class T>
-T VecDot(T* vec1,const T* vec2,int n)
+T VecDot(const T* vec1,const T* vec2,int n)
 {
     T s=T(0);
     for(int i=0;i<n;i++)
@@ -99,16 +99,16 @@ T VecDot(T* vec1,const T* vec2,int n)
 
 //---------------------------------- Matrix -----------------------
 template<class T>
-void MatFillEye(T *m, int n)
+void MatFillEye(T *dat, int n)
 {
-    VecFillZeros(m,n*n);
+    VecFillZeros(dat,n*n);
     for(int i=0;i<n;i++)
-        m[i+i*n]=1;
+        dat[i+i*n]=1;
 }
 void MatTranspose(const double*  X, double *result, int nrow, int ncol);
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);
-void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V);
+std::vector<std::vector<double>> MatSVD(const double*  X, int n1,int n2,double tol=1e-14);
 
 
 //--------------------------------- Cube --------------------------

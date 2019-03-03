@@ -3,6 +3,7 @@
 
 #include<iostream>
 #include<vector>
+#include<functional>
 #include"tensor.h"
 
 
@@ -15,13 +16,20 @@ private:
 public:
     TensorD C;
     int length, m, pos=0;
+    std::function< std::vector<TensorD>(const TensorD&,int) > t_decomposer;
 
     MPS(int length, int m)
         :M(length),length(length),m(m)
-    {}
+    {
+        t_decomposer= [](const TensorD& t, int p)
+        { return Decomposition(t,p); };
+    }
     MPS(const std::vector<TensorD>& tensors,int m=0)
         :M(tensors),length(tensors.size()),m(m)
     {
+        t_decomposer= [](const TensorD& t, int p)
+                { return Decomposition(t,p); };
+
         int n0=M[0].dim.back();
         C=TensorD({n0,n0});
         C.FillEye(1);
@@ -39,11 +47,12 @@ public:
         C=TensorD({n0,n0});
         C.FillEye(1);
     }
-    void FillRandu(Index dim)
+    MPS& FillRandu(Index dim)
     {
         FillNone(dim);
         for(TensorD &x:M) x.FillRandu();
         Canonicalize();
+        return *this;
     }
     const TensorD& at(int i) const { return M[i]; }
     void PrintSizes() const
@@ -94,9 +103,10 @@ public:
         TensorD psi=ApplyC();
         if (vx==-1) vx=1; else pos++;
         ExtractNorm(psi);
-        auto usvt=SVDecomposition(psi,psi.rank()-1);
-        M[pos]=usvt[0];
-        C=usvt[1]*usvt[2];
+        auto usvt=t_decomposer(psi,psi.rank()-1);
+        M[pos]=usvt.front();
+        C=usvt[1];
+        for(uint i=2;i<usvt.size();i++) C=C*usvt[i];
     }
     void SweepLeft()
     {
@@ -104,9 +114,10 @@ public:
         TensorD psi=ApplyC();
         if(vx==1) vx=-1; else pos--;
         ExtractNorm(psi);
-        auto usvt=SVDecomposition(psi,1);
-        M[pos+1]=usvt[2];
-        C=usvt[0]*usvt[1];
+        auto usvt=t_decomposer(psi,1);
+        M[pos+1]=usvt.back();
+        C=usvt[0];
+        for(uint i=1;i<usvt.size()-1;i++) C=C*usvt[i];
     }
     void SetPos(int p)
     {
@@ -208,6 +219,23 @@ inline MPO MPOIdentity(int length)
     std::vector<TensorD> O(length);
     std::vector<double> id={1,0,0,1};
     for(auto& x:O) x=TensorD({1,2,2,1}, id);
+    return O;
+}
+inline MPO Fermi(int i, int L, bool dagged)
+{
+    static TensorD
+            id( {1,2,2,1},{1,0,0,1} ),
+            sg( {1,2,2,1}, {1,0,0,-1} );
+
+    auto fe=dagged ? TensorD( {1,2,2,1}, {0,0,1,0} )
+                   : TensorD( {1,2,2,1}, {0,1,0,0} );
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+    {
+        O[j]= (j <i) ? sg :
+              (j==i) ? fe :
+                       id ;
+    }
     return O;
 }
 inline MPO MPOEH(int length)

@@ -7,13 +7,13 @@
 #include<stdexcept>
 
 template<class T>
-int Prod_n(const T* ini, int n)
+T Prod_n(const T* ini, int n)
 {
     return std::accumulate(ini,ini+n,1,std::multiplies<T>());
 }
 
 template<class T>
-int Prod(const T* ini, const T* fin)
+T Prod(const T* ini, const T* fin)
 {
     return std::accumulate(ini,fin,1,std::multiplies<T>());
 }

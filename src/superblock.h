@@ -5,6 +5,8 @@
 #include<vector>
 #include<array>
 
+#include"supertensor.h"
+
 class Superblock
 {
  public:
@@ -18,6 +20,18 @@ class Superblock
     {
         C=TensorD(Index(mps.size(),1),{1});
         Canonicalize();
+    }
+    double value() const
+    {
+        auto value=mps[0].C("iI") * b1[pos]("ijk") * mps[2].C("kK") *
+                   b2[pos]("IJK") * mps[1].C("jJ") ;
+        double prod=1;
+        for(const MPS& x:mps) prod*=x.norm();
+        return value.t[0]*prod;
+    }
+    SuperTensor Oper() const
+    {
+        return { b1[pos], mps[1].C, b2[pos] };
     }
     void Canonicalize()
     {
@@ -33,14 +47,6 @@ class Superblock
         while(pos>p) SweepLeft();
     }
 
-    double value() const
-    {
-        auto value=mps[0].C("iI") * b1[pos]("ijk") * mps[2].C("kK") *
-                  b2[pos]("IJK") * mps[1].C("jJ");
-        double prod=1;
-        for(const MPS& x:mps) prod*=x.norm();
-        return value.t[0]*prod;
-    }
     void SweepRight()
     {
         if(pos==length-2) return;

@@ -16,20 +16,16 @@ private:
 public:
     TensorD C;
     int length, m, pos=0;
-    std::function< std::vector<TensorD>(const TensorD&,int) > t_decomposer;
+    enum class decomp_type {svd,eye};
+    decomp_type t_decomposer;
 
-    MPS(int length, int m)
-        :M(length),length(length),m(m)
+    MPS(int length, int m, decomp_type decomp=decomp_type::svd)
+        :M(length),length(length),m(m),t_decomposer(decomp)
     {
-        t_decomposer= [](const TensorD& t, int p)
-        { return Decomposition(t,p); };
     }
-    MPS(const std::vector<TensorD>& tensors,int m=0)
-        :M(tensors),length(tensors.size()),m(m)
-    {
-        t_decomposer= [](const TensorD& t, int p)
-                { return Decomposition(t,p); };
-
+    MPS(const std::vector<TensorD>& tensors,int m=0, decomp_type decomp=decomp_type::svd)
+        :M(tensors),length(tensors.size()),m(m),t_decomposer(decomp)
+    {        
         int n0=M[0].dim.back();
         C=TensorD({n0,n0});
         C.FillEye(1);
@@ -51,12 +47,13 @@ public:
     {
         FillNone(dim);
         for(TensorD &x:M) x.FillRandu();
-        Canonicalize();
+//        Canonicalize();
         return *this;
     }
     const TensorD& at(int i) const { return M[i]; }
-    void PrintSizes() const
+    void PrintSizes(const char str[]="") const
     {
+        std::cout<<str<<"\n";
         for(const TensorD& t:M)
         {
             for(int x:t.dim)
@@ -67,16 +64,16 @@ public:
     }
     operator TensorD() const
     {
-        TensorD tr=TensorD({1,1},{1})*pow(norm_n,length);
-        if (pos==-1) tr=C*tr;
+        static TensorD one({1},{1});
+        TensorD tr=one*pow(norm_n,length);
         for(int i=0;i<length;i++)
         {
             tr=tr*M[i];
             if (i==pos) tr=tr*C;
         }
-        return tr;
+        return tr*one;
     }
-    void Normalize() {norm_n=1;C*=1.0/Norm(C);}
+    MPS& Normalize() {norm_n=1; C*=1.0/Norm(C); return *this;}
     MPS& Canonicalize()
     {
 //        SetPos(0);
@@ -87,7 +84,7 @@ public:
 //        SetPos(length/2-1);
 //        C=cC*C;
 //        ExtractNorm(C);
-        Sweep();
+        for(int i=0;i<2;i++) Sweep();
         return *this;
     }
     void Sweep() { for(int i:SweepPosSec(length)) SetPos(i); }
@@ -103,10 +100,13 @@ public:
         TensorD psi=ApplyC();
         if (vx==-1) vx=1; else pos++;
         ExtractNorm(psi);
-        auto usvt=t_decomposer(psi,psi.rank()-1);
-        M[pos]=usvt.front();
-        C=usvt[1];
-        for(uint i=2;i<usvt.size();i++) C=C*usvt[i];
+        std::array<TensorD,2> uv;
+        if (t_decomposer==decomp_type::svd)
+            uv=psi.Decomposition(false,MatSVD);
+        else
+            uv=psi.Decomposition(false,MatChopDecomp);
+        M[pos]=uv[0];
+        C=uv[1];
     }
     void SweepLeft()
     {
@@ -114,10 +114,13 @@ public:
         TensorD psi=ApplyC();
         if(vx==1) vx=-1; else pos--;
         ExtractNorm(psi);
-        auto usvt=t_decomposer(psi,1);
-        M[pos+1]=usvt.back();
-        C=usvt[0];
-        for(uint i=1;i<usvt.size()-1;i++) C=C*usvt[i];
+        std::array<TensorD,2> uv;
+        if (t_decomposer==decomp_type::svd)
+            uv=psi.Decomposition(true,MatSVD);
+        else
+            uv=psi.Decomposition(true,MatChopDecomp);
+        M[pos+1]=uv[1];
+        C=uv[0];
     }
     void SetPos(int p)
     {
@@ -125,6 +128,10 @@ public:
             throw std::invalid_argument("SB::SetPos out of range");
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
+    }
+    double norm_factor() const
+    {
+        return pow(norm_n,length);
     }
     double norm() const
     {
@@ -153,15 +160,39 @@ public:
 
         mps1.C=DirectSum(mps1.C,mps2.C);
         mps1.norm_n=1;
-        if ( mps1.NeedCompress() ) mps1.Sweep();
+        if ( mps1.MaxVirtDim()>m )
+            for(int i=0;i<2;i++)
+                mps1.Sweep();
+    }
+    MPS operator*(const MPS& mps2) const
+    {
+        const MPS& mps1=*this;
+        if (mps1.length != mps2.length)
+            throw std::invalid_argument("MPO+MPO incompatible length");
+        MPS mps3(mps1.length,mps1.m*mps2.m);
+        for(int i=0;i<length;i++)
+        {
+            TensorD tr;
+            tr("iIjJlL")=mps1.M[i]("ijkl")*mps2.M[i]("IkJL");
+            mps3.M[i]=tr.ReShape({2,3,4}).Clone();
+        }
+        TensorD tr;
+        tr("iIjJ")=mps1.C("ij")*mps2.C("IJ");
+        mps3.C=tr.ReShape(2).Clone();
+        mps3.norm_n = mps1.norm_n * mps2.norm_n;
+//        if ( mps3.MaxVirtDim()>m ) mps3.Sweep();
+        return mps3;
     }
 
-    bool NeedCompress() const
+    int MaxVirtDim() const
     {
+        int mm=std::numeric_limits<int>::min();
         for(const TensorD& x:M)
-            if (x.dim.front()>m || x.dim.back()>m)
-                return true;
-        return false;
+        {
+            mm=std::max(mm,x.dim.front());
+            mm=std::max(mm,x.dim.back());
+        }
+        return mm;
     }
     static std::vector<int> SweepPosSec(int length)
     {
@@ -193,16 +224,19 @@ struct MPSSum
 {
     std::vector<MPS> v;
     int m;
+    MPS::decomp_type t_decomposer;
 
-    MPSSum(int m)
-        :m(m){}
+    MPSSum(int m,MPS::decomp_type t_decomposer=MPS::decomp_type::svd)
+        :m(m)
+        ,t_decomposer(t_decomposer)
+    {}
 
     void operator+=(const MPS& mps)
     {
         v.push_back(mps);
         v.back().m=m;
+        v.back().t_decomposer=t_decomposer;
     }
-//    void operator+=(const MPSSum& s) { for(auto x:s.v) (*this)+=x; }
     MPS toMPS() const
     {
         auto vc=v;
@@ -224,11 +258,12 @@ inline MPO MPOIdentity(int length)
 inline MPO Fermi(int i, int L, bool dagged)
 {
     static TensorD
-            id( {1,2,2,1},{1,0,0,1} ),
-            sg( {1,2,2,1}, {1,0,0,-1} );
+            id( {1,2,2,1}, {1,0,0,1} ),
+            sg( {1,2,2,1}, {1,0,0,-1} ),
+            cd( {1,2,2,1}, {0,1,0,0} ),
+            c ( {1,2,2,1}, {0,0,1,0} );
 
-    auto fe=dagged ? TensorD( {1,2,2,1}, {0,0,1,0} )
-                   : TensorD( {1,2,2,1}, {0,1,0,0} );
+    auto fe=dagged ? cd : c;
     std::vector<TensorD> O(L);
     for(int j=0;j<L;j++)
     {
@@ -248,6 +283,44 @@ inline MPO MPOEH(int length)
         else
             O[i]=TensorD({1,2,2,1}, id);
     return O;
+}
+
+inline MPO HamTB2(int L,bool periodic)
+{
+    const int m=128;
+    MPSSum h(m);
+    for(int i=0;i<L-1+periodic; i++)
+    {
+        h += Fermi(i,L,true)*Fermi((i+1)%L,L,false)*(-1.0) ;
+        h += Fermi((i+1)%L,L,true)*Fermi(i,L,false)*(-1.0) ;
+    }
+    return h.toMPS();
+}
+
+inline MPO HamTBExact(int L)
+{
+    static TensorD
+            I ={{2,2},{1,0,0,1}},
+            c ={{2,2},{0,0,1,0}},
+            sg={{2,2},{1,0,0,-1}},
+            o ={{2,2},{0,0,0,0}};
+    TensorD cd=c.t(),n=cd*c, H=o;
+    auto fv1=flat({I, H , c*sg*(-1.0), cd*sg, o});
+    auto fv2=flat(   { I, H , c*sg*(-1.0), cd*sg, o,      //H
+                       o, I , o    , o          , o,      //I
+                       o, cd, o    , o          , o,      //cd
+                       o, c , o    , o          , o,      //c
+                       o, n , o    , o          , I,      //nT
+                     }  );
+    auto fv3=flat({H,I,cd,c,n});
+
+    std::vector<TensorD> O(L);
+    O[0]={ {2,2,5,1}, fv1 };
+    for(int i=1;i<L-1;i++)
+        O[i]={ {2,2,5,5}, fv2 };
+    O[L-1]=TensorD( {2,2,1,5},fv3 );
+    for(TensorD& x:O) x=x.Reorder("ijkl","lijk");
+    return MPS(O,5,MPS::decomp_type::eye)*(-1.0);
 }
 
 #endif // MPS_H

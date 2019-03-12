@@ -1,33 +1,39 @@
-#include"superblock.h"
 #include"catch.hpp"
+#include"dmrg_gs.h"
 
-
-int Square(int x)
+double ExactEnergyTB(int L, int nPart,bool periodic)
 {
-    return x*x;
+    std::vector<double> evals(L);
+    for(int k=0;k<L;k++)
+    {
+        double kf= periodic ? 2*M_PI*k/L: M_PI*(k+1)/(L+1);
+        evals[k]=2*cos(kf);
+    }
+    std::sort(evals.begin(),evals.end());
+    double sum=0;
+    for(int k=0;k<nPart;k++)
+        sum+=evals[k];
+    return sum;
 }
 
 TEST_CASE( "dmrg tight-binding", "[dmrg_tb]" )
 {
-    int len=10, m=8;
-    MPS x(len,m);
-    x.FillRandu({m,2,m});
-    SECTION( "<x|1|x>" )
+    srand(time(NULL));
+    int len=4, m=128;
+
+    SECTION( "dmrg" )
     {
-        x.Canonicalize();
-        x.Normalize();
-        REQUIRE( x.norm() == Approx(1) );
-        auto op=MPOIdentity(len);
-        REQUIRE( op.norm()== Approx(sqrt(1<<len)) );
-//        REQUIRE( Norm(op.C)==Approx(1) );
-        Superblock sb({x,op,x});
-        op=sb.mps[1];
-        REQUIRE( op.norm()==Approx(sqrt(1<<len)) );
-        REQUIRE( Norm(op.C)==Approx(1) );
-        for(int i=0;i<sb.length-1;i++)
+//        auto op=HamTB2(len,false);
+        auto op=HamTBExact(len);
+        DMRG_gs sol(op,m);
+        sol.Solve();
+        for(int k=0;k<1;k++)
+        for(int i:MPS::SweepPosSec(len))
         {
-            sb.SetPos(i);
-            REQUIRE( sb.value()==Approx(1) );
+            sol.Solve();
+            sol.sb.SetPos(i);
+            sol.Print();
         }
+        std::cout<<"exact ener="<<ExactEnergyTB(len,len/2,false)<<"\n";
     }
 }

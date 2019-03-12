@@ -2,11 +2,13 @@
 #define UTILS_H
 
 #include<vector>
+#include<array>
 #include<random>
 #include<complex>
 #include<iomanip>
 #include<iostream>
 
+typedef std::vector<double> stdvec;
 
 template<class T>
 T VecReduce(T* v,int n)
@@ -108,7 +110,8 @@ void MatFillEye(T *dat, int n)
 void MatTranspose(const double*  X, double *result, int nrow, int ncol);
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);
-std::vector<std::vector<double>> MatSVD(const double*  X, int n1,int n2,double tol=1e-14);
+std::array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol);
+std::array<stdvec,2> MatChopDecomp(bool is_right,const double*  X, int n1,int n2,double tol);
 
 
 //--------------------------------- Cube --------------------------

@@ -24,7 +24,7 @@ TEST_CASE( "mps canonization", "[mps]" )
     }
     SECTION( "Sweep, casting as tensor")
     {
-        MPS x(6,8);
+        MPS x(10,8,MPS::decomp_type::eye);
         x.FillRandu({8,2,8});
         TensorD tx=x;
         while (x.pos<x.length-2)
@@ -54,6 +54,8 @@ TEST_CASE( "mps canonization", "[mps]" )
     }
     SECTION( "norm" )
     {
+        MPS x(20,8);
+        x.FillRandu({8,2,8});
         x.Canonicalize();
         x.Normalize();
         REQUIRE( x.norm() ==Approx(1) );
@@ -67,38 +69,5 @@ TEST_CASE( "mps canonization", "[mps]" )
         x+=x;
         REQUIRE( x.norm()==Approx(2) );
     }
-    SECTION( "MPO operators: * +" )
-    {
-        SECTION( "random operator" )
-        {
-            MPO s(x.length,x.m);
-            s.FillRandu({x.m,2,2,x.m});
-            s.Canonicalize();
-            double nr=s.norm();//1<<(x.length/2);
-            REQUIRE( s.norm()==Approx(nr) );
-            REQUIRE( (s*3).norm()==Approx(3*nr) );
-            s+=s;
-            REQUIRE( s.norm()==Approx(2*nr) );
-        }
-        SECTION( "1 operator" )
-        {
-            MPO s=MPOIdentity(x.length);
-            double nr=pow(2,x.length/2.);
-            REQUIRE( s.norm()==Approx(nr) );
-            REQUIRE( (s*3).norm()==Approx(3*nr) );
-            s+=s;
-            REQUIRE( s.norm()==Approx(2*nr) );
-        }
-    }
-    SECTION( "MPSSum" )
-    {
-        MPO s=MPOIdentity(x.length);
-        double nr=pow(2,x.length/2.);
-        REQUIRE( s.norm()==Approx(nr) );
-        MPSSum sum(20);
-        for(int i=0;i<20;i++)
-            sum+=s;
-        REQUIRE( sum.toMPS().norm()==Approx(20*nr) );
-        sum.toMPS().PrintSizes();
-    }
+
 }

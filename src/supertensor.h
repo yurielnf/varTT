@@ -15,7 +15,7 @@ struct SuperTensor
     TensorD operator*(const TensorD& psi) const
     {
         TensorD tr;
-        tr("jJ")=_A("ijk")*psi("iI")*_B("IjK");
+        tr("kK")=_A("ijk")*psi("iI")*_B("IjK");
         return tr;
     }
 };

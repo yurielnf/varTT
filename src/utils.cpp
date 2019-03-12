@@ -50,7 +50,7 @@ void MatFullDiag(double* const X,int n,double *evec,double *eval)
 //    svd_econ(mU, vS, mV, mX);
 //}
 
-vector<vector<double>> MatSVD(const double*  X, int n1,int n2,double tol)
+array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol)
 {
     const mat mX((double* const)X,n1,n2,false);
     mat U,V;
@@ -61,14 +61,75 @@ vector<vector<double>> MatSVD(const double*  X, int n1,int n2,double tol)
     for(int i=0;i<D;i++)
         if(i>0 && fabs(s[i])<tol) {D=i;break;}
 
-    vector<double> A(n1*D), c(D), B(n2*D);
-    mat Aa(A.data(),n1,D,false,true);
-    vec ca(c.data(),D,false,true);
-    mat Ba(B.data(),n2,D,false,true);
-    Aa=U.head_cols(D);
-    ca=s.head(D);
-    Ba=V.head_cols(D);
-    return {A,c,B};
+    mat Ua=U.head_cols(D);
+    mat Sa=diagmat(s.head(D));
+    mat Vt=V.head_cols(D).t();
+    if (is_right)
+        return {conv_to<stdvec>::from(vectorise(Ua*Sa)),
+                conv_to<stdvec>::from(vectorise(Vt))    };
+    else
+        return {conv_to<stdvec>::from(vectorise(Ua)),
+                conv_to<stdvec>::from(vectorise(Sa*Vt)) };
+}
+
+vector<int> FindNonZeroCols(const double*  X, int n1,int n2,double tol)
+{
+    vector<int> cols;
+    for(int j=0;j<n2;j++)
+    {
+        double mc=*std::max_element(X+j*n1,X+(j+1)*n1);
+        if ( mc >= tol ) cols.push_back(j);
+    }
+    if (cols.empty())
+        throw runtime_error("FindNonZeroCols with cero col");
+    return cols;
+}
+
+mat MatSelectCols(const mat& A, const vector<int>& cols)
+{
+    mat B(A.n_rows,cols.size());
+    for(uint j=0;j<cols.size();j++)
+        B.col(j)=A.col(cols[j]);
+    return B;
+}
+
+array<mat,2> MatChopDecompArmaByCol(const mat& mX,double tol)
+{
+    int n1=mX.n_rows, n2=mX.n_cols;
+    mat U(n2,n2,fill::eye);
+    auto cols=FindNonZeroCols(mX.memptr(),n1,n2,tol);
+    mat Xa=MatSelectCols(mX,cols);
+    mat Ua=MatSelectCols(U ,cols).t();
+    return {Xa,Ua};
+}
+
+array<stdvec,2> MatChopDecomp(bool is_right,const double*  X, int n1,int n2,double tol)
+{
+    const mat mX((double* const)X,n1,n2,false);
+    if (is_right)
+    {
+        stdvec vx(X,X+n1*n2);
+        stdvec vu(n1*n1);
+        MatFillEye(vu.data(),n1);
+        return {vu,vx};
+
+//        auto ab=MatChopDecompArmaByCol(mX.t(),tol);
+//        mat a=ab[1].t();
+//        mat b=ab[0].t();
+//        return {stdvec(a.begin(),a.end()),
+//                stdvec(b.begin(),b.end())};
+    }
+    else
+    {
+        stdvec vx(X,X+n1*n2);
+        stdvec vu(n2*n2);
+        MatFillEye(vu.data(),n2);
+        return {vx,vu};
+
+//        auto ab=MatChopDecompArmaByCol(mX,tol);
+//        return {stdvec(ab[0].begin(),ab[0].end()),
+//                stdvec(ab[1].begin(),ab[1].end())};
+    }
 }
 
 

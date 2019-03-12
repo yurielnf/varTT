@@ -41,11 +41,14 @@ public:
         :dim(dim),n(Prod(dim)),_vec(n) {}
     Tensor(const Index& dim,const std::vector<T>& vec)
         :dim(dim),n(Prod(dim)),_vec(vec)
-    {}
-    Tensor(const Index& dim,T* dat)
-        :dim(dim),n(Prod(dim)),mem(dat)
-    {}
+    {
+        if ( (int)vec.size() !=n )
+            throw std::invalid_argument("Tensor from vec incompatible");
+    }
 
+    Tensor(const Index& dim,T* dat)
+        :dim(dim),n(Prod(dim)),mem(dat) {}
+    Tensor Clone() const { return {dim,vec()}; }
     int rank() const {return dim.size();}
 
     void FillZeros()
@@ -364,19 +367,26 @@ public:
 //        MatSVD(mt.data(),mt.dim[0],mt.dim[1],U.data(),S.data(),V.data());
 //        return {U,S.DiagMat(),V.Transpose(V.rank()-1)};
 //    }
-    friend std::vector<Tensor> Decomposition(const Tensor& t,int splitPos) //M=U*S*Vt
+    typedef std::function< std::array<stdvec,2>(
+                                                bool is_right,
+                                                const double*  X,
+                                                int n1,int n2,
+                                                double tol)> mat_decomp;
+    std::array<Tensor,2> Decomposition(bool is_right,
+                                      mat_decomp decomp=MatSVD) const
     {
+        const Tensor &t=*this;
+        int splitPos= is_right ? 1 : t.rank()-1;
         auto mt=t.ReShape(splitPos);
 
-        auto usvt=MatSVD(mt.data(),mt.dim[0],mt.dim[1]);
-        int n=usvt[1].size();
+        auto uv=decomp(is_right,mt.data(),mt.dim[0],mt.dim[1],1e-14);
+        int n=uv[0].size()/mt.dim[0];
         auto dimUV=SplitIndex(t.dim,splitPos);
         dimUV[0].push_back(n);    //U dimension
-        dimUV[1].push_back(n);    //V dimension
-        auto U=Tensor(dimUV[0],usvt[0]);
-        auto S=Tensor({n},usvt[1]);
-        auto V=Tensor(dimUV[1],usvt[2]);
-        return {U,S.DiagMat(),V.Transpose(V.rank()-1)};
+        dimUV[1].insert(dimUV[1].begin(),n);    //V dimension
+        auto U=Tensor(dimUV[0],uv[0]);
+        auto V=Tensor(dimUV[1],uv[1]);
+        return {U,V};
     }
 };
 
@@ -416,6 +426,15 @@ struct TensorNotation
 
 
 //--------------------------------- other friends --------------------------------------
+
+template<class T=double>
+std::vector<T> flat(const std::vector<Tensor<T>> &vt)
+{
+    std::vector<T> v;
+    for(const Tensor<T>& x:vt)
+        v.insert(v.end(),x.data(),x.data()+x.size());
+    return v;
+}
 
 template<class T>
 using TransferTensor=std::vector<const Tensor<T>*>;

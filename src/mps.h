@@ -12,7 +12,7 @@ class MPS
 {
 private:
     std::vector<TensorD> M;
-    int vx=1;
+    int vx=-1;
 public:
     TensorD C;
     int length, m, pos=0;

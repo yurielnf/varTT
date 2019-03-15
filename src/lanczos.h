@@ -32,7 +32,7 @@ void Orthogonalize(Ket &t,const std::vector<Ket>& basis,int size)
         t+=basis[i]*(-Dot(basis[i],t));
 }
 
-LEigenPair GSTridiagonal(double *a, double *b, int size, double tol=1e-14);
+LEigenPair GSTridiagonal(double *a, double *b, int size, double tol=0);
 
 
 template<class LinearOperator, class Ket>
@@ -96,7 +96,7 @@ Lanczos<LinearOperator,Ket> create_Lanczos(const LinearOperator& A, const Ket& r
 }
 
 template<class Hamiltonian, class Ket>                                      //Portal method
-Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,Ket& wf,int nIter=256,double tol=1e-14)
+Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,Ket& wf,int nIter=256,double tol=1e-13)
 {
     Lanczos<Hamiltonian,Ket> lan(H,wf);
     lan.DoIt(nIter, tol);

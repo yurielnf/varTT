@@ -388,6 +388,30 @@ public:
         auto V=Tensor(dimUV[1],uv[1]);
         return {U,V};
     }
+//    std::array<Tensor,2> ChopMatDecomposition(bool is_right) const
+//    {
+//        for(int j=0;j<dim.back();j++)
+//        {
+//            auto ts=Subtensor(j);
+//            double mc=*std::max_element(ts.data(),ts.data()+ts.n,
+//                                        [](T a,T b){return std::abs(a)<std::abs(b);})
+//        }
+//    }
+//    std::array<Tensor,2> ChopDecomposition(bool is_right) const
+//    {
+//        const Tensor &t=*this;
+//        int splitPos= is_right ? 1 : t.rank()-1;
+//        auto mt=t.ReShape(splitPos);
+
+//        auto uv=ChopMatDecomposition(is_right);
+//        int n=uv[0].size()/mt.dim[0];
+//        auto dimUV=SplitIndex(t.dim,splitPos);
+//        dimUV[0].push_back(n);    //U dimension
+//        dimUV[1].insert(dimUV[1].begin(),n);    //V dimension
+//        auto U=Tensor(dimUV[0],uv[0]);
+//        auto V=Tensor(dimUV[1],uv[1]);
+//        return {U,V};
+//    }
 };
 
 
@@ -445,8 +469,13 @@ Tensor<T> operator*(const Tensor<T>& t,TransferTensor<T> transfer)
     Tensor<T> ts;
     const Tensor<T> &t0=*transfer[0];
     const Tensor<T> &t1=*transfer[1];
-    const Tensor<T> &t2=*transfer[2];
-    ts("IJK")=t0("ipI")*t("ijk")*t2("kqK")*t1("jpqJ");
+    if(transfer.size()==2)
+        ts("IJ")=t0("ipI")*t("ij")*t1("jpJ");
+    else if (transfer.size()==3)
+    {
+        const Tensor<T> &t2=*transfer[2];
+        ts("IJK")=t0("ipI")*t("ijk")*t2("kqK")*t1("jpqJ");
+    }
     return ts;
 }
 
@@ -456,8 +485,13 @@ Tensor<T> operator*(TransferTensor<T> transfer,const Tensor<T>& t)
     Tensor<T> ts;
     const Tensor<T> &t0=*transfer[0];
     const Tensor<T> &t1=*transfer[1];
-    const Tensor<T> &t2=*transfer[2];
-    ts("IJK")=t0("Ipi")*t("ijk")*t2("Kqk")*t1("Jpqj");
+    if(transfer.size()==2)
+        ts("IJ")=t0("Ipi")*t("ij")*t1("Jpj");
+    else if (transfer.size()==3)
+    {
+        const Tensor<T> &t2=*transfer[2];
+        ts("IJK")=t0("Ipi")*t("ijk")*t2("Kqk")*t1("Jpqj");
+    }
     return ts;
 }
 

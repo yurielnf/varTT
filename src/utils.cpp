@@ -72,13 +72,18 @@ array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol)
                 conv_to<stdvec>::from(vectorise(Sa*Vt)) };
 }
 
+static bool abs_compare(double a, double b)
+{
+    return (std::abs(a) < std::abs(b));
+}
+
 vector<int> FindNonZeroCols(const double*  X, int n1,int n2,double tol)
 {
     vector<int> cols;
     for(int j=0;j<n2;j++)
     {
-        double mc=*std::max_element(X+j*n1,X+(j+1)*n1);
-        if ( mc >= tol ) cols.push_back(j);
+        double mc=*std::max_element(X+j*n1,X+(j+1)*n1,abs_compare);
+        if ( std::abs(mc) >= tol ) cols.push_back(j);
     }
     if (cols.empty())
         throw runtime_error("FindNonZeroCols with cero col");
@@ -108,27 +113,27 @@ array<stdvec,2> MatChopDecomp(bool is_right,const double*  X, int n1,int n2,doub
     const mat mX((double* const)X,n1,n2,false);
     if (is_right)
     {
-        stdvec vx(X,X+n1*n2);
-        stdvec vu(n1*n1);
-        MatFillEye(vu.data(),n1);
-        return {vu,vx};
+//        stdvec vx(X,X+n1*n2);
+//        stdvec vu(n1*n1);
+//        MatFillEye(vu.data(),n1);
+//        return {vu,vx};
 
-//        auto ab=MatChopDecompArmaByCol(mX.t(),tol);
-//        mat a=ab[1].t();
-//        mat b=ab[0].t();
-//        return {stdvec(a.begin(),a.end()),
-//                stdvec(b.begin(),b.end())};
+        auto ab=MatChopDecompArmaByCol(mX.t(),tol);
+        mat a=ab[1].t();
+        mat b=ab[0].t();
+        return {stdvec(a.begin(),a.end()),
+                stdvec(b.begin(),b.end())};
     }
     else
     {
-        stdvec vx(X,X+n1*n2);
-        stdvec vu(n2*n2);
-        MatFillEye(vu.data(),n2);
-        return {vx,vu};
+//        stdvec vx(X,X+n1*n2);
+//        stdvec vu(n2*n2);
+//        MatFillEye(vu.data(),n2);
+//        return {vx,vu};
 
-//        auto ab=MatChopDecompArmaByCol(mX,tol);
-//        return {stdvec(ab[0].begin(),ab[0].end()),
-//                stdvec(ab[1].begin(),ab[1].end())};
+        auto ab=MatChopDecompArmaByCol(mX,tol);
+        return {stdvec(ab[0].begin(),ab[0].end()),
+                stdvec(ab[1].begin(),ab[1].end())};
     }
 }
 

@@ -31,7 +31,7 @@ class Superblock
         for(int k=0;k<1;k++)
         for(int i:MPS::SweepPosSec(length)) SetPos(i);
     }
-    double Norm() const
+    double norm_factor() const
     {
         double prod=1;
         for(const MPS& x:mps) prod*=x.norm_factor();
@@ -39,18 +39,15 @@ class Superblock
     }
     SuperTensor Oper() const
     {
-        return { b1[pos], mps[1].C, b2[pos] };
+        if(mps.size()==3)
+            return { b1[pos], b2[pos], {mps[1].C} };
+        else return { b1[pos], b2[pos]};
     }
     double value() const
     {
-        TensorD Cp=Oper()*mps[0].C;
-        auto value=Cp("kK")*mps[2].C("kK");
-//        auto value=mps[0].C("iI") * b1[pos]("ijk") * mps[2].C("kK") *
-//                   b2[pos]("IJK") * mps[1].C("jJ") ;
-
-        return value.t[0]*Norm();
+        TensorD Cp=Oper()*mps.front().C;
+        return Dot(mps.back().C,Cp)*norm_factor();
     }
-
     void SetPos(int p)
     {
         if (pos<0 || pos>length-2)
@@ -58,7 +55,6 @@ class Superblock
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
-
     void SweepRight()
     {
         if(pos==length-2) return;

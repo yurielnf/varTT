@@ -19,15 +19,15 @@ double ExactEnergyTB(int L, int nPart,bool periodic)
 TEST_CASE( "dmrg tight-binding", "[dmrg_tb]" )
 {
     srand(time(NULL));
-    int len=4, m=128;
+    int len=20, m=128;
 
     SECTION( "dmrg" )
     {
-//        auto op=HamTB2(len,false);
-        auto op=HamTBExact(len);
+        auto op=HamTB2(len,false);
+//        auto op=HamTBExact(len);
         DMRG_gs sol(op,m);
         sol.Solve();
-        for(int k=0;k<1;k++)
+        for(int k=0;k<2;k++)
         for(int i:MPS::SweepPosSec(len))
         {
             sol.Solve();

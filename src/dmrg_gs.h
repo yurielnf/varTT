@@ -24,7 +24,7 @@ public:
     {
         auto Heff=sb.Oper();
         auto lan=Diagonalize(Heff, sb.mps[0].C, nIterMax, tol_diag);  //Lanczos
-        ener=lan.lambda0*sb.Norm();
+        ener=lan.lambda0*sb.norm_factor();
         iter=lan.iter;
         sb.mps[0].C=sb.mps[2].C=lan.GetState();
     }
@@ -32,7 +32,7 @@ public:
     {
         std::cout<<sb.pos+1<<" "<<sb.length-sb.pos-1;
         std::cout<<" m="<<sb.b1[sb.pos].dim[0]<<" M="<<sb.b1[sb.pos].dim[1]<<" ";
-        std::cout<<iter<<" lancz iter; ener="<<ener<<"="<<sb.value()<<"\n";
+        std::cout<<iter<<" lancz iter; ener="<<sb.value()<<"\n";
     }
 };
 

@@ -3,7 +3,7 @@
 
 TEST_CASE("auto mpo","[mpo]")
 {
-    int len=20;
+    int len=10;
     SECTION( "MPO operators: * +" )
     {
         SECTION( "random operator" )

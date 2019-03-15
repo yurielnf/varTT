@@ -7,15 +7,20 @@
 struct SuperTensor
 {
     TensorD _A,_B;
-    SuperTensor(const TensorD& A,const TensorD& C,const TensorD& B)
+    SuperTensor(const TensorD& A,const TensorD& B,
+                const std::vector<TensorD>& C={})
         :_A(A),_B(B)
     {
-        _A("iJk")=_A("ijk")*C("jJ");
+        if (C.size()==1)
+            _A("iJk")=_A("ijk")*C[0]("jJ");
     }
     TensorD operator*(const TensorD& psi) const
     {
         TensorD tr;
-        tr("kK")=_A("ijk")*psi("iI")*_B("IjK");
+        if (_A.rank()==2)
+            tr("kK")=_A("ik")*psi("iI")*_B("IK");
+        else if (_A.rank()==3)
+            tr("kK")=_A("ijk")*psi("iI")*_B("IjK");
         return tr;
     }
 };

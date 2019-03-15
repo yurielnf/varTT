@@ -4,6 +4,23 @@
 TEST_CASE( "superblock for mpo", "[superblock]" )
 {
     int len=10;
+    SECTION( "superblock <x|x>" )
+    {
+        int m=128;
+        MPS x(len,m);
+        x.FillRandu({m,2,m});
+        x.Canonicalize();
+        x.Normalize();
+        REQUIRE( x.norm() == Approx(1) );
+        Superblock sb({x,x});
+        double e=sb.value();
+        REQUIRE( e==Approx(1) );
+        for(int i:MPS::SweepPosSec(len))
+        {
+            sb.SetPos(i);
+            REQUIRE( sb.value()==Approx(e) );
+        }
+    }
     SECTION( "<x|1|x>" )
     {
         int m=8;
@@ -30,6 +47,7 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
         int m=128;
         MPS x(len,m);
         x.FillRandu({m,2,m});
+        x.Canonicalize();
         x.Normalize();
         x.PrintSizes("|x>=");
         REQUIRE( x.norm() == Approx(1) );

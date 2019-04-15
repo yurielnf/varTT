@@ -8,7 +8,9 @@ SOURCES +=\
     index.cpp \
     mps.cpp \
     dmrg_gs.cpp \
-    supertensor.cpp
+    supertensor.cpp \
+    dmrg_0_gs.cpp \
+    dmrg_se_gs.cpp
 
 HEADERS += \
     tensor.h \
@@ -18,5 +20,7 @@ HEADERS += \
     superblock.h \
     dmrg_gs.h \
     supertensor.h \
-    lanczos.h
+    lanczos.h \
+    dmrg_0_gs.h \
+    dmrg_se_gs.h
 

@@ -1,8 +1,9 @@
 #include"index.h"
+#include<iostream>
 
 using namespace std;
 
-int Offset(Index id, Index dim)
+int Offset(const Index& id, const Index &dim)
 {
     int sum=0,prod=1;
     for(uint i=0;i<id.size();i++)
@@ -12,8 +13,12 @@ int Offset(Index id, Index dim)
     }
     return sum;
 }
-int Offset(Index id, Index dim,const std::vector<int>& posMap)
+int Offset(const Index& id,const Index& dim,const std::vector<int>& posMap)
 {
+    for(int j=0;j<dim.size();j++)
+        if(id[posMap[j]]>=dim[j])
+            throw invalid_argument("Offset out of bound");
+
     int sum=0,prod=1;
     for(uint i=0;i<id.size();i++)
     {
@@ -22,10 +27,10 @@ int Offset(Index id, Index dim,const std::vector<int>& posMap)
     }
     return sum;
 }
-Index ToIndex(int pos,Index dim)
+Index ToIndex(int pos, const Index &dim)
 {
     Index id(dim.size());
-    for(int i=0;i<dim.size();i++)
+    for(uint i=0;i<dim.size();i++)
     {
         id[i]=pos%dim[i];
         pos/=dim[i];
@@ -33,19 +38,23 @@ Index ToIndex(int pos,Index dim)
     return id;
 }
 
-vector<Index> SplitIndex(Index dim,int splitPos)
+vector<Index> SplitIndex(const Index &dim, int splitPos)
 {
+//    if (splitPos>=dim.size())
+//        throw std::invalid_argument("SplitIndex invalid splitPos");
     vector<Index> dim_v(2);
     for(int i=0;i<splitPos;i++)
         dim_v[0].push_back(dim[i]);
     for(int i=splitPos;i<dim.size();i++)
         dim_v[1].push_back(dim[i]);
     for(auto& x:dim_v)
-        if (x.empty()) x.push_back({1});
+        if (x.empty())
+//            throw std::invalid_argument("SplitIndex empty");
+            x.push_back({1});
     return dim_v;
 }
 
-vector<Index> SplitIndex(Index dim,vector<int> splitPos)
+vector<Index> SplitIndex(const Index &dim, const std::vector<int> &splitPos)
 {
     vector<Index> dim_v(splitPos.size()+1);
     uint p=0,s;

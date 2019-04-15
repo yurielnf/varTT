@@ -45,9 +45,38 @@ public:
         if ( (int)vec.size() !=n )
             throw std::invalid_argument("Tensor from vec incompatible");
     }
-
     Tensor(const Index& dim,T* dat)
         :dim(dim),n(Prod(dim)),mem(dat) {}
+//    friend void swap(Tensor& t1,Tensor& t2)
+//    {
+//        std::swap(t1.dim,t2.dim);
+//        std::swap(t1.n,t2.n);
+//        std::swap(t1._vec,t2._vec);
+//        std::swap(t1.mem,t2.mem);
+//    }
+
+//    Tensor(const Tensor& t)
+//        :dim(t.dim)
+//        ,n(t.n)
+//        ,_vec(t._vec)
+//        ,mem(t.mem)
+//    {}
+//    Tensor(Tensor&& t)
+//        :Tensor()
+//    { swap(*this,t); }
+
+//    Tensor& operator=(const Tensor& t)
+//    {
+//        Tensor t2=t;
+//        swap(*this,t2);
+//        return *this;
+//    }
+//    Tensor& operator=(Tensor&& t)
+//    {
+//        swap(*this,t);
+//        return *this;
+//    }
+
     Tensor Clone() const { return {dim,vec()}; }
     int rank() const {return dim.size();}
 
@@ -208,14 +237,37 @@ public:
         return t2;
     }
 
-    Tensor Reorder(std::vector<int> posMap) const
+//    Tensor Reorder(std::vector<int> posMap) const
+//    {
+//        Tensor t(IndexReorder(dim,posMap));
+//        for(int i=0;i<t.size();i++)
+//        {
+////            int im=Offset(IndexReorder(ToIndex(i,dim),posMap),t.dim) ;
+//            int im=Offset(ToIndex(i,t.dim),dim,posMap);
+//            t[i]=(*this)[im];
+//        }
+//        return t;
+//    }
+    Tensor Reorder(const std::vector<int>& posMap) const
     {
         Tensor t(IndexReorder(dim,posMap));
+        Index id(t.dim.size(),0);               // <-----------------  to do: manual id2 for im
+//        int pos=0;
         for(int i=0;i<t.size();i++)
         {
 //            int im=Offset(IndexReorder(ToIndex(i,dim),posMap),t.dim) ;
-            int im=Offset(ToIndex(i,t.dim),dim,posMap);
+            id=ToIndex(i,t.dim);
+            int im=Offset(id,dim,posMap);
             t[i]=(*this)[im];
+
+//            if (id2!=id) throw std::runtime_error("Reorder: id!=id2");
+//            id[pos]++;
+//            if (id[pos]==t.dim[pos])
+//            {
+//                while (id[pos]==t.dim[pos] && pos<t.rank()) {pos++; id[pos]++;}
+//                for(int j=0;j<pos;j++) id[j]=0;
+//                pos=0;
+//            }
         }
         return t;
     }
@@ -370,19 +422,18 @@ public:
     typedef std::function< std::array<stdvec,2>(
                                                 bool is_right,
                                                 const double*  X,
-                                                int n1,int n2,
-                                                double tol)> mat_decomp;
+                                                int n1,int n2)> mat_decomp;
     std::array<Tensor,2> Decomposition(bool is_right,
-                                      mat_decomp decomp=MatSVD) const
+                                       mat_decomp decomp) const
     {
         const Tensor &t=*this;
         int splitPos= is_right ? 1 : t.rank()-1;
         auto mt=t.ReShape(splitPos);
 
-        auto uv=decomp(is_right,mt.data(),mt.dim[0],mt.dim[1],1e-14);
+        auto uv=decomp(is_right,mt.data(),mt.dim[0],mt.dim[1]);
         int n=uv[0].size()/mt.dim[0];
         auto dimUV=SplitIndex(t.dim,splitPos);
-        dimUV[0].push_back(n);    //U dimension
+        dimUV[0].push_back(n);                  //U dimension
         dimUV[1].insert(dimUV[1].begin(),n);    //V dimension
         auto U=Tensor(dimUV[0],uv[0]);
         auto V=Tensor(dimUV[1],uv[1]);
@@ -415,6 +466,7 @@ public:
 };
 
 
+
 template<class Tensor>
 struct TensorNotation
 {
@@ -433,17 +485,36 @@ struct TensorNotation
     template<class Tensor2>
     TensorNotation& operator=(const TensorNotation<Tensor2>& tn)
     {
-        t=tn.t.Reorder(tn.id,id);
+        if (id==tn.id)
+            t=tn.t;
+        else
+            t=tn.t.Reorder(tn.id,id);
         return *this;
     }
     template<class Tensor2>
     TensorNotation<_Tensor> operator*(const TensorNotation<Tensor2>& tn)
     {
         auto ids=SortForMultiply(id,tn.id);
-        auto t1=   t.Reorder(id   ,ids[0]);
-        auto t2=tn.t.Reorder(tn.id,ids[1]);
         int nc=ids[3].length();
-        auto t3=t1.Multiply(t2,nc);
+        _Tensor t3;
+        if (id==ids[0] && tn.id==ids[1])
+            t3=t.Multiply(tn.t,nc);
+        else if(id==ids[0])
+        {
+            auto t2=tn.t.Reorder(tn.id,ids[1]);
+            t3=t.Multiply(t2,nc);
+        }
+        else if(tn.id==ids[1])
+        {
+            auto t1=   t.Reorder(id   ,ids[0]);
+            t3=t1.Multiply(tn.t,nc);
+        }
+        else
+        {
+            auto t1=   t.Reorder(id   ,ids[0]);
+            auto t2=tn.t.Reorder(tn.id,ids[1]);
+            t3=t1.Multiply(t2,nc);
+        }
         return {t3, ids[2]};
     }
 };

@@ -1,7 +1,7 @@
 #include"catch.hpp"
 #include"dmrg_gs.h"
 
-double ExactEnergyTB(int L, int nPart,bool periodic)
+static double ExactEnergyTB(int L, int nPart,bool periodic)
 {
     std::vector<double> evals(L);
     for(int k=0;k<L;k++)
@@ -19,21 +19,22 @@ double ExactEnergyTB(int L, int nPart,bool periodic)
 TEST_CASE( "dmrg tight-binding", "[dmrg_tb]" )
 {
     srand(time(NULL));
-    int len=20, m=128;
-
+    int len=10, m=128;
+    std::cout<<std::setprecision(15);
     SECTION( "dmrg" )
     {
-        auto op=HamTB2(len,false);
-//        auto op=HamTBExact(len);
+        auto op=HamTbAuto(len,false); op.PrintSizes("Htb=");
+//        auto op=HamTBExact(len); op.PrintSizes("HtbExact=");
         DMRG_gs sol(op,m);
         sol.Solve();
-        for(int k=0;k<2;k++)
-        for(int i:MPS::SweepPosSec(len))
+        for(int k=0;k<4;k++)
+        for(auto i:MPS::SweepPosSec(len))
         {
             sol.Solve();
-            sol.sb.SetPos(i);
+            sol.SetPos(i);
             sol.Print();
         }
-        std::cout<<"exact ener="<<ExactEnergyTB(len,len/2,false)<<"\n";
+        std::cout<<"ener ="<<sol.sb.value()<<"\n";
+        std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
     }
 }

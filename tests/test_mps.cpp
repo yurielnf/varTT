@@ -24,16 +24,16 @@ TEST_CASE( "mps canonization", "[mps]" )
     }
     SECTION( "Sweep, casting as tensor")
     {
-        MPS x(10,8,MPS::decomp_type::eye);
+        MPS x(10,8,MatChopDecompFixedTol(0));
         x.FillRandu({8,2,8});
         TensorD tx=x;
-        while (x.pos<x.length-2)
+        while (x.pos.i<x.length-2)
         {
             x.SweepRight();
             TensorD tx2=x;
             REQUIRE( Norm(tx-tx2)/Norm(tx) < 1e-14 );
         }
-        while (x.pos>0)
+        while (x.pos.i>0)
         {
             x.SweepLeft();
             TensorD tx2=x;
@@ -41,7 +41,7 @@ TEST_CASE( "mps canonization", "[mps]" )
         }
         SECTION( "SetPos")
         {
-            x.SetPos(x.length/2);
+            x.SetPos({x.length/2,1});
             TensorD tx2=x;
             REQUIRE( Norm(tx-tx2)/Norm(tx) < 1e-14 );
         }
@@ -68,6 +68,10 @@ TEST_CASE( "mps canonization", "[mps]" )
         REQUIRE( (x*3).norm()==Approx(3) );
         x+=x;
         REQUIRE( x.norm()==Approx(2) );
+        auto dif=x;
+        dif+=x*(-1.0);
+        dif.Canonicalize();
+        REQUIRE( dif.norm() < 1e-13 );
     }
 
 }

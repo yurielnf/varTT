@@ -27,42 +27,24 @@ void MatFullDiag(double* const X,int n,double *evec,double *eval)
     eig_sym(meval,mevec,mX);
 }
 
-//void MatSVD(const double*  X, int m,int n,double *U,double *S,double *Vt)
-//{
-//    const mat mX((double* const)X,m,n,false);
-//    int ns=std::min(m,n);
-//    mat mU(U,m,ns,false);
-//    mat vS(S,ns,ns,false);
-//    mat mVt(Vt,ns,n,false),V;
-//    vec s;
-//    svd_econ(mU, s, V, mX);
-//    vS.diag()=s;
-//    mVt=V.t();
-//}
 
-//void MatSVD(const double*  X, int m,int n,double *U,double *S,double *V)
-//{
-//    const mat mX((double* const)X,m,n,false);
-//    int ns=std::min(m,n);
-//    mat mU(U,m,ns,false,true);
-//    vec vS(S,ns,false,true);
-//    mat mV(V,n,ns,false,true);
-//    svd_econ(mU, vS, mV, mX);
-//}
-
-array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol)
+array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol,int Dmin)
 {
     const mat mX((double* const)X,n1,n2,false);
     mat U,V;
     vec s;
     svd_econ(U, s, V, mX);
-    tol=max( tol, s[0]*numeric_limits<double>::epsilon());
-    int D=s.size();
-    for(int i=0;i<D;i++)
-        if(i>0 && fabs(s[i])<tol) {D=i;break;}
-
+    int D=std::min(Dmin,(int)s.size());
+    if (D==0)
+    {
+        D=s.size();
+        for(uint i=0;i<s.size();i++)
+            if(fabs(s[i])<=tol) {D=i;break;}
+    }
+    double sum=0;
+    for(int i=0;i<D;i++) sum+=s[i]*s[i];
     mat Ua=U.head_cols(D);
-    mat Sa=diagmat(s.head(D));
+    mat Sa=diagmat(s.head(D)/sum);
     mat Vt=V.head_cols(D).t();
     if (is_right)
         return {conv_to<stdvec>::from(vectorise(Ua*Sa)),
@@ -83,7 +65,7 @@ vector<int> FindNonZeroCols(const double*  X, int n1,int n2,double tol)
     for(int j=0;j<n2;j++)
     {
         double mc=*std::max_element(X+j*n1,X+(j+1)*n1,abs_compare);
-        if ( std::abs(mc) >= tol ) cols.push_back(j);
+        if ( std::abs(mc) > tol ) cols.push_back(j);
     }
     if (cols.empty())
         throw runtime_error("FindNonZeroCols with cero col");
@@ -108,9 +90,10 @@ array<mat,2> MatChopDecompArmaByCol(const mat& mX,double tol)
     return {Xa,Ua};
 }
 
-array<stdvec,2> MatChopDecomp(bool is_right,const double*  X, int n1,int n2,double tol)
+array<stdvec,2> MatChopDecomp(bool is_right, const double*  X, int n1, int n2, double tol)
 {
     const mat mX((double* const)X,n1,n2,false);
+//    tol=max( tol, mX.max()*numeric_limits<double>::epsilon());
     if (is_right)
     {
 //        stdvec vx(X,X+n1*n2);
@@ -134,6 +117,27 @@ array<stdvec,2> MatChopDecomp(bool is_right,const double*  X, int n1,int n2,doub
         auto ab=MatChopDecompArmaByCol(mX,tol);
         return {stdvec(ab[0].begin(),ab[0].end()),
                 stdvec(ab[1].begin(),ab[1].end())};
+    }
+}
+
+array<stdvec,2> MatQRDecomp(bool is_right, const double*  X, int n1, int n2)
+{
+    const mat mX((double* const)X,n1,n2,false);
+    if (is_right)
+    {
+        mat Q,R;
+        qr_econ(Q,R,mX.t());
+        mat a=R.t();
+        mat b=Q.t();
+        return {stdvec(a.begin(),a.end()),
+                stdvec(b.begin(),b.end())};
+    }
+    else
+    {
+        mat Q,R;
+        qr_econ(Q,R,mX);
+        return {stdvec(Q.begin(),Q.end()),
+                stdvec(R.begin(),R.end())};
     }
 }
 

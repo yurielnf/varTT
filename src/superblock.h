@@ -9,77 +9,87 @@
 
 class Superblock
 {
- public:
-    std::vector<MPS> mps;
-    int length,pos=0;
-    std::vector<TensorD> b1,b2;
     TensorD one;
+ public:
+    std::vector<MPS*> mps;
+    int length;
+    MPS::Pos pos={0,-1};
+    std::vector<TensorD> b1,b2;
 
-    Superblock(const std::vector<MPS>& mps)
-        :mps(mps),length(mps[0].length),b1(length),b2(length)
+    Superblock() {}
+    Superblock(const std::vector<MPS*>& mps)
+        :mps(mps),length(mps[0]->length),b1(length),b2(length)
     {
         one=TensorD(Index(mps.size(),1),{1});
         InitBlocks();
     }
     void InitBlocks()
     {
-        b1[0]=one*Transfer(pos);
-        b2[length-2]=Transfer(length-1)*one;
-        pos=0;
-        for(MPS& x:this->mps)
-            x.SetPos(pos);
-        for(int k=0;k<1;k++)
-        for(int i:MPS::SweepPosSec(length)) SetPos(i);
+        pos=mps.front()->pos;
+        for(MPS* x:mps)
+            x->SetPos(pos);
+        auto prod=one;
+        for(int i=0;i<=pos.i;i++)
+            b1[i]=prod=prod*Transfer(i);
+        prod=one;
+        for(int i=length-2;i>=pos.i;i--)
+            b2[i]=prod=Transfer(i+1)*prod;
     }
     double norm_factor() const
     {
         double prod=1;
-        for(const MPS& x:mps) prod*=x.norm_factor();
+        for(const MPS* x:mps) prod*=x->norm_factor();
         return prod;
     }
     SuperTensor Oper() const
     {
         if(mps.size()==3)
-            return { b1[pos], b2[pos], {mps[1].C} };
-        else return { b1[pos], b2[pos]};
+            return { b1[pos.i]*norm_factor(), b2[pos.i], {mps[1]->C} };
+        else return { b1[pos.i]*norm_factor(), b2[pos.i]};
     }
     double value() const
     {
-        TensorD Cp=Oper()*mps.front().C;
-        return Dot(mps.back().C,Cp)*norm_factor();
+        TensorD Cp=Oper()*mps.front()->C;
+        return Dot(mps.back()->C,Cp);
     }
-    void SetPos(int p)
+    void SetPos(MPS::Pos p)
     {
-        if (pos<0 || pos>length-2)
+        if (pos.i<0 || pos.i>length-2)
             throw std::invalid_argument("SB::SetPos out of range");
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
     void SweepRight()
     {
-        if(pos==length-2) return;
-        for(MPS& x:mps) x.SweepRight();
-        pos=mps.front().pos;
-        if (pos==0)
-            b1[pos]=one*Transfer(pos);
+        if(pos.i==length-2 && pos.vx==1) return;
+        ++pos;
+        for(MPS* x:mps) x->SetPos(pos);
+//        for(MPS* x:mps) x->SweepRight();
+//        pos=mps.front()->pos;
+//        vx=mps.front()->vx;
+        if (pos.i==0)
+            b1[pos.i]=one*Transfer(pos.i);
         else
-            b1[pos]=b1[pos-1]*Transfer(pos);
+            b1[pos.i]=b1[pos.i-1]*Transfer(pos.i);
     }
     void SweepLeft()
     {
-        if (pos==0) return;
-        for(MPS& x:mps) x.SweepLeft();
-        pos=mps.front().pos;
-        if (pos==length-2)
-            b2[pos]=Transfer(pos+1)*one;
+        if (pos.i==0 && pos.vx==-1) return;
+        --pos;
+        for(MPS* x:mps) x->SetPos(pos);
+//        for(MPS* x:mps) x->SweepLeft();
+//        pos=mps.front()->pos;
+//        vx=mps.front()->vx;
+        if (pos.i==length-2)
+            b2[pos.i]=Transfer(pos.i+1)*one;
         else
-            b2[pos]=Transfer(pos+1)*b2[pos+1];
+            b2[pos.i]=Transfer(pos.i+1)*b2[pos.i+1];
     }
     std::vector<const TensorD*> Transfer(int pos) const
     {
         std::vector<const TensorD*> transfer;
-        for(const MPS& x:mps)
-            transfer.push_back( &x.at(pos) );
+        for(const MPS* x:mps)
+            transfer.push_back( &x->at(pos) );
         return transfer;
     }
 

@@ -46,7 +46,7 @@ struct Lanczos
     vector<double> a,b; // the tridiagonal matrix: principal and second diagonals
     int iter;
 
-    double lambda0, error=1;
+    double lambda0=1, error=1;
     vector<double> evec;
 
     Lanczos(const LinearOperator& A, const Ket& r0)
@@ -58,6 +58,12 @@ struct Lanczos
 
     void Iterate()
     {
+        if (b[iter]< lambda0*std::numeric_limits<double>::epsilon() )
+        {
+            r.FillRandu(); r*=(1.0/Norm(r));
+            Orthogonalize(r,v,iter-1);
+            b[iter]=Norm(r);
+        }
         v.push_back( r*(1.0/b[iter]) );
         r=A*v[iter];
         if (iter>0) r+=v[iter-1]*(-b[iter]);
@@ -82,9 +88,15 @@ struct Lanczos
 
     void DoIt(int nIter, double tol)
     {
-        for(int i=0;i<nIter && error>tol;i++)
+//        tol=std::max(tol,nIter*std::numeric_limits<double>::epsilon());
+        double tolr=0;
+        for(int i=0;i<nIter;i++)
+        {
+            tolr=std::max(tol*fabs(lambda0),tol);
+            if (error<tolr) break;
             Iterate();
-        if (error>tol)
+        }
+        if (error>tolr)
             std::cout<<"lanczos failed, residual_norm = "<<error<<std::endl;
     }
 };
@@ -96,7 +108,7 @@ Lanczos<LinearOperator,Ket> create_Lanczos(const LinearOperator& A, const Ket& r
 }
 
 template<class Hamiltonian, class Ket>                                      //Portal method
-Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,Ket& wf,int nIter=256,double tol=1e-13)
+Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,Ket& wf,int nIter,double tol)
 {
     Lanczos<Hamiltonian,Ket> lan(H,wf);
     lan.DoIt(nIter, tol);

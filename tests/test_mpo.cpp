@@ -33,7 +33,7 @@ TEST_CASE("auto mpo","[mpo]")
         MPO s=MPOIdentity(len);
         double nr=pow(2,len/2.);
         REQUIRE( s.norm()==Approx(nr) );
-        MPSSum sum(50);
+        MPSSum sum(50,MatSVDFixedTol(1e-14));
         for(int i=0;i<50;i++)
             sum+=s;
         REQUIRE( sum.toMPS().norm()==Approx(50*nr) );
@@ -44,10 +44,10 @@ TEST_CASE("auto mpo","[mpo]")
         int len=10;
         MPO he=HamTBExact(len);
         he.PrintSizes("HtbExact=");
-        MPO h=HamTB2(len,false);
+        MPO h=HamTbAuto(len,false);
         h.PrintSizes("Htb=");
         TensorD the=he;
         TensorD th=h;
-        REQUIRE( Norm(the-th)/Norm(the) < 1e-14 );
+        REQUIRE( Norm(the-th)/Norm(the) < 1e-13 );
     }
 }

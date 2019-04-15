@@ -113,13 +113,13 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     }
     SECTION( "matrix decomposition: svd" )
     {
-        auto usvt=t.Decomposition(0,MatChopDecomp);
+        auto usvt=t.Decomposition(0,MatChopDecompFixedTol(0));
         auto x=usvt[0]*usvt[1];
         REQUIRE( Norm(x-t)/Norm(x)<1e-15 );
         SECTION( "228" )
         {
             TensorD t({2,2,8}); t.FillRandu();
-            auto usvt=t.Decomposition(1,MatChopDecomp);
+            auto usvt=t.Decomposition(1,MatChopDecompFixedTol(0));
 
             auto x=usvt[0]*usvt[1];
             REQUIRE( Norm(x-t)/Norm(t)<1e-15 );

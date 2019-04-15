@@ -20,17 +20,18 @@ T Prod(const T* ini, const T* fin)
 
 typedef std::vector<int> Index;
 
-inline int Prod(std::vector<int> dim)
+inline int Prod(const std::vector<int>& dim)
 {
     return Prod_n(&dim[0],dim.size());
 }
 
-int Offset(Index id, Index dim);
-int Offset(Index id, Index dim, const std::vector<int> &posMap);
-Index ToIndex(int pos, Index dim);
+int Offset(const Index& id, const Index& dim);
+int Offset(const Index &id, const Index &dim, const std::vector<int> &posMap);
+Index ToIndex(int pos, const Index& dim);
 
-std::vector<Index> SplitIndex(Index dim,int splitPos);
-std::vector<Index> SplitIndex(Index dim,std::vector<int> splitPos);
+std::vector<Index> SplitIndex(const Index& dim,int splitPos);
+std::vector<Index> SplitIndex(const Index& dim,
+                              const std::vector<int>& splitPos);
 
 Index IndexReorder(const Index& dim, const std::vector<int>& posMap);
 

@@ -7,15 +7,15 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
     SECTION( "superblock <x|x>" )
     {
         int m=128;
-        MPS x(len,m);
+        MPS x(len,m,MatSVDFixedTol(1e-12));
         x.FillRandu({m,2,m});
         x.Canonicalize();
         x.Normalize();
         REQUIRE( x.norm() == Approx(1) );
-        Superblock sb({x,x});
+        Superblock sb({&x,&x});
         double e=sb.value();
         REQUIRE( e==Approx(1) );
-        for(int i:MPS::SweepPosSec(len))
+        for(auto i:MPS::SweepPosSec(len))
         {
             sb.SetPos(i);
             REQUIRE( sb.value()==Approx(e) );
@@ -32,13 +32,13 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
         auto op=MPOIdentity(len);
         REQUIRE( op.norm()== Approx(sqrt(1<<len)) );
 //        REQUIRE( Norm(op.C)==Approx(1) );
-        Superblock sb({x,op,x});
-        op=sb.mps[1];
+        Superblock sb({&x,&op,&x});
+        op=(*sb.mps[1]);
         REQUIRE( op.norm()==Approx(sqrt(1<<len)) );
         REQUIRE( Norm(op.C)==Approx(1) );
         for(int i=0;i<sb.length-1;i++)
         {
-            sb.SetPos(i);
+            sb.SetPos({i,1});
             REQUIRE( sb.value()==Approx(1) );
         }
     }    
@@ -51,11 +51,11 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
         x.Normalize();
         x.PrintSizes("|x>=");
         REQUIRE( x.norm() == Approx(1) );
-        auto op=HamTB2(len,false);
+        auto op=HamTbAuto(len,false);
         op.PrintSizes();
-        Superblock sb({x,op,x});
+        Superblock sb({&x,&op,&x});
         double e=sb.value();
-        for(int i:MPS::SweepPosSec(len))
+        for(auto i:MPS::SweepPosSec(len))
         {
             sb.SetPos(i);
             REQUIRE( sb.value()==Approx(e) );

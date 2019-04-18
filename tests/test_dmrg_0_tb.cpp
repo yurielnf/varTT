@@ -19,7 +19,7 @@ static double ExactEnergyTB(int L, int nPart,bool periodic)
 TEST_CASE( "dmrg0 tight-binding", "[dmrg0_tb]" )
 {
     srand(time(NULL));
-    int len=10, m=128;
+    int len=20, m=128;
     std::cout<<std::setprecision(15);
 
     SECTION( "dmrg" )

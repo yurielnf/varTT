@@ -24,7 +24,7 @@ struct Tensor
 {
     typedef std::vector<T> C;
 
-    Index  dim;
+    Index  dim,dim_prod;
 private:
     int n=0;
     std::vector<T> _vec;
@@ -38,44 +38,47 @@ public:
 
     Tensor() {}
     Tensor(const Index& dim)
-        :dim(dim),n(Prod(dim)),_vec(n) {}
+        :dim(dim),dim_prod(DimProd(dim)),n(Prod(dim)),_vec(n) {}
     Tensor(const Index& dim,const std::vector<T>& vec)
-        :dim(dim),n(Prod(dim)),_vec(vec)
+        :dim(dim),dim_prod(DimProd(dim)),n(Prod(dim)),_vec(vec)
     {
         if ( (int)vec.size() !=n )
             throw std::invalid_argument("Tensor from vec incompatible");
     }
     Tensor(const Index& dim,T* dat)
-        :dim(dim),n(Prod(dim)),mem(dat) {}
-//    friend void swap(Tensor& t1,Tensor& t2)
-//    {
-//        std::swap(t1.dim,t2.dim);
-//        std::swap(t1.n,t2.n);
-//        std::swap(t1._vec,t2._vec);
-//        std::swap(t1.mem,t2.mem);
-//    }
+        :dim(dim),dim_prod(DimProd(dim)),n(Prod(dim)),mem(dat) {}
 
-//    Tensor(const Tensor& t)
-//        :dim(t.dim)
-//        ,n(t.n)
-//        ,_vec(t._vec)
-//        ,mem(t.mem)
-//    {}
-//    Tensor(Tensor&& t)
-//        :Tensor()
-//    { swap(*this,t); }
+    /*friend void swap(Tensor& t1,Tensor& t2)
+    {
+        std::swap(t1.dim,t2.dim);
+        std::swap(t1.dim_prod,t2.dim_prod);
+        std::swap(t1.n,t2.n);
+        std::swap(t1._vec,t2._vec);
+        std::swap(t1.mem,t2.mem);
+    }
 
-//    Tensor& operator=(const Tensor& t)
-//    {
-//        Tensor t2=t;
-//        swap(*this,t2);
-//        return *this;
-//    }
-//    Tensor& operator=(Tensor&& t)
-//    {
-//        swap(*this,t);
-//        return *this;
-//    }
+    Tensor(const Tensor& t)
+        :dim(t.dim)
+        ,dim_prod(t.dim_prod)
+        ,n(t.n)
+        ,_vec(t._vec)
+        ,mem(t.mem)
+    {}
+    Tensor(Tensor&& t)
+        :Tensor()
+    { swap(*this,t); }
+
+    Tensor& operator=(const Tensor& t)
+    {
+        Tensor t2=t;
+        swap(*this,t2);
+        return *this;
+    }
+    Tensor& operator=(Tensor&& t)
+    {
+        swap(*this,t);
+        return *this;
+    }*/
 
     Tensor Clone() const { return {dim,vec()}; }
     int rank() const {return dim.size();}
@@ -97,11 +100,11 @@ public:
 
     T& operator[](const Index& id)
     {
-        return (*this)[Offset(id,dim)];
+        return (*this)[OffsetP(id,dim_prod)];
     }
     const T& operator[](const Index& id) const
     {
-        return (*this)[Offset(id,dim)];
+        return (*this)[OffsetP(id,dim_prod)];
     }
     T& operator[](int i)
     {
@@ -252,22 +255,26 @@ public:
     {
         Tensor t(IndexReorder(dim,posMap));
         Index id(t.dim.size(),0);               // <-----------------  to do: manual id2 for im
-//        int pos=0;
+        int pos=0;
         for(int i=0;i<t.size();i++)
         {
 //            int im=Offset(IndexReorder(ToIndex(i,dim),posMap),t.dim) ;
-            id=ToIndex(i,t.dim);
-            int im=Offset(id,dim,posMap);
+//            id=ToIndex(i,t.dim);
+            int im=OffsetP(id,dim_prod,posMap);
             t[i]=(*this)[im];
 
 //            if (id2!=id) throw std::runtime_error("Reorder: id!=id2");
-//            id[pos]++;
-//            if (id[pos]==t.dim[pos])
-//            {
-//                while (id[pos]==t.dim[pos] && pos<t.rank()) {pos++; id[pos]++;}
-//                for(int j=0;j<pos;j++) id[j]=0;
-//                pos=0;
-//            }
+            id[pos]++;
+            if (id[pos]==t.dim[pos])
+            {
+                while (id[pos]==t.dim[pos] && pos<t.rank())
+                {
+                    id[pos]=0;
+                    pos++;
+                    if(pos<t.rank()) id[pos]++;
+                }
+                pos=0;
+            }
         }
         return t;
     }

@@ -24,9 +24,20 @@ inline int Prod(const std::vector<int>& dim)
 {
     return Prod_n(&dim[0],dim.size());
 }
+inline Index DimProd(const Index& dim)
+{
+    Index dim_prod(dim.size());
+    int prod=1;
+    for(uint i=0;i<dim.size();i++)
+    {
+        dim_prod[i]=prod;
+        prod*=dim[i];
+    }
+    return dim_prod;
+}
 
-int Offset(const Index& id, const Index& dim);
-int Offset(const Index &id, const Index &dim, const std::vector<int> &posMap);
+int OffsetP(const Index& id, const Index& dimp);
+int OffsetP(const Index& id,const Index& dimp,const std::vector<int>& posMap);
 Index ToIndex(int pos, const Index& dim);
 
 std::vector<Index> SplitIndex(const Index& dim,int splitPos);

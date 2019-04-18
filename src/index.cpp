@@ -3,28 +3,18 @@
 
 using namespace std;
 
-int Offset(const Index& id, const Index &dim)
+int OffsetP(const Index& id, const Index &dimp)
 {
-    int sum=0,prod=1;
+    int sum=0;
     for(uint i=0;i<id.size();i++)
-    {
-        sum+=id[i]*prod;
-        prod*=dim[i];
-    }
+        sum+=id[i]*dimp[i];
     return sum;
 }
-int Offset(const Index& id,const Index& dim,const std::vector<int>& posMap)
+int OffsetP(const Index& id,const Index& dimp,const std::vector<int>& posMap)
 {
-    for(int j=0;j<dim.size();j++)
-        if(id[posMap[j]]>=dim[j])
-            throw invalid_argument("Offset out of bound");
-
-    int sum=0,prod=1;
+    int sum=0;
     for(uint i=0;i<id.size();i++)
-    {
-        sum+=id[posMap[i]]*prod;
-        prod*=dim[i];
-    }
+        sum+=id[posMap[i]]*dimp[i];
     return sum;
 }
 Index ToIndex(int pos, const Index &dim)

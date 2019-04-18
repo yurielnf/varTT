@@ -41,13 +41,15 @@ int main()
     cout << "Hello World!" << endl;
     time_t t0=time(NULL);
     srand(time(NULL));
-    int len=20, m=128;
+    int len=100, m=128;
 
     //SECTION( "dmrg" )
     {
         auto op=HamTbAuto(len,false);
 //        auto op=HamTBExact(len);
         DMRG_gs sol(op,m);
+//        sol.nIterMax=20;
+        sol.tol_diag=1e-5;
         sol.Solve();
         for(int k=0;k<2;k++)
         for(auto i:MPS::SweepPosSec(len))

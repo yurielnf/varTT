@@ -52,6 +52,18 @@ MPO HamTbAuto(int L,bool periodic)
     return h.toMPS();
 }
 
+MPO HamHubbardAuto(int L)
+{
+    const int m=4;
+    MPSSum h(m,MatSVDFixedTol(1e-13));
+    for(int i=0;i<L-1; i++)
+    {
+        h += Fermi(i,L,true)*Fermi(i+1,L,false)*(-1.0) ;
+        h += Fermi(i+1,L,true)*Fermi(i,L,false)*(-1.0) ;
+    }
+    return h.toMPS();
+}
+
 MPO HamTBExact(int L)
 {
     static TensorD

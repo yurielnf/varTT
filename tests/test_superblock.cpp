@@ -59,6 +59,7 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
         {
             sb.SetPos(i);
             REQUIRE( sb.value()==Approx(e) );
+            REQUIRE( sb.value1()==Approx(e) );
         }
     }
 }

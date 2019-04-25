@@ -48,7 +48,6 @@ int main()
         auto op=HamTbAuto(len,false);
 //        auto op=HamTBExact(len);
         DMRG_gs sol(op,m);
-//        sol.nIterMax=20;
         sol.tol_diag=1e-5;
         sol.Solve();
         for(int k=0;k<2;k++)

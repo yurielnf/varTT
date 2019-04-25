@@ -321,32 +321,66 @@ public:
         return t3;
     }
 
+//    friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
+//    {
+//        if (t1.rank()!=t2.rank())
+//            throw std::invalid_argument("TensorSum incompatible rank");
+
+//        Tensor A=t1.ReShape({1,t1.rank()-1}).Reorder("ijk","ikj");
+//        Tensor B=t2.ReShape({1,t1.rank()-1}).Reorder("ijk","ikj");
+//        if (A.dim[2]!=B.dim[2])
+//            throw std::invalid_argument("TensorSum incompatible inner index");
+//        Index dimc=A.dim;
+//        dimc[0]=left ? 1 : A.dim[0]+B.dim[0];
+//        dimc[1]=left ? A.dim[1]+B.dim[1] : 1;
+//        Tensor C(dimc);
+//        for(int i=0;i<C.dim[2];i++)
+//        {
+//            Tensor As=A.Subtensor(i);
+//            Tensor Bs=B.Subtensor(i);
+//            Tensor Cs=C.Subtensor(i);
+//            std::copy_n(As.data(),As.size(),Cs.data());
+//            std::copy_n(Bs.data(),Bs.size(),Cs.data()+As.size());
+//        }
+
+//        Index dimr=t1.dim;
+//        dimr.front()=C.dim[0];
+//        dimr.back()=C.dim[1];
+//        return { dimr,C.Reorder("ikj","ijk").vec() };
+//    }
     friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
     {
         if (t1.rank()!=t2.rank())
             throw std::invalid_argument("TensorSum incompatible rank");
 
-        Tensor A=t1.ReShape({1,t1.rank()-1}).Reorder("ijk","ikj");
-        Tensor B=t2.ReShape({1,t1.rank()-1}).Reorder("ijk","ikj");
-        if (A.dim[2]!=B.dim[2])
+        Tensor A=t1.ReShape({1,t1.rank()-1});
+        Tensor B=t2.ReShape({1,t1.rank()-1});
+        if (A.dim[1]!=B.dim[1])
             throw std::invalid_argument("TensorSum incompatible inner index");
-        Index dimc=A.dim;
-        dimc[0]=left ? 1 : A.dim[0]+B.dim[0];
-        dimc[1]=left ? A.dim[1]+B.dim[1] : 1;
-        Tensor C(dimc);
-        for(int i=0;i<C.dim[2];i++)
+        Index dimr=t1.dim,delta={0,0,0};
+        if (!left)
         {
-            Tensor As=A.Subtensor(i);
-            Tensor Bs=B.Subtensor(i);
-            Tensor Cs=C.Subtensor(i);
-            std::copy_n(As.data(),As.size(),Cs.data());
-            std::copy_n(Bs.data(),Bs.size(),Cs.data()+As.size());
+            dimr.front()=t1.dim.front()+t2.dim.front();
+            delta[0]=A.dim[0];
         }
+        else
+        {
+            dimr.back()=t1.dim.back()+t2.dim.back();
+            delta[2]=A.dim[2];
+        }
+        Tensor tr(dimr);
+        Tensor C=tr.ReShape({1,t1.rank()-1});
+        C.FillZeros();
+        for(int i=0;i<A.dim[0];i++)
+            for(int j=0;j<A.dim[1];j++)
+                for(int k=0;k<A.dim[2];k++)
+                    C[{i,j,k}]=A[{i,j,k}];
+        for(int i=0;i<B.dim[0];i++)
+            for(int j=0;j<B.dim[1];j++)
+                for(int k=0;k<B.dim[2];k++)
+                    C[{i+delta[0],j,k+delta[2]}]=B[{i,j,k}];
 
-        Index dimr=t1.dim;
-        dimr.front()=C.dim[0];
-        dimr.back()=C.dim[1];
-        return { dimr,C.Reorder("ikj","ijk").vec() };
+        return tr;
     }
     friend Tensor DirectSum(const Tensor& t1,const Tensor& t2)
     {
@@ -374,6 +408,7 @@ public:
 
         return tr;
     }
+
     //---- friends ----
 
     friend bool operator==(const Tensor& t1,const Tensor& t2) //esta mal
@@ -486,7 +521,9 @@ struct TensorNotation
         :t(t),id(id)
     {
         if (t.rank()>0 && t.rank()!=(int)id.size())
-            throw std::invalid_argument("TensorNotation rank != string length");
+            throw std::invalid_argument(
+                    "TensorNotation rank != string length: "+id
+                    +" != "+std::to_string(t.rank()));
     }
 
     template<class Tensor2>

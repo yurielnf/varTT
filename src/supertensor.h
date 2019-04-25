@@ -12,7 +12,16 @@ struct SuperTensor
         :_A(A),_B(B)
     {
         if (C.size()==1)
-            _A("iJk")=_A("ijk")*C[0]("jJ");
+        {
+            if (C[0].rank()==2)
+                _A("iJk")=_A("ijk")*C[0]("jJ");
+            else if(C[0].rank()==4)
+            {
+                TensorD t;
+                t("iaJbk")=_A("ijk")*C[0]("jabJ");
+                _A=t;
+            }
+        }
     }
     TensorD operator*(const TensorD& psi) const
     {
@@ -21,6 +30,8 @@ struct SuperTensor
             tr("kK")=_A("ik")*psi("iI")*_B("IK");
         else if (_A.rank()==3)
             tr("kK")=_A("ijk")*psi("iI")*_B("IjK");
+        else if(_A.rank()==5)
+            tr("kbK")=_A("iajbk")*psi("iaI")*_B("IjK");
         return tr;
     }
 };

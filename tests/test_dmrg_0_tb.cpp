@@ -16,39 +16,25 @@ static double ExactEnergyTB(int L, int nPart,bool periodic)
     return sum;
 }
 
-TEST_CASE( "dmrg0 tight-binding", "[dmrg0_tb]" )
+TEST_CASE( "dmrg0 tight-binding", "[dmrg_0_tb]" )
 {
     srand(time(NULL));
-    int len=20, m=128;
+    int len=100, m=16, mMax=128;
     std::cout<<std::setprecision(15);
 
     SECTION( "dmrg" )
     {
         auto op=HamTbAuto(len,false); op.PrintSizes("Htb=");
 //        auto op=HamTBExact(len); op.PrintSizes("HtbExact=");
-        DMRG_0_gs sol(op,m);
-        sol.Solve();
-        sol.Print();
-        for(int k=0;k<4;k++)
+        DMRG_0_gs sol(op,m,mMax);
+        double error=sol.error;
+        for(int k=0;k<12;k++)
         {
-            for(auto i:MPS::SweepPosSec(len))
-            {
-                sol.Solve();
-                sol.SetPos(i);
-                sol.Print();
-            }
-            std::cout<<"\n\nsweep\n\n";
-            sol.reset_gs();
+            std::cout<<"\nsweep "<<k<<"; error="<<error<<"\n\n";
+            sol.DoIt();
             std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
+            if (error/sol.error<1.2) break;
+            error=sol.error;
         }
-        for(int k=0;k<1;k++)
-            for(auto i:MPS::SweepPosSec(len))
-            {
-//                sol.Solve();
-                sol.SetPos(i);
-                sol.Print();
-            }
-        std::cout<<"ener ="<<sol.sb_h11.value()<<"\n";
-        std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
     }
 }

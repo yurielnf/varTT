@@ -40,7 +40,7 @@ public:
         int id() const {return i*2+vx;}
     };
 
-    Pos pos=Pos({0,-1});
+    Pos pos={0,-1};
     TensorD::mat_decomp decomposer;
 
     MPS():length(0),m(0){}
@@ -69,14 +69,10 @@ public:
         C=TensorD({n0,n0});
         C.FillEye(1);
     }
-    MPS& FillRandu(Index dim)
-    {
-        FillNone(dim);
-        for(TensorD &x:M) x.FillRandu();
-//        Canonicalize();
-        return *this;
-    }
+    MPS& FillRandu() { for(TensorD &x:M) x.FillRandu(); return *this; }
+    MPS& FillRandu(Index dim) { FillNone(dim); return FillRandu(); }
     const TensorD& at(int i) const { return M[i]; }
+    TensorD& at(int i) { return M[i]; }
     void PrintSizes(const char str[]="") const
     {
         std::cout<<str<<"\n";
@@ -126,7 +122,7 @@ public:
     {
         return pos.vx==1 ? C*M[pos.i+1] : M[pos.i]*C;
     }
-//    void SweepG()
+/*    void SweepG()
 //    {
 //        TensorD psi=ApplyC();
 //        ExtractNorm(psi);
@@ -137,7 +133,7 @@ public:
 //        M[pos]=uv[0+vxb];
 //        C=uv[1-vxb];
 //    }
-
+*/
     void SweepRight()
     {
         if ( pos.i==length-2 && pos.vx==1 ) return;
@@ -166,17 +162,14 @@ public:
             throw std::invalid_argument("SB::SetPos out of range");
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
-//        if (pos.vx==-1 && p.vx==1) SweepRight();
-//        if (pos.vx==1 && p.vx==-1) SweepLeft();
     }
-    double norm_factor() const
+    TensorD CentralMat1() const
     {
-        return pow(norm_n,length);
+        return pos.vx==-1 ? C*M[pos.i+1]
+                          : M[pos.i]*C;
     }
-    double norm() const
-    {
-        return pow(norm_n,length)*Norm(C);
-    }
+    double norm_factor() const { return pow(norm_n,length); }
+    double norm() const  { return pow(norm_n,length)*Norm(C); }
 
     void operator*=(double c)
     {
@@ -206,7 +199,6 @@ public:
                 mps1.Sweep();
     }
     void operator*=(const MPS& mps2)
-
     {
         MPS& mps1=*this;
         if (mps1.length != mps2.length)

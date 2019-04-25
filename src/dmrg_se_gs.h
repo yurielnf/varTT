@@ -8,73 +8,66 @@
 struct DMRG_se_gs
 {
     int nIterMax=128,iter;
-    double tol_diag=1e-13;
-public:
+    double ener,tol_diag=1e-13;
+
     MPS gs,dgs;
     MPO mpo;
-    Superblock sb_h11, sb_o12, sb_h12,sb_h22;
+    Superblock sb;
     stdvec a,b;
 
-    DMRG_se_gs(const MPO& mpo,int m)
-        :mpo(mpo),a(2),b(1)
+    DMRG_se_gs(const MPO& ham,int m)
+        :mpo(ham),a(2),b(1)
     {
-        auto gs= MPS(mpo.length,m)
+        gs= MPS(mpo.length,m,MatSVDFixedDim(m))
                       .FillRandu({m,2,m})
                       .Canonicalize()
                       .Normalize() ;
-        set_gs(gs);
-    }
-    void set_gs(const MPS& _gs)
-    {
-        gs=_gs; gs.decomposer=MatQRDecomp;
-        sb_h11=Superblock({&gs,&mpo,&gs});
-        int m=gs.m;
-        dgs= MPS(mpo.length,m)
-                      .FillRandu({m,2,m});
-        dgs.Canonicalize().Normalize();
-        sb_h12=Superblock({&gs,&mpo,&dgs});
-        sb_h22=Superblock({&dgs,&mpo,&dgs});
-        sb_o12 =Superblock({&gs,&dgs});
-    }
-    void reset_gs()
-    {
-        auto eigen=GSTridiagonal(a.data(),b.data(),2);
-        MPSSum gsn(gs.m);
-        gsn+=gs*eigen.evec[0];
-        gsn+=dgs*eigen.evec[1];
-        std::cout<<"enerL="<<eigen.eval<<"\n";
-        set_gs( gsn.toMPS().Canonicalize().Normalize() );
+        sb=Superblock({&gs,&mpo,&gs});
+        ener=sb.value();
     }
     void Solve()
     {
-        auto lan=Diagonalize(sb_h11.Oper(), gs.C, nIterMax, tol_diag);  //Lanczos
+        auto lan=Diagonalize(sb.Oper(), gs.C, nIterMax, tol_diag);  //Lanczos
         iter=lan.iter;
-        double ener=lan.lambda0;
+        if (lan.lambda0 > ener) return;
+        ener=lan.lambda0;
         gs.C=lan.GetState();
-        auto d_psiC= sb_h12.Oper()*gs.C
-                    -sb_o12.Oper()*gs.C*ener;
-        a[0]=ener;
-        b[0]=Norm(d_psiC); d_psiC*=1.0/b[0];
-        dgs.C=d_psiC;
-        a[1]=sb_h22.value();
-    }
 
-    void SetPos(MPS::Pos p)
-    {
-        sb_h11.SetPos(p);
-        sb_o12.SetPos(p);
-        sb_h12.SetPos(p);
-        sb_h22.SetPos(p);
+        if (sb.pos.vx==1)
+        {
+            auto &A=gs.at(gs.pos.i);
+            auto &C=gs.C;
+            std::array<TensorD,2> AC={A,C};
+            auto M=A*C;
+            auto Mb= sb.Oper1()*M - M*ener;
+            a[0]=ener;
+            b[0]=Norm(Mb); Mb*=1.0/b[0];
+            auto ACb=Mb.Decomposition(false,MatQRDecomp);
+            A=ACb[0]; C=ACb[1];  //<-------------------  setCentralMat1(Mb)
+            sb.UpdateBlocks();
+            a[1]=sb.value();
+            A=AC[0]; C=AC[1];    //<-------------------  setCentralMat1(M)
+            auto eigen=GSTridiagonal(a.data(),b.data(),2);
+            A=DirectSum(AC[0]*eigen.evec[0],
+                       ACb[0]*eigen.evec[1], true);
+            C=DirectSum(AC[1],
+                       ACb[1], false);
+            sb.UpdateBlocks();
+            double ener1=sb.value();
+            AC=A.Decomposition(false,MatQRDecomp);
+            A=AC[0]; C=AC[1]*C;
+            sb.UpdateBlocks();
+            double ener2=sb.value();
+//            double ener3=sb.value1();
+            std::cout<<"enerL="<<eigen.eval<<" "<<ener2<<"\n";
+        }
     }
-
+    void SetPos(MPS::Pos p) { sb.SetPos(p); }
     void Print() const
     {
-        const auto& sb=sb_h11;
         std::cout<<sb.pos.i+1<<" "<<sb.length-sb.pos.i-1;
         std::cout<<" m="<<sb.b1[sb.pos.i].dim[0]<<" M="<<sb.b1[sb.pos.i].dim[1]<<" ";
         std::cout<<iter<<" lancz iter; ener="<<sb.value();
-//        std::cout<<"; h12="<<sb_h12.value()/sb_o12.mps[1].norm_factor();
-//        std::cout<<"; h22="<<sb_h22.value()/pow(sb_h22.mps[0].norm_factor(),2);
         std::cout<<"\n";
         std::cout.flush();
     }

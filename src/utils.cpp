@@ -28,19 +28,19 @@ void MatFullDiag(double* const X,int n,double *evec,double *eval)
 }
 
 
-array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol,int Dmin)
+array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol,int Dmax)
 {
     const mat mX((double* const)X,n1,n2,false);
     mat U,V;
     vec s;
     svd_econ(U, s, V, mX);
-    int D=std::min(Dmin,(int)s.size());
+    int D=std::min(Dmax,(int)s.size());
     if (D==0)
     {
-        D=s.size();
-        for(uint i=0;i<s.size();i++)
+        D=s.size();}
+        for(uint i=0;i<D;i++)
             if(fabs(s[i])<=tol) {D=i;break;}
-    }
+
     double sum=0;
     for(int i=0;i<D;i++) sum+=s[i]*s[i];
     mat Ua=U.head_cols(D);

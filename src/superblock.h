@@ -34,6 +34,7 @@ class Superblock
         prod=one;
         for(int i=length-2;i>=pos.i;i--)
             b2[i]=prod=Transfer(i+1)*prod;
+        b2[length-1]=one;
     }
     double norm_factor() const
     {
@@ -41,16 +42,44 @@ class Superblock
         for(const MPS* x:mps) prod*=x->norm_factor();
         return prod;
     }
+    void UpdateBlocks()
+    {
+        const auto& left= pos.i==0 ? one
+                                   : b1[pos.i-1];
+        const auto& right= pos.i==length-2 ? one
+                                           : b2[pos.i+1];
+        if (pos.vx==1)
+            b1[pos.i]=left*Transfer(pos.i);
+        else
+            b2[pos.i]=Transfer(pos.i+1)*right;
+    }
+
     SuperTensor Oper() const
     {
         if(mps.size()==3)
             return { b1[pos.i]*norm_factor(), b2[pos.i], {mps[1]->C} };
-        else return { b1[pos.i]*norm_factor(), b2[pos.i]};
+        else // size()==2
+            return { b1[pos.i]*norm_factor(), b2[pos.i]};
+    }
+    SuperTensor Oper1() const
+    {
+        const auto& left= pos.i==0 ? one
+                                   : b1[pos.i-1];
+        if(mps.size()==3)
+            return { left*norm_factor(), b2[pos.i]
+                    ,{mps[1]->CentralMat1()} };
+        else // size()==2
+            return { left*norm_factor(), b2[pos.i] };
     }
     double value() const
     {
         TensorD Cp=Oper()*mps.front()->C;
         return Dot(mps.back()->C,Cp);
+    }
+    double value1() const
+    {
+        TensorD Cp=Oper1()*mps.front()->CentralMat1();
+        return Dot(mps.back()->CentralMat1(),Cp);
     }
     void SetPos(MPS::Pos p)
     {
@@ -64,9 +93,6 @@ class Superblock
         if(pos.i==length-2 && pos.vx==1) return;
         ++pos;
         for(MPS* x:mps) x->SetPos(pos);
-//        for(MPS* x:mps) x->SweepRight();
-//        pos=mps.front()->pos;
-//        vx=mps.front()->vx;
         if (pos.i==0)
             b1[pos.i]=one*Transfer(pos.i);
         else
@@ -77,9 +103,6 @@ class Superblock
         if (pos.i==0 && pos.vx==-1) return;
         --pos;
         for(MPS* x:mps) x->SetPos(pos);
-//        for(MPS* x:mps) x->SweepLeft();
-//        pos=mps.front()->pos;
-//        vx=mps.front()->vx;
         if (pos.i==length-2)
             b2[pos.i]=Transfer(pos.i+1)*one;
         else
@@ -91,6 +114,12 @@ class Superblock
         for(const MPS* x:mps)
             transfer.push_back( &x->at(pos) );
         return transfer;
+    }
+    void Print() const
+    {
+        std::cout<<pos.i+1<<" "<<length-pos.i-1;
+        std::cout<<" m="<<b1[pos.i].dim[0]<<" M="<<b1[pos.i].dim[1]<<" ";
+        std::cout<<"; value="<<value();
     }
 
 };

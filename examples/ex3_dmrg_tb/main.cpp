@@ -1,5 +1,5 @@
 #include <iostream>
-#include"dmrg_gs.h"
+#include"dmrg_0_gs.h"
 
 using namespace std;
 
@@ -39,26 +39,25 @@ int main()
 //    return 0;
 
     cout << "Hello World!" << endl;
+    std::cout<<std::setprecision(15);
     time_t t0=time(NULL);
     srand(time(NULL));
-    int len=100, m=128;
+    int len=100, m=16, mMax=128;
 
     //SECTION( "dmrg" )
     {
         auto op=HamTbAuto(len,false);
 //        auto op=HamTBExact(len);
-        DMRG_gs sol(op,m);
-        sol.tol_diag=1e-5;
-        sol.Solve();
-        for(int k=0;k<2;k++)
-        for(auto i:MPS::SweepPosSec(len))
+        DMRG_0_gs sol(op,m,mMax);
+        double error=sol.error;
+        for(int k=0;k<20;k++)
         {
-            sol.Solve();
-            sol.sb.SetPos(i);
-            sol.Print();
+            std::cout<<"\nsweep "<<k<<"; error="<<sol.error<<"\n\n";
+            sol.DoIt();
+            std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
+            if (k>2 && error/sol.error<1.1) break;
+            error=sol.error;
         }
-        std::cout<<"ener ="<<sol.sb.value()<<"\n";
-        std::cout<<"exact ener="<<ExactEnergyTB(len,len/2,false)<<"\n";
     }
 
     cout<<"\nDone in "<<difftime(time(NULL),t0)<<"s"<<endl;

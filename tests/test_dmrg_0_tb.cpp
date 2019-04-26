@@ -28,12 +28,12 @@ TEST_CASE( "dmrg0 tight-binding", "[dmrg_0_tb]" )
 //        auto op=HamTBExact(len); op.PrintSizes("HtbExact=");
         DMRG_0_gs sol(op,m,mMax);
         double error=sol.error;
-        for(int k=0;k<12;k++)
+        for(int k=0;k<20;k++)
         {
             std::cout<<"\nsweep "<<k<<"; error="<<error<<"\n\n";
             sol.DoIt();
             std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
-            if (error/sol.error<1.2) break;
+            if (k>2 && error/sol.error<1.1) break;
             error=sol.error;
         }
     }

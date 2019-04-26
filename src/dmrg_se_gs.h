@@ -53,7 +53,6 @@ struct DMRG_se_gs
             C=DirectSum(AC[1],
                        ACb[1], false);
             sb.UpdateBlocks();
-            double ener1=sb.value();
             AC=A.Decomposition(false,MatQRDecomp);
             A=AC[0]; C=AC[1]*C;
             sb.UpdateBlocks();

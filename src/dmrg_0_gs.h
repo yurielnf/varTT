@@ -91,7 +91,7 @@ public:
             Solve_gs();
             SetPos_res(p);
             Solve_res();
-            if ((p.i+1) % (gs.length/16) ==0) Print();
+            if ((p.i+1) % (gs.length/10) ==0) Print();
         }
         for(int i=0;i<1;i++)
         for(auto p:pos_sec)
@@ -101,9 +101,6 @@ public:
         }
         reset_gs();
     }
-
-
-
 };
 
 #endif // DMRG_0_GS_H

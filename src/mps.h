@@ -237,15 +237,24 @@ public:
         }
         return mm;
     }    
+//    static std::vector<Pos> SweepPosSec(int length)
+//    {
+//        std::vector<Pos> pos;
+//        for(int i=length/2-1;i<length-1;i++) //Right
+//            pos.push_back({i,1});
+//        for(int i=length-2;i>=0;i--)
+//            pos.push_back({i,-1});
+//        for(int i=0;i<length/2;i++)
+//            pos.push_back({i,1});
+//        return pos;
+//    }
     static std::vector<Pos> SweepPosSec(int length)
     {
         std::vector<Pos> pos;
-        for(int i=length/2-1;i<length-1;i++) //Right
+        for(int i=0;i<length-1;i++) //Right
             pos.push_back({i,1});
         for(int i=length-2;i>=0;i--)
             pos.push_back({i,-1});
-        for(int i=0;i<length/2;i++)
-            pos.push_back({i,1});
         return pos;
     }
 

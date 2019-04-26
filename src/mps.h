@@ -44,7 +44,7 @@ public:
     TensorD::mat_decomp decomposer;
 
     MPS():length(0),m(0){}
-    MPS(int length, int m,
+    MPS(uint length, int m,
         TensorD::mat_decomp decomposer=MatQRDecomp)
         :M(length),length(length),m(m),decomposer(decomposer)
     {}

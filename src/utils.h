@@ -95,7 +95,7 @@ T VecDot(const T* vec1,const T* vec2,int n)
 {
     T s=T(0);
     for(int i=0;i<n;i++)
-        s+=std::conj(vec1[i]) * vec2[i];
+        s+=std::real(std::conj(vec1[i]) * vec2[i]);
     return s;
 }
 

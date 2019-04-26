@@ -5,6 +5,7 @@
 #include<array>
 #include<algorithm>
 #include<stdexcept>
+#include<numeric>
 
 template<class T>
 T Prod_n(const T* ini, int n)

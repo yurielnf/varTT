@@ -42,7 +42,7 @@ int main()
     std::cout<<std::setprecision(15);
     time_t t0=time(NULL);
     srand(time(NULL));
-    int len=100, m=16, mMax=128;
+    int len=30, m=16, mMax=128;
 
     //SECTION( "dmrg" )
     {

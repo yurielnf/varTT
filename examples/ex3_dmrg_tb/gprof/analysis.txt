@@ -1,0 +1,1137 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 41.48     13.82    13.82   191597     0.00     0.00  Tensor<double>::Reorder(std::vector<int, std::allocator<int> > const&) const
+ 41.12     27.52    13.70                             OffsetP(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&)
+  3.57     28.71     1.19                             OffsetP(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&)
+  2.64     29.59     0.88    21639     0.00     0.00  void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int)
+  2.46     30.41     0.82                             MatQRDecomp(bool, double const*, int, int)
+  1.83     31.02     0.61   197022     0.00     0.00  Norm(Tensor<double> const&)
+  1.59     31.55     0.53   246496     0.00     0.00  Tensor<double>::operator+=(Tensor<double> const&)
+  1.44     32.03     0.48    20394     0.00     0.00  DirectSum(Tensor<double> const&, Tensor<double> const&)
+  0.93     32.34     0.31    79395     0.00     0.00  Tensor<double>::operator*(double) const
+  0.51     32.51     0.17       13     0.01     0.44  Lanczos<SuperTensor, Tensor<double> >::Iterate()
+  0.48     32.67     0.16                             Superblock::SetPos(MPS::Pos)
+  0.45     32.82     0.15                             MatSVD(bool, double const*, int, int, double, int)
+  0.27     32.91     0.09   128502     0.00     0.00  MPS::ExtractNorm(Tensor<double>&)
+  0.12     32.95     0.04  4514146     0.00     0.00  std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&)
+  0.09     32.98     0.03                             std::vector<double, std::allocator<double> > arma::conv_to<std::vector<double, std::allocator<double> > >::from<double, arma::Op<arma::Glue<arma::Mat<double>, arma::Mat<double>, arma::glue_times>, arma::op_vectorise_col> >(arma::Base<double, arma::Op<arma::Glue<arma::Mat<double>, arma::Mat<double>, arma::glue_times>, arma::op_vectorise_col> > const&, arma::arma_not_cx<double>::result const*)
+  0.06     33.00     0.02  4522324     0.00     0.00  frame_dummy
+  0.06     33.02     0.02   923950     0.00     0.00  std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&)
+  0.06     33.04     0.02   540868     0.00     0.00  Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&)
+  0.06     33.06     0.02    49007     0.00     0.00  TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&)
+  0.06     33.08     0.02                             SplitIndex(std::vector<int, std::allocator<int> > const&, int)
+  0.06     33.10     0.02                             SortForMultiply(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
+  0.06     33.12     0.02                             MatMul(double const*, double const*, double*, int, int, int)
+  0.06     33.14     0.02                             IndexMul(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, int)
+  0.06     33.16     0.02                             void std::vector<int, std::allocator<int> >::_M_emplace_back_aux<int>(int&&)
+  0.03     33.17     0.01  1251533     0.00     0.00  Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, double*)
+  0.03     33.18     0.01   547782     0.00     0.00  __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  0.03     33.19     0.01   519081     0.00     0.00  Tensor<double>::operator=(Tensor<double>&&)
+  0.03     33.20     0.01   168241     0.00     0.00  TensorNotation<Tensor<double> const&>::TensorNotation(Tensor<double> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
+  0.03     33.21     0.01   163548     0.00     0.00  Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const
+  0.03     33.22     0.01    64251     0.00     0.00  MPS::SweepRight()
+  0.03     33.23     0.01    60917     0.00     0.00  TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&)
+  0.03     33.24     0.01     3584     0.00     0.00  Superblock::value() const
+  0.03     33.25     0.01       10     0.00     0.00  MPS::FillRandu(std::vector<int, std::allocator<int> >)
+  0.03     33.26     0.01       10     0.00     0.34  DMRG_0_gs::Solve_res()
+  0.03     33.27     0.01                             IndexReorder(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&)
+  0.03     33.28     0.01                             ToIndex(int, std::vector<int, std::allocator<int> > const&)
+  0.03     33.29     0.01                             arma::Mat<double>::reset()
+  0.03     33.30     0.01                             DMRG_0_gs::reset_gs()
+  0.03     33.31     0.01                             MPSSum::toMPS() const
+  0.02     33.32     0.01  1415081     0.00     0.00  std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::~vector()
+  0.02     33.32     0.01       30     0.00     0.00  std::vector<MPS*, std::allocator<MPS*> >::vector(std::initializer_list<MPS*>, std::allocator<MPS*> const&)
+  0.00     33.32     0.00  3477513     0.00     0.00  Tensor<double>::~Tensor()
+  0.00     33.32     0.00  1169315     0.00     0.00  Tensor<double>::ReShape(int) const
+  0.00     33.32     0.00  1132911     0.00     0.00  Tensor<double>::Tensor(Tensor<double> const&)
+  0.00     33.32     0.00   483614     0.00     0.00  std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)
+  0.00     33.32     0.00   395846     0.00     0.00  Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&)
+  0.00     33.32     0.00   347710     0.00     0.00  std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)
+  0.00     33.32     0.00   326936     0.00     0.00  Tensor<double>::Multiply(Tensor<double> const&, int) const
+  0.00     33.32     0.00   299575     0.00     0.00  Tensor<double>::operator=(Tensor<double> const&)
+  0.00     33.32     0.00   191597     0.00     0.00  Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const
+  0.00     33.32     0.00   190950     0.00     0.00  std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&)
+  0.00     33.32     0.00   187902     0.00     0.00  void std::vector<int, std::allocator<int> >::_M_insert_aux<int const&>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int const&)
+  0.00     33.32     0.00   171468     0.00     0.00  std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&)
+  0.00     33.32     0.00   168241     0.00     0.00  Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const
+  0.00     33.32     0.00   139034     0.00     0.00  TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
+  0.00     33.32     0.00   119036     0.00     0.00  TensorNotation<Tensor<double> >::~TensorNotation()
+  0.00     33.32     0.00   107227     0.00     0.00  TensorNotation<Tensor<double>&>::TensorNotation(Tensor<double>&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
+  0.00     33.32     0.00   107227     0.00     0.00  Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
+  0.00     33.32     0.00    82218     0.00     0.00  Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const
+  0.00     33.32     0.00    78117     0.00     0.00  TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&)
+  0.00     33.32     0.00    64251     0.00     0.00  MPS::SweepLeft()
+  0.00     33.32     0.00    32371     0.00     0.00  SuperTensor::operator*(Tensor<double> const&) const
+  0.00     33.32     0.00    29110     0.00     0.00  TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&)
+  0.00     33.32     0.00    25222     0.00     0.00  GSTridiagonal(double*, double*, int, double)
+  0.00     33.32     0.00    16474     0.00     0.00  Superblock::Transfer(int) const
+  0.00     33.32     0.00    13609     0.00     0.00  std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector()
+  0.00     33.32     0.00    12686     0.00     0.00  SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&)
+  0.00     33.32     0.00    10742     0.00     0.00  Superblock::Oper() const
+  0.00     33.32     0.00    10197     0.00     0.00  Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&)
+  0.00     33.32     0.00     9112     0.00     0.00  Tensor<double>* std::__uninitialized_copy<false>::__uninit_copy<Tensor<double> const*, Tensor<double>*>(Tensor<double> const*, Tensor<double> const*, Tensor<double>*)
+  0.00     33.32     0.00     8071     0.00     0.00  void std::vector<Tensor<double>, std::allocator<Tensor<double> > >::_M_emplace_back_aux<Tensor<double> >(Tensor<double>&&)
+  0.00     33.32     0.00     6277     0.00     0.00  Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >)
+  0.00     33.32     0.00     6219     0.00     0.00  std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)
+  0.00     33.32     0.00     2970     0.00     0.00  std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), MatSVDFixedDim>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&)
+  0.00     33.32     0.00     1130     0.00     0.00  MPS::MPS(MPS const&)
+  0.00     33.32     0.00      649     0.00     0.00  MPS::SweepPosSec(int)
+  0.00     33.32     0.00      649     0.00     0.00  MPS::Sweep()
+  0.00     33.32     0.00      486     0.00     0.00  std::vector<Tensor<double>, std::allocator<Tensor<double> > >::vector(unsigned long, std::allocator<Tensor<double> > const&)
+  0.00     33.32     0.00      473     0.00     0.00  std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&)
+  0.00     33.32     0.00      434     0.00     0.00  MPS::Canonicalize()
+  0.00     33.32     0.00      412     0.00     0.00  DirectSum(Tensor<double> const&, Tensor<double> const&, bool)
+  0.00     33.32     0.00      349     0.00     0.00  MPS::~MPS()
+  0.00     33.32     0.00       44     0.00     0.00  Superblock::~Superblock()
+  0.00     33.32     0.00       40     0.00     0.02  Superblock::InitBlocks()
+  0.00     33.32     0.00       40     0.00     0.02  Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&)
+  0.00     33.32     0.00       40     0.00     0.00  Superblock::operator=(Superblock&&)
+  0.00     33.32     0.00       27     0.00     0.00  void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&)
+  0.00     33.32     0.00       20     0.00     0.00  std::vector<Tensor<double>, std::allocator<Tensor<double> > >::operator=(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&)
+  0.00     33.32     0.00       11     0.00     0.00  MPS::FillNone(std::vector<int, std::allocator<int> >)
+  0.00     33.32     0.00       10     0.00     0.00  Lanczos<SuperTensor, Tensor<double> >::~Lanczos()
+  0.00     33.32     0.00       10     0.00     0.58  DMRG_0_gs::Solve_gs()
+  0.00     33.32     0.00        9     0.00     1.12  DMRG_0_gs::set_gs(MPS const&)
+  0.00     33.32     0.00        1     0.00     0.00  _GLOBAL__sub_I__Z13ExactEnergyTBiib
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.03% of 33.32 seconds
+
+index % time    self  children    called     name
+                0.00    2.80   38810/191597      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    2.96   41020/191597      TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    3.52   48712/191597      TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    4.55   63055/191597      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+[1]     41.5    0.00   13.83  191597         Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+               13.82    0.01  191597/191597      Tensor<double>::Reorder(std::vector<int, std::allocator<int> > const&) const [2]
+                0.00    0.00  191597/547782      __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [57]
+                0.00    0.00  383194/4522324     frame_dummy [47]
+-----------------------------------------------
+               13.82    0.01  191597/191597      Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+[2]     41.5   13.82    0.01  191597         Tensor<double>::Reorder(std::vector<int, std::allocator<int> > const&) const [2]
+                0.01    0.00  191597/540868      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+-----------------------------------------------
+                                                 <spontaneous>
+[3]     41.1   13.70    0.00                 OffsetP(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) [3]
+-----------------------------------------------
+                                                 <spontaneous>
+[4]     30.4    0.01   10.13                 DMRG_0_gs::reset_gs() [4]
+                0.00   10.08       9/9           DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.02      27/434         MPS::Canonicalize() [32]
+                0.02    0.00     891/20394       DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.00    0.01      15/649         MPS::Sweep() [27]
+                0.00    0.00      18/27          void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&) [71]
+                0.00    0.00      54/1130        MPS::MPS(MPS const&) [66]
+                0.00    0.00    1800/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00       9/197022      Norm(Tensor<double> const&) [26]
+                0.00    0.00     909/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00      18/412         DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00       9/25222       GSTridiagonal(double*, double*, int, double) [75]
+                0.00    0.00    2709/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00      72/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+                0.00    0.00      72/349         MPS::~MPS() [102]
+                0.00    0.00      18/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+                0.00    0.00      18/473         std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [101]
+                0.00    0.00       9/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+-----------------------------------------------
+                0.00   10.08       9/9           DMRG_0_gs::reset_gs() [4]
+[5]     30.2    0.00   10.08       9         DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    5.76      10/10          DMRG_0_gs::Solve_gs() [6]
+                0.01    3.38      10/10          DMRG_0_gs::Solve_res() [11]
+                0.00    0.90      40/40          Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.01    0.00      10/10          MPS::FillRandu(std::vector<int, std::allocator<int> >) [56]
+                0.00    0.01      10/434         MPS::Canonicalize() [32]
+                0.01    0.00      30/30          std::vector<MPS*, std::allocator<MPS*> >::vector(std::initializer_list<MPS*>, std::allocator<MPS*> const&) [63]
+                0.00    0.00      10/3584        Superblock::value() const [22]
+                0.00    0.00      20/20          std::vector<Tensor<double>, std::allocator<Tensor<double> > >::operator=(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [77]
+                0.00    0.00      10/197022      Norm(Tensor<double> const&) [26]
+                0.00    0.00      20/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00      40/40          Superblock::operator=(Superblock&&) [82]
+                0.00    0.00      10/4522324     frame_dummy [47]
+                0.00    0.00      40/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00      40/44          Superblock::~Superblock() [103]
+                0.00    0.00      20/473         std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [101]
+                0.00    0.00      11/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00      10/486         std::vector<Tensor<double>, std::allocator<Tensor<double> > >::vector(unsigned long, std::allocator<Tensor<double> > const&) [100]
+                0.00    0.00      10/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00      10/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+                0.00    0.00      10/349         MPS::~MPS() [102]
+                0.00    0.00       9/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+-----------------------------------------------
+                0.00    5.76      10/10          DMRG_0_gs::set_gs(MPS const&) [5]
+[6]     17.3    0.00    5.76      10         DMRG_0_gs::Solve_gs() [6]
+                0.17    5.59      13/13          Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.00    0.00      10/10742       Superblock::Oper() const [17]
+                0.00    0.00      10/79395       Tensor<double>::operator*(double) const [34]
+                0.00    0.00      10/197022      Norm(Tensor<double> const&) [26]
+                0.00    0.00       3/246496      Tensor<double>::operator+=(Tensor<double> const&) [28]
+                0.00    0.00      13/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00      10/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00      10/4522324     frame_dummy [47]
+                0.00    0.00      43/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00      10/10          Lanczos<SuperTensor, Tensor<double> >::~Lanczos() [104]
+-----------------------------------------------
+                0.17    5.59      13/13          DMRG_0_gs::Solve_gs() [6]
+[7]     17.3    0.17    5.59      13         Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.00    3.72   21639/32371       SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.88    0.58   21639/21639       void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [18]
+                0.25    0.00   63125/79395       Tensor<double>::operator*(double) const [34]
+                0.09    0.00   41486/246496      Tensor<double>::operator+=(Tensor<double> const&) [28]
+                0.07    0.00   21639/197022      Norm(Tensor<double> const&) [26]
+                0.00    0.00   21639/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   21639/25222       GSTridiagonal(double*, double*, int, double) [75]
+                0.00    0.00   29582/4522324     frame_dummy [47]
+                0.00    0.00   21639/483614      std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00   84764/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00    8071/8071        void std::vector<Tensor<double>, std::allocator<Tensor<double> > >::_M_emplace_back_aux<Tensor<double> >(Tensor<double>&&) [96]
+-----------------------------------------------
+                0.00    0.62    3584/32371       Superblock::value() const [22]
+                0.00    1.23    7148/32371       DMRG_0_gs::Solve_res() [11]
+                0.00    3.72   21639/32371       Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+[8]     16.7    0.00    5.57   32371         SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.01    2.44   32533/60917       TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.01    1.87   32533/49007       TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    1.24   32533/78117       TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.01   97599/168241      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.00    0.00  260264/4522324     frame_dummy [47]
+                0.00    0.00   32533/107227      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00   65066/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   65066/119036      TensorNotation<Tensor<double> >::~TensorNotation() [93]
+-----------------------------------------------
+                0.00    0.81   10762/60917       Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    1.32   17622/60917       Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.01    2.44   32533/60917       SuperTensor::operator*(Tensor<double> const&) const [8]
+[9]     13.7    0.01    4.57   60917         TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    4.55   63055/191597      Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+                0.00    0.01   60917/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.00  121834/547782      __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [57]
+                0.00    0.00   60917/139034      TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [65]
+                0.00    0.00  308861/4522324     frame_dummy [47]
+                0.00    0.00   60917/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   60917/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00  245806/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    1.10    9112/29110       SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    2.42   19998/29110       MPS::operator*=(MPS const&) [12]
+[10]    10.6    0.00    3.52   29110         TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    3.52   48712/191597      Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+                0.00    0.00   29110/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.00   58220/547782      __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [57]
+                0.00    0.00  184754/4522324     frame_dummy [47]
+                0.00    0.00   29110/139034      TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [65]
+                0.00    0.00   29110/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   29110/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00  136042/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.01    3.38      10/10          DMRG_0_gs::set_gs(MPS const&) [5]
+[11]    10.2    0.01    3.38      10         DMRG_0_gs::Solve_res() [11]
+                0.00    1.23    7148/32371       SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.01    1.11    3574/3584        Superblock::value() const [22]
+                0.00    1.00    7148/10742       Superblock::Oper() const [17]
+                0.01    0.00    3574/79395       Tensor<double>::operator*(double) const [34]
+                0.01    0.00    3574/197022      Norm(Tensor<double> const&) [26]
+                0.00    0.00    3574/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00    3574/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00    3574/25222       GSTridiagonal(double*, double*, int, double) [75]
+                0.00    0.00   28592/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]    10.1    0.00    3.35                 MPS::operator*=(MPS const&) [12]
+                0.00    2.42   19998/29110       TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.76   19998/78117       TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.17     198/649         MPS::Sweep() [27]
+                0.00    0.00   19800/82218       Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const [68]
+                0.00    0.00   19998/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   39996/107227      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00   19800/395846      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00     198/168241      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.00    0.00     198/1169315     Tensor<double>::ReShape(int) const [41]
+                0.00    0.00   79992/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                                                 <spontaneous>
+[13]     8.9    0.16    2.82                 Superblock::SetPos(MPS::Pos) [13]
+                0.00    1.41    6237/10197       Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    1.40    6237/6277        Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00   10692/163548      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.00   10692/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.00   42768/923950      std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00   33858/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   21384/483614      std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00   12474/16474       Superblock::Transfer(int) const [94]
+                0.00    0.00   12474/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   10692/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00    7128/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+-----------------------------------------------
+                0.00    0.24    6277/78117       Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.35    9112/78117       SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.39   10197/78117       Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.76   19998/78117       MPS::operator*=(MPS const&) [12]
+                0.00    1.24   32533/78117       SuperTensor::operator*(Tensor<double> const&) const [8]
+[14]     8.9    0.00    2.97   78117         TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    2.96   41020/191597      Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+                0.00    0.00   37097/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00   78117/547782      __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [57]
+                0.00    0.00   41020/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   82040/4522324     frame_dummy [47]
+                0.00    0.00   41020/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.36    6277/49007       Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.59   10197/49007       Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.01    1.87   32533/49007       SuperTensor::operator*(Tensor<double> const&) const [8]
+[15]     8.5    0.02    2.81   49007         TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    2.80   38810/191597      Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+                0.00    0.01   49007/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.00   98014/547782      __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [57]
+                0.00    0.00   49007/139034      TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [65]
+                0.00    0.00  224641/4522324     frame_dummy [47]
+                0.00    0.00   49007/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00   49007/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00  185831/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.89    3960/10197       Superblock::InitBlocks() [24]
+                0.00    1.41    6237/10197       Superblock::SetPos(MPS::Pos) [13]
+[16]     6.9    0.00    2.30   10197         Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    1.32   17622/60917       TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.59   10197/49007       TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.39   10197/78117       TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00   38016/168241      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.00    0.00   96426/4522324     frame_dummy [47]
+                0.00    0.00   10197/107227      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00   27819/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   27819/119036      TensorNotation<Tensor<double> >::~TensorNotation() [93]
+-----------------------------------------------
+                0.00    0.00      10/10742       DMRG_0_gs::Solve_gs() [6]
+                0.00    0.50    3584/10742       Superblock::value() const [22]
+                0.00    1.00    7148/10742       DMRG_0_gs::Solve_res() [11]
+[17]     4.5    0.00    1.50   10742         Superblock::Oper() const [17]
+                0.00    1.45   12686/12686       SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.05    0.00   12686/79395       Tensor<double>::operator*(double) const [34]
+                0.00    0.00    9112/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00    9112/9112        Tensor<double>* std::__uninitialized_copy<false>::__uninit_copy<Tensor<double> const*, Tensor<double>*>(Tensor<double> const*, Tensor<double> const*, Tensor<double>*) [76]
+                0.00    0.00   21798/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   12686/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+-----------------------------------------------
+                0.88    0.58   21639/21639       Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+[18]     4.4    0.88    0.58   21639         void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [18]
+                0.44    0.00  205007/246496      Tensor<double>::operator+=(Tensor<double> const&) [28]
+                0.13    0.00   43278/197022      Norm(Tensor<double> const&) [26]
+                0.00    0.00  205007/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00  205007/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    1.45   12686/12686       Superblock::Oper() const [17]
+[19]     4.4    0.00    1.45   12686         SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    1.10    9112/29110       TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.35    9112/78117       TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00    9112/168241      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.00    0.00   25372/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00   54672/4522324     frame_dummy [47]
+                0.00    0.00   18224/107227      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00    9112/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00    9112/119036      TensorNotation<Tensor<double> >::~TensorNotation() [93]
+-----------------------------------------------
+                0.00    0.01      40/6277        Superblock::InitBlocks() [24]
+                0.00    1.40    6237/6277        Superblock::SetPos(MPS::Pos) [13]
+[20]     4.2    0.00    1.41    6277         Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.81   10762/60917       TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.36    6277/49007       TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.24    6277/78117       TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00   23316/168241      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.00    0.00   59186/4522324     frame_dummy [47]
+                0.00    0.00    6277/107227      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00   17039/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   17039/119036      TensorNotation<Tensor<double> >::~TensorNotation() [93]
+-----------------------------------------------
+                                                 <spontaneous>
+[21]     3.6    1.19    0.00                 OffsetP(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) [21]
+-----------------------------------------------
+                0.00    0.00      10/3584        DMRG_0_gs::set_gs(MPS const&) [5]
+                0.01    1.11    3574/3584        DMRG_0_gs::Solve_res() [11]
+[22]     3.4    0.01    1.12    3584         Superblock::value() const [22]
+                0.00    0.62    3584/32371       SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.00    0.50    3584/10742       Superblock::Oper() const [17]
+                0.00    0.00   10752/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.90      40/40          DMRG_0_gs::set_gs(MPS const&) [5]
+[23]     2.7    0.00    0.90      40         Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.00    0.90      40/40          Superblock::InitBlocks() [24]
+                0.00    0.00      40/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00      40/395846      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00      80/4522324     frame_dummy [47]
+                0.00    0.00      80/486         std::vector<Tensor<double>, std::allocator<Tensor<double> > >::vector(unsigned long, std::allocator<Tensor<double> > const&) [100]
+                0.00    0.00      40/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.90      40/40          Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+[24]     2.7    0.00    0.90      40         Superblock::InitBlocks() [24]
+                0.00    0.89    3960/10197       Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.01      40/6277        Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00    8000/923950      std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00    4000/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00    4000/483614      std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00      80/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00      40/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00    4040/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00    4000/16474       Superblock::Transfer(int) const [94]
+-----------------------------------------------
+                                                 <spontaneous>
+[25]     2.5    0.82    0.00                 MatQRDecomp(bool, double const*, int, int) [25]
+-----------------------------------------------
+                0.00    0.00       9/197022      DMRG_0_gs::reset_gs() [4]
+                0.00    0.00      10/197022      DMRG_0_gs::Solve_gs() [6]
+                0.00    0.00      10/197022      DMRG_0_gs::set_gs(MPS const&) [5]
+                0.01    0.00    3574/197022      DMRG_0_gs::Solve_res() [11]
+                0.07    0.00   21639/197022      Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.13    0.00   43278/197022      void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [18]
+                0.40    0.00  128502/197022      MPS::ExtractNorm(Tensor<double>&) [30]
+[26]     1.8    0.61    0.00  197022         Norm(Tensor<double> const&) [26]
+-----------------------------------------------
+                0.00    0.00       1/649         MPSSum::toMPS() const [29]
+                0.00    0.01      15/649         DMRG_0_gs::reset_gs() [4]
+                0.00    0.17     198/649         MPS::operator*=(MPS const&) [12]
+                0.00    0.37     435/649         MPS::Canonicalize() [32]
+[27]     1.7    0.00    0.55     649         MPS::Sweep() [27]
+                0.01    0.27   64251/64251       MPS::SweepRight() [35]
+                0.00    0.27   64251/64251       MPS::SweepLeft() [36]
+                0.00    0.00     649/649         MPS::SweepPosSec(int) [99]
+-----------------------------------------------
+                0.00    0.00       3/246496      DMRG_0_gs::Solve_gs() [6]
+                0.09    0.00   41486/246496      Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.44    0.00  205007/246496      void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [18]
+[28]     1.6    0.53    0.00  246496         Tensor<double>::operator+=(Tensor<double> const&) [28]
+-----------------------------------------------
+                                                 <spontaneous>
+[29]     1.5    0.01    0.48                 MPSSum::toMPS() const [29]
+                0.46    0.00   19503/20394       DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.00    0.01   48708/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.00  194832/923950      std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00   24354/163548      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.00       1/434         MPS::Canonicalize() [32]
+                0.00    0.00       1/649         MPS::Sweep() [27]
+                0.00    0.00   39794/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00   48708/395846      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00   24354/1169315     Tensor<double>::ReShape(int) const [41]
+                0.00    0.00     200/1130        MPS::MPS(MPS const&) [66]
+                0.00    0.00   97416/483614      std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00     394/412         DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00   49102/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00   39203/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00   19503/171468      std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&) [92]
+                0.00    0.00     198/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00       1/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+                0.00    0.00       1/349         MPS::~MPS() [102]
+-----------------------------------------------
+                0.05    0.20   64251/128502      MPS::SweepRight() [35]
+                0.05    0.20   64251/128502      MPS::SweepLeft() [36]
+[30]     1.5    0.09    0.40  128502         MPS::ExtractNorm(Tensor<double>&) [30]
+                0.40    0.00  128502/197022      Norm(Tensor<double> const&) [26]
+-----------------------------------------------
+                0.02    0.00     891/20394       DMRG_0_gs::reset_gs() [4]
+                0.46    0.00   19503/20394       MPSSum::toMPS() const [29]
+[31]     1.4    0.48    0.00   20394         DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.00    0.00   61182/82218       Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const [68]
+                0.00    0.00   20394/540868      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.00    0.00   61182/4522324     frame_dummy [47]
+                0.00    0.00   20394/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+                0.00    0.00   61182/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.00       1/434         MPSSum::toMPS() const [29]
+                0.00    0.01      10/434         DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.02      27/434         DMRG_0_gs::reset_gs() [4]
+                0.00    0.34     396/434         MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+[32]     1.1    0.00    0.37     434         MPS::Canonicalize() [32]
+                0.00    0.37     435/649         MPS::Sweep() [27]
+                0.00    0.00     814/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00     435/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00     435/473         std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [101]
+                0.00    0.00      54/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+-----------------------------------------------
+                                                 <spontaneous>
+[33]     1.0    0.00    0.34                 MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.34     396/434         MPS::Canonicalize() [32]
+                0.00    0.00   39600/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00     396/540868      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.00    0.00     396/1169315     Tensor<double>::ReShape(int) const [41]
+                0.00    0.00     396/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00     792/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00     396/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+-----------------------------------------------
+                0.00    0.00      10/79395       DMRG_0_gs::Solve_gs() [6]
+                0.01    0.00    3574/79395       DMRG_0_gs::Solve_res() [11]
+                0.05    0.00   12686/79395       Superblock::Oper() const [17]
+                0.25    0.00   63125/79395       Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+[34]     0.9    0.31    0.00   79395         Tensor<double>::operator*(double) const [34]
+                0.00    0.00   79395/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+-----------------------------------------------
+                0.01    0.27   64251/64251       MPS::Sweep() [27]
+[35]     0.8    0.01    0.27   64251         MPS::SweepRight() [35]
+                0.05    0.20   64251/128502      MPS::ExtractNorm(Tensor<double>&) [30]
+                0.00    0.01   64251/163548      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.01   64251/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.01  128502/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00  128502/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00  321255/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   64251/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00   62667/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00    1485/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+-----------------------------------------------
+                0.00    0.27   64251/64251       MPS::Sweep() [27]
+[36]     0.8    0.00    0.27   64251         MPS::SweepLeft() [36]
+                0.05    0.20   64251/128502      MPS::ExtractNorm(Tensor<double>&) [30]
+                0.00    0.01   64251/163548      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.01   64251/326936      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.01  128502/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00  128502/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00  321255/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00   64251/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00   62667/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00    1485/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+-----------------------------------------------
+                                                 <spontaneous>
+[37]     0.5    0.15    0.00                 MatSVD(bool, double const*, int, int, double, int) [37]
+-----------------------------------------------
+                0.00    0.00      11/4514146     MPS::FillRandu(std::vector<int, std::allocator<int> >) [56]
+                0.00    0.00      22/4514146     MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00     412/4514146     DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00   20394/4514146     DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.00    0.00  395846/4514146     Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00  540868/4514146     Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.01    0.00 1251533/4514146     Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, double*) [44]
+                0.02    0.00 2305060/4514146     Tensor<double>::Tensor(Tensor<double> const&) [46]
+[38]     0.1    0.04    0.00 4514146         std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+-----------------------------------------------
+                0.00    0.00   10692/326936      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   29110/326936      TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.01   48708/326936      MPSSum::toMPS() const [29]
+                0.00    0.01   49007/326936      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.01   60917/326936      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.01   64251/326936      MPS::SweepRight() [35]
+                0.00    0.01   64251/326936      MPS::SweepLeft() [36]
+[39]     0.1    0.00    0.04  326936         Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+                0.00    0.02  980808/1169315     Tensor<double>::ReShape(int) const [41]
+                0.01    0.00  326936/540868      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.00    0.00  980808/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                                                 <spontaneous>
+[40]     0.1    0.03    0.00                 std::vector<double, std::allocator<double> > arma::conv_to<std::vector<double, std::allocator<double> > >::from<double, arma::Op<arma::Glue<arma::Mat<double>, arma::Mat<double>, arma::glue_times>, arma::op_vectorise_col> >(arma::Base<double, arma::Op<arma::Glue<arma::Mat<double>, arma::Mat<double>, arma::glue_times>, arma::op_vectorise_col> > const&, arma::arma_not_cx<double>::result const*) [40]
+-----------------------------------------------
+                0.00    0.00      11/1169315     MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00     198/1169315     MPS::operator*=(MPS const&) [12]
+                0.00    0.00     396/1169315     MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.00   24354/1169315     MPSSum::toMPS() const [29]
+                0.00    0.00  163548/1169315     Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.02  980808/1169315     Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+[41]     0.1    0.00    0.03 1169315         Tensor<double>::ReShape(int) const [41]
+                0.01    0.01 1169315/1251533     Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, double*) [44]
+                0.01    0.00 1169315/4522324     frame_dummy [47]
+                0.00    0.00 1169315/1415081     std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::~vector() [64]
+-----------------------------------------------
+                0.00    0.00   10692/163548      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   24354/163548      MPSSum::toMPS() const [29]
+                0.00    0.01   64251/163548      MPS::SweepRight() [35]
+                0.00    0.01   64251/163548      MPS::SweepLeft() [36]
+[42]     0.1    0.01    0.02  163548         Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.01  327096/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00  327096/395846      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00  163548/1169315     Tensor<double>::ReShape(int) const [41]
+                0.00    0.00  163548/1415081     std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::~vector() [64]
+                0.00    0.00  102762/4522324     frame_dummy [47]
+                0.00    0.00  163548/187902      void std::vector<int, std::allocator<int> >::_M_insert_aux<int const&>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int const&) [74]
+                0.00    0.00  490644/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00  151965/171468      std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&) [92]
+                0.00    0.00    2970/2970        std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), MatSVDFixedDim>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&) [98]
+-----------------------------------------------
+                0.00    0.00     396/540868      MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.00     412/540868      DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00    1133/540868      MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00   20394/540868      DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.01    0.00  191597/540868      Tensor<double>::Reorder(std::vector<int, std::allocator<int> > const&) const [2]
+                0.01    0.00  326936/540868      Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+[43]     0.1    0.02    0.00  540868         Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.00    0.00  540868/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+-----------------------------------------------
+                0.00    0.00   82218/1251533     Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const [68]
+                0.01    0.01 1169315/1251533     Tensor<double>::ReShape(int) const [41]
+[44]     0.1    0.01    0.01 1251533         Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, double*) [44]
+                0.01    0.00 1251533/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+-----------------------------------------------
+                0.00    0.00    8000/923950      Superblock::InitBlocks() [24]
+                0.00    0.00   42768/923950      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   79200/923950      Fermi(int, int, bool) [67]
+                0.00    0.00  194832/923950      MPSSum::toMPS() const [29]
+                0.01    0.00  599150/923950      Tensor<double>::operator=(Tensor<double> const&) [53]
+[45]     0.1    0.02    0.00  923950         std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00  161478/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.00    0.00      13/1132911     DMRG_0_gs::Solve_gs() [6]
+                0.00    0.00      40/1132911     Superblock::InitBlocks() [24]
+                0.00    0.00     200/1132911     std::vector<Tensor<double>, std::allocator<Tensor<double> > >::operator=(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [77]
+                0.00    0.00     396/1132911     Fermi(int, int, bool) [67]
+                0.00    0.00    1800/1132911     DMRG_0_gs::reset_gs() [4]
+                0.00    0.00    3574/1132911     DMRG_0_gs::Solve_res() [11]
+                0.00    0.00    9112/1132911     Tensor<double>* std::__uninitialized_copy<false>::__uninit_copy<Tensor<double> const*, Tensor<double>*>(Tensor<double> const*, Tensor<double> const*, Tensor<double>*) [76]
+                0.00    0.00    9112/1132911     Superblock::Oper() const [17]
+                0.00    0.00   25372/1132911     SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.00   29110/1132911     TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.00   39600/1132911     MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.00   39794/1132911     MPSSum::toMPS() const [29]
+                0.00    0.00   49007/1132911     TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.00   60917/1132911     TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.00   79395/1132911     Tensor<double>::operator*(double) const [34]
+                0.00    0.00  114332/1132911     MPS::MPS(MPS const&) [66]
+                0.00    0.00  139034/1132911     TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [65]
+                0.00    0.00  205007/1132911     void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [18]
+                0.00    0.01  327096/1132911     Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+[46]     0.1    0.00    0.02 1132911         Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.02    0.00 2305060/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+-----------------------------------------------
+                                  63             frame_dummy [47]
+                0.00    0.00      10/4522324     DMRG_0_gs::Solve_gs() [6]
+                0.00    0.00      10/4522324     DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      11/4522324     MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00      80/4522324     Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.00    0.00    1648/4522324     DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00   29582/4522324     Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.00    0.00   50444/4522324     GSTridiagonal(double*, double*, int, double) [75]
+                0.00    0.00   54672/4522324     SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.00   59186/4522324     Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00   61182/4522324     DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.00    0.00   82040/4522324     TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00   96426/4522324     Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.00  102762/4522324     void std::vector<int, std::allocator<int> >::_M_insert_aux<int const&>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int const&) [74]
+                0.00    0.00  102762/4522324     Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.00  103186/4522324     std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00  107227/4522324     TensorNotation<Tensor<double>&>::TensorNotation(Tensor<double>&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [72]
+                0.00    0.00  107227/4522324     Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00  139034/4522324     TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [65]
+                0.00    0.00  161478/4522324     std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00  168241/4522324     TensorNotation<Tensor<double> const&>::TensorNotation(Tensor<double> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [55]
+                0.00    0.00  168241/4522324     Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.00    0.00  184754/4522324     TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.00  224641/4522324     TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.00  260264/4522324     SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.00    0.00  308861/4522324     TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.00  383194/4522324     Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+                0.00    0.00  395846/4522324     Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.01    0.00 1169315/4522324     Tensor<double>::ReShape(int) const [41]
+[47]     0.1    0.02    0.00 4522324+63      frame_dummy [47]
+                                  63             frame_dummy [47]
+-----------------------------------------------
+                                                 <spontaneous>
+[48]     0.1    0.02    0.00                 SplitIndex(std::vector<int, std::allocator<int> > const&, int) [48]
+-----------------------------------------------
+                                                 <spontaneous>
+[49]     0.1    0.02    0.00                 SortForMultiply(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [49]
+-----------------------------------------------
+                                                 <spontaneous>
+[50]     0.1    0.02    0.00                 MatMul(double const*, double const*, double*, int, int, int) [50]
+-----------------------------------------------
+                                                 <spontaneous>
+[51]     0.1    0.02    0.00                 IndexMul(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, int) [51]
+-----------------------------------------------
+                                                 <spontaneous>
+[52]     0.1    0.02    0.00                 void std::vector<int, std::allocator<int> >::_M_emplace_back_aux<int>(int&&) [52]
+-----------------------------------------------
+                0.00    0.00      20/299575      DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      80/299575      Superblock::InitBlocks() [24]
+                0.00    0.00    1800/299575      std::vector<Tensor<double>, std::allocator<Tensor<double> > >::operator=(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [77]
+                0.00    0.00    3574/299575      DMRG_0_gs::Solve_res() [11]
+                0.00    0.00   37097/299575      TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.01  128502/299575      MPS::SweepRight() [35]
+                0.00    0.01  128502/299575      MPS::SweepLeft() [36]
+[53]     0.0    0.00    0.01  299575         Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.01    0.00  599150/923950      std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00  299575/483614      std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+-----------------------------------------------
+                0.00    0.00     198/168241      MPS::operator*=(MPS const&) [12]
+                0.00    0.00    9112/168241      SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.00   23316/168241      Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00   38016/168241      Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.01   97599/168241      SuperTensor::operator*(Tensor<double> const&) const [8]
+[54]     0.0    0.00    0.01  168241         Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+                0.01    0.00  168241/168241      TensorNotation<Tensor<double> const&>::TensorNotation(Tensor<double> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [55]
+                0.00    0.00  168241/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.01    0.00  168241/168241      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [54]
+[55]     0.0    0.01    0.00  168241         TensorNotation<Tensor<double> const&>::TensorNotation(Tensor<double> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [55]
+                0.00    0.00  168241/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.01    0.00      10/10          DMRG_0_gs::set_gs(MPS const&) [5]
+[56]     0.0    0.01    0.00      10         MPS::FillRandu(std::vector<int, std::allocator<int> >) [56]
+                0.00    0.00      11/11          MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00      11/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+-----------------------------------------------
+                0.00    0.00   58220/547782      TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.00   78117/547782      TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00   98014/547782      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.00  121834/547782      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.00  191597/547782      Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const [1]
+[57]     0.0    0.01    0.00  547782         __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [57]
+-----------------------------------------------
+                0.00    0.00      10/519081      DMRG_0_gs::Solve_gs() [6]
+                0.00    0.00      40/519081      Superblock::operator=(Superblock&&) [82]
+                0.00    0.00      40/519081      Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.00    0.00     396/519081      MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.00     909/519081      DMRG_0_gs::reset_gs() [4]
+                0.00    0.00    1133/519081      MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00    4000/519081      Superblock::InitBlocks() [24]
+                0.00    0.00   19998/519081      MPS::operator*=(MPS const&) [12]
+                0.00    0.00   21639/519081      Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.00    0.00   29110/519081      TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.00   33858/519081      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   41020/519081      TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00   49007/519081      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.00   60917/519081      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.00  128502/519081      MPS::SweepRight() [35]
+                0.00    0.00  128502/519081      MPS::SweepLeft() [36]
+[58]     0.0    0.01    0.00  519081         Tensor<double>::operator=(Tensor<double>&&) [58]
+-----------------------------------------------
+                                                 <spontaneous>
+[59]     0.0    0.01    0.00                 IndexReorder(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) [59]
+-----------------------------------------------
+                                                 <spontaneous>
+[60]     0.0    0.01    0.00                 ToIndex(int, std::vector<int, std::allocator<int> > const&) [60]
+-----------------------------------------------
+                                                 <spontaneous>
+[61]     0.0    0.01    0.00                 arma::Mat<double>::reset() [61]
+-----------------------------------------------
+                0.00    0.00       4/395846      Fermi(int, int, bool) [67]
+                0.00    0.00      40/395846      Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.00    0.00     198/395846      Tensor<double>::Clone() const [81]
+                0.00    0.00   19800/395846      MPS::operator*=(MPS const&) [12]
+                0.00    0.00   48708/395846      MPSSum::toMPS() const [29]
+                0.00    0.00  327096/395846      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+[62]     0.0    0.00    0.01  395846         Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00  395846/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+                0.00    0.00  395846/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.01    0.00      30/30          DMRG_0_gs::set_gs(MPS const&) [5]
+[63]     0.0    0.01    0.00      30         std::vector<MPS*, std::allocator<MPS*> >::vector(std::initializer_list<MPS*>, std::allocator<MPS*> const&) [63]
+-----------------------------------------------
+                0.00    0.00   82218/1415081     Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const [68]
+                0.00    0.00  163548/1415081     Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.00 1169315/1415081     Tensor<double>::ReShape(int) const [41]
+[64]     0.0    0.01    0.00 1415081         std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::~vector() [64]
+-----------------------------------------------
+                0.00    0.00   29110/139034      TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.00   49007/139034      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.00   60917/139034      TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+[65]     0.0    0.00    0.00  139034         TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [65]
+                0.00    0.00  139034/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00  139034/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.00    0.00      54/1130        DMRG_0_gs::reset_gs() [4]
+                0.00    0.00     200/1130        MPSSum::toMPS() const [29]
+                0.00    0.00     291/1130        void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&) [71]
+                0.00    0.00     585/1130        HamTbAuto(int, bool) [69]
+[66]     0.0    0.00    0.00    1130         MPS::MPS(MPS const&) [66]
+                0.00    0.00  114332/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00    1132/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+-----------------------------------------------
+                                                 <spontaneous>
+[67]     0.0    0.00    0.00                 Fermi(int, int, bool) [67]
+                0.00    0.00   79200/923950      std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&) [45]
+                0.00    0.00   39600/483614      std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00     396/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+                0.00    0.00       4/395846      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+                0.00    0.00     396/486         std::vector<Tensor<double>, std::allocator<Tensor<double> > >::vector(unsigned long, std::allocator<Tensor<double> > const&) [100]
+                0.00    0.00     396/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00     396/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00     396/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+-----------------------------------------------
+                0.00    0.00    1236/82218       DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00   19800/82218       MPS::operator*=(MPS const&) [12]
+                0.00    0.00   61182/82218       DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+[68]     0.0    0.00    0.00   82218         Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const [68]
+                0.00    0.00   82218/1251533     Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, double*) [44]
+                0.00    0.00   82218/1415081     std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::~vector() [64]
+-----------------------------------------------
+                                                 <spontaneous>
+[69]     0.0    0.00    0.00                 HamTbAuto(int, bool) [69]
+                0.00    0.00     585/1130        MPS::MPS(MPS const&) [66]
+                0.00    0.00       9/27          void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&) [71]
+                0.00    0.00     990/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00     199/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+-----------------------------------------------
+                0.00    0.00    6277/107227      Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00   10197/107227      Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.00   18224/107227      SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.00   32533/107227      SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.00    0.00   39996/107227      MPS::operator*=(MPS const&) [12]
+[70]     0.0    0.00    0.00  107227         Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+                0.00    0.00  107227/4522324     frame_dummy [47]
+                0.00    0.00  107227/107227      TensorNotation<Tensor<double>&>::TensorNotation(Tensor<double>&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [72]
+-----------------------------------------------
+                0.00    0.00       9/27          HamTbAuto(int, bool) [69]
+                0.00    0.00      18/27          DMRG_0_gs::reset_gs() [4]
+[71]     0.0    0.00    0.00      27         void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&) [71]
+                0.00    0.00     291/1130        MPS::MPS(MPS const&) [66]
+                0.00    0.00     264/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+                0.00    0.00     264/349         MPS::~MPS() [102]
+-----------------------------------------------
+                0.00    0.00  107227/107227      Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [70]
+[72]     0.0    0.00    0.00  107227         TensorNotation<Tensor<double>&>::TensorNotation(Tensor<double>&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [72]
+                0.00    0.00  107227/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.00    0.00    4000/483614      Superblock::InitBlocks() [24]
+                0.00    0.00   21384/483614      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   21639/483614      Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.00    0.00   39600/483614      Fermi(int, int, bool) [67]
+                0.00    0.00   97416/483614      MPSSum::toMPS() const [29]
+                0.00    0.00  299575/483614      Tensor<double>::operator=(Tensor<double> const&) [53]
+[73]     0.0    0.00    0.00  483614         std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [73]
+                0.00    0.00  103186/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.00    0.00   24354/187902      std::vector<int, std::allocator<int> >::insert(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int const&) [79]
+                0.00    0.00  163548/187902      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+[74]     0.0    0.00    0.00  187902         void std::vector<int, std::allocator<int> >::_M_insert_aux<int const&>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int const&) [74]
+                0.00    0.00  102762/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.00    0.00       9/25222       DMRG_0_gs::reset_gs() [4]
+                0.00    0.00    3574/25222       DMRG_0_gs::Solve_res() [11]
+                0.00    0.00   21639/25222       Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+[75]     0.0    0.00    0.00   25222         GSTridiagonal(double*, double*, int, double) [75]
+                0.00    0.00   50444/4522324     frame_dummy [47]
+-----------------------------------------------
+                0.00    0.00    9112/9112        Superblock::Oper() const [17]
+[76]     0.0    0.00    0.00    9112         Tensor<double>* std::__uninitialized_copy<false>::__uninit_copy<Tensor<double> const*, Tensor<double>*>(Tensor<double> const*, Tensor<double> const*, Tensor<double>*) [76]
+                0.00    0.00    9112/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+-----------------------------------------------
+                0.00    0.00      20/20          DMRG_0_gs::set_gs(MPS const&) [5]
+[77]     0.0    0.00    0.00      20         std::vector<Tensor<double>, std::allocator<Tensor<double> > >::operator=(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [77]
+                0.00    0.00    1800/299575      Tensor<double>::operator=(Tensor<double> const&) [53]
+                0.00    0.00     200/1132911     Tensor<double>::Tensor(Tensor<double> const&) [46]
+-----------------------------------------------
+                0.00    0.00      11/11          MPS::FillRandu(std::vector<int, std::allocator<int> >) [56]
+[78]     0.0    0.00    0.00      11         MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00    1133/540868      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.00    0.00    1133/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00      11/1169315     Tensor<double>::ReShape(int) const [41]
+                0.00    0.00      22/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+                0.00    0.00      11/4522324     frame_dummy [47]
+                0.00    0.00    1144/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                                                 <spontaneous>
+[79]     0.0    0.00    0.00                 std::vector<int, std::allocator<int> >::insert(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int const&) [79]
+                0.00    0.00   24354/187902      void std::vector<int, std::allocator<int> >::_M_insert_aux<int const&>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int const&) [74]
+-----------------------------------------------
+                0.00    0.00      18/412         DMRG_0_gs::reset_gs() [4]
+                0.00    0.00     394/412         MPSSum::toMPS() const [29]
+[80]     0.0    0.00    0.00     412         DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00    1236/82218       Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const [68]
+                0.00    0.00     412/540868      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [43]
+                0.00    0.00    1648/4522324     frame_dummy [47]
+                0.00    0.00     412/4514146     std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&) [38]
+                0.00    0.00    1236/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                                                 <spontaneous>
+[81]     0.0    0.00    0.00                 Tensor<double>::Clone() const [81]
+                0.00    0.00     198/395846      Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [62]
+-----------------------------------------------
+                0.00    0.00      40/40          DMRG_0_gs::set_gs(MPS const&) [5]
+[82]     0.0    0.00    0.00      40         Superblock::operator=(Superblock&&) [82]
+                0.00    0.00      40/519081      Tensor<double>::operator=(Tensor<double>&&) [58]
+                0.00    0.00      80/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+-----------------------------------------------
+                0.00    0.00       4/3477513     DMRG_0_gs::~DMRG_0_gs() [138]
+                0.00    0.00      40/3477513     Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.00    0.00      40/3477513     DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      43/3477513     DMRG_0_gs::Solve_gs() [6]
+                0.00    0.00     198/3477513     MPSSum::toMPS() const [29]
+                0.00    0.00     353/3477513     MPS::~MPS() [102]
+                0.00    0.00     396/3477513     Fermi(int, int, bool) [67]
+                0.00    0.00     792/3477513     MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.00    1144/3477513     MPS::FillNone(std::vector<int, std::allocator<int> >) [78]
+                0.00    0.00    1236/3477513     DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [80]
+                0.00    0.00    2709/3477513     DMRG_0_gs::reset_gs() [4]
+                0.00    0.00    4040/3477513     Superblock::InitBlocks() [24]
+                0.00    0.00    9112/3477513     SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.00   10752/3477513     Superblock::value() const [22]
+                0.00    0.00   12474/3477513     Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   17039/3477513     Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00   21798/3477513     Superblock::Oper() const [17]
+                0.00    0.00   27819/3477513     Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.00   28235/3477513     void std::vector<Tensor<double>, std::allocator<Tensor<double> > >::_M_emplace_back_aux<Tensor<double> >(Tensor<double>&&) [96]
+                0.00    0.00   28592/3477513     DMRG_0_gs::Solve_res() [11]
+                0.00    0.00   41020/3477513     TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [14]
+                0.00    0.00   61182/3477513     DirectSum(Tensor<double> const&, Tensor<double> const&) [31]
+                0.00    0.00   65066/3477513     SuperTensor::operator*(Tensor<double> const&) const [8]
+                0.00    0.00   79992/3477513     MPS::operator*=(MPS const&) [12]
+                0.00    0.00   84764/3477513     Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+                0.00    0.00   92025/3477513     std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+                0.00    0.00  136042/3477513     TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [10]
+                0.00    0.00  185831/3477513     TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [15]
+                0.00    0.00  205007/3477513     void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [18]
+                0.00    0.00  245806/3477513     TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [9]
+                0.00    0.00  321255/3477513     MPS::SweepRight() [35]
+                0.00    0.00  321255/3477513     MPS::SweepLeft() [36]
+                0.00    0.00  490644/3477513     Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+                0.00    0.00  980808/3477513     Tensor<double>::Multiply(Tensor<double> const&, int) const [39]
+[89]     0.0    0.00    0.00 3477513         Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.00      11/347710      DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      32/347710      MPS::~MPS() [102]
+                0.00    0.00     396/347710      Fermi(int, int, bool) [67]
+                0.00    0.00     471/347710      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [101]
+                0.00    0.00     814/347710      MPS::Canonicalize() [32]
+                0.00    0.00     990/347710      HamTbAuto(int, bool) [69]
+                0.00    0.00    7128/347710      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   39203/347710      MPSSum::toMPS() const [29]
+                0.00    0.00   62667/347710      MPS::SweepRight() [35]
+                0.00    0.00   62667/347710      MPS::SweepLeft() [36]
+                0.00    0.00  173331/347710      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+[90]     0.0    0.00    0.00  347710         std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+-----------------------------------------------
+                0.00    0.00       9/190950      DMRG_0_gs::reset_gs() [4]
+                0.00    0.00      10/190950      DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00     199/190950      HamTbAuto(int, bool) [69]
+                0.00    0.00     396/190950      MPS::MPS(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) [33]
+                0.00    0.00     435/190950      MPS::Canonicalize() [32]
+                0.00    0.00     473/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [101]
+                0.00    0.00    1132/190950      MPS::MPS(MPS const&) [66]
+                0.00    0.00   10692/190950      Superblock::SetPos(MPS::Pos) [13]
+                0.00    0.00   49102/190950      MPSSum::toMPS() const [29]
+                0.00    0.00   64251/190950      MPS::SweepRight() [35]
+                0.00    0.00   64251/190950      MPS::SweepLeft() [36]
+[91]     0.0    0.00    0.00  190950         std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00  173331/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+                0.00    0.00    3105/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+-----------------------------------------------
+                0.00    0.00   19503/171468      MPSSum::toMPS() const [29]
+                0.00    0.00  151965/171468      Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+[92]     0.0    0.00    0.00  171468         std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&) [92]
+-----------------------------------------------
+                0.00    0.00    9112/119036      SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [19]
+                0.00    0.00   17039/119036      Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >) [20]
+                0.00    0.00   27819/119036      Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&) [16]
+                0.00    0.00   65066/119036      SuperTensor::operator*(Tensor<double> const&) const [8]
+[93]     0.0    0.00    0.00  119036         TensorNotation<Tensor<double> >::~TensorNotation() [93]
+-----------------------------------------------
+                0.00    0.00    4000/16474       Superblock::InitBlocks() [24]
+                0.00    0.00   12474/16474       Superblock::SetPos(MPS::Pos) [13]
+[94]     0.0    0.00    0.00   16474         Superblock::Transfer(int) const [94]
+-----------------------------------------------
+                0.00    0.00       1/13609       MPSSum::toMPS() const [29]
+                0.00    0.00       2/13609       DMRG_0_gs::~DMRG_0_gs() [138]
+                0.00    0.00      10/13609       Lanczos<SuperTensor, Tensor<double> >::~Lanczos() [104]
+                0.00    0.00      10/13609       DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      72/13609       DMRG_0_gs::reset_gs() [4]
+                0.00    0.00      80/13609       Superblock::operator=(Superblock&&) [82]
+                0.00    0.00      88/13609       Superblock::~Superblock() [103]
+                0.00    0.00     264/13609       void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&) [71]
+                0.00    0.00     396/13609       Fermi(int, int, bool) [67]
+                0.00    0.00   12686/13609       Superblock::Oper() const [17]
+[95]     0.0    0.00    0.00   13609         std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+                0.00    0.00   92025/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.00    8071/8071        Lanczos<SuperTensor, Tensor<double> >::Iterate() [7]
+[96]     0.0    0.00    0.00    8071         void std::vector<Tensor<double>, std::allocator<Tensor<double> > >::_M_emplace_back_aux<Tensor<double> >(Tensor<double>&&) [96]
+                0.00    0.00   28235/3477513     Tensor<double>::~Tensor() [89]
+-----------------------------------------------
+                0.00    0.00       9/6219        DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      18/6219        DMRG_0_gs::reset_gs() [4]
+                0.00    0.00      54/6219        MPS::Canonicalize() [32]
+                0.00    0.00      63/6219        MPS::~MPS() [102]
+                0.00    0.00    1485/6219        MPS::SweepRight() [35]
+                0.00    0.00    1485/6219        MPS::SweepLeft() [36]
+                0.00    0.00    3105/6219        std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+[97]     0.0    0.00    0.00    6219         std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+-----------------------------------------------
+                0.00    0.00    2970/2970        Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const [42]
+[98]     0.0    0.00    0.00    2970         std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), MatSVDFixedDim>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&) [98]
+-----------------------------------------------
+                0.00    0.00     649/649         MPS::Sweep() [27]
+[99]     0.0    0.00    0.00     649         MPS::SweepPosSec(int) [99]
+-----------------------------------------------
+                0.00    0.00      10/486         DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      80/486         Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [23]
+                0.00    0.00     396/486         Fermi(int, int, bool) [67]
+[100]    0.0    0.00    0.00     486         std::vector<Tensor<double>, std::allocator<Tensor<double> > >::vector(unsigned long, std::allocator<Tensor<double> > const&) [100]
+-----------------------------------------------
+                0.00    0.00      18/473         DMRG_0_gs::reset_gs() [4]
+                0.00    0.00      20/473         DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00     435/473         MPS::Canonicalize() [32]
+[101]    0.0    0.00    0.00     473         std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [101]
+                0.00    0.00     473/190950      std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&) [91]
+                0.00    0.00     471/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+-----------------------------------------------
+                0.00    0.00       1/349         MPSSum::toMPS() const [29]
+                0.00    0.00       2/349         DMRG_0_gs::~DMRG_0_gs() [138]
+                0.00    0.00      10/349         DMRG_0_gs::set_gs(MPS const&) [5]
+                0.00    0.00      72/349         DMRG_0_gs::reset_gs() [4]
+                0.00    0.00     264/349         void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&) [71]
+[102]    0.0    0.00    0.00     349         MPS::~MPS() [102]
+                0.00    0.00     353/3477513     Tensor<double>::~Tensor() [89]
+                0.00    0.00      63/6219        std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [97]
+                0.00    0.00      32/347710      std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation) [90]
+-----------------------------------------------
+                0.00    0.00       4/44          DMRG_0_gs::~DMRG_0_gs() [138]
+                0.00    0.00      40/44          DMRG_0_gs::set_gs(MPS const&) [5]
+[103]    0.0    0.00    0.00      44         Superblock::~Superblock() [103]
+                0.00    0.00      88/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+-----------------------------------------------
+                0.00    0.00      10/10          DMRG_0_gs::Solve_gs() [6]
+[104]    0.0    0.00    0.00      10         Lanczos<SuperTensor, Tensor<double> >::~Lanczos() [104]
+                0.00    0.00      10/13609       std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector() [95]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [166]
+[105]    0.0    0.00    0.00       1         _GLOBAL__sub_I__Z13ExactEnergyTBiib [105]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+ [105] _GLOBAL__sub_I__Z13ExactEnergyTBiib [30] MPS::ExtractNorm(Tensor<double>&) [42] Tensor<double>::Decomposition(bool, std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>) const
+  [48] SplitIndex(std::vector<int, std::allocator<int> > const&, int) [99] MPS::SweepPosSec(int) [68] Tensor<double>::ReShape(std::vector<int, std::allocator<int> >) const
+  [25] MatQRDecomp(bool, double const*, int, int) [32] MPS::Canonicalize() [41] Tensor<double>::ReShape(int) const
+  [59] IndexReorder(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) [27] MPS::Sweep() [1] Tensor<double>::Reorder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const
+  [75] GSTridiagonal(double*, double*, int, double) [78] MPS::FillNone(std::vector<int, std::allocator<int> >) [2] Tensor<double>::Reorder(std::vector<int, std::allocator<int> > const&) const
+  [18] void Orthogonalize<Tensor<double> >(Tensor<double>&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&, int) [56] MPS::FillRandu(std::vector<int, std::allocator<int> >) [39] Tensor<double>::Multiply(Tensor<double> const&, int) const
+  [49] SortForMultiply(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [36] MPS::SweepLeft() [54] Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const
+  [26] Norm(Tensor<double> const&) [66] MPS::MPS(MPS const&) [34] Tensor<double>::operator*(double) const
+  [50] MatMul(double const*, double const*, double*, int, int, int) [102] MPS::~MPS() [97] std::_Function_base::_Base_manager<MatSVDFixedDim>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)
+  [37] MatSVD(bool, double const*, int, int, double, int) [61] arma::Mat<double>::reset() [90] std::_Function_base::_Base_manager<std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)
+  [21] OffsetP(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) [40] std::vector<double, std::allocator<double> > arma::conv_to<std::vector<double, std::allocator<double> > >::from<double, arma::Op<arma::Glue<arma::Mat<double>, arma::Mat<double>, arma::glue_times>, arma::op_vectorise_col> >(arma::Base<double, arma::Op<arma::Glue<arma::Mat<double>, arma::Mat<double>, arma::glue_times>, arma::op_vectorise_col> > const&, arma::arma_not_cx<double>::result const*) [98] std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), MatSVDFixedDim>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&)
+   [3] OffsetP(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) [43] Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&) [92] std::_Function_handler<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int), std::array<std::vector<double, std::allocator<double> >, 2ul> (*)(bool, double const*, int, int)>::_M_invoke(std::_Any_data const&, bool&&, double const*&&, int&&, int&&)
+  [60] ToIndex(int, std::vector<int, std::allocator<int> > const&) [44] Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, double*) [76] Tensor<double>* std::__uninitialized_copy<false>::__uninit_copy<Tensor<double> const*, Tensor<double>*>(Tensor<double> const*, Tensor<double> const*, Tensor<double>*)
+  [51] IndexMul(std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, int) [62] Tensor<double>::Tensor(std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&) [71] void std::vector<MPS, std::allocator<MPS> >::_M_emplace_back_aux<MPS const&>(MPS const&)
+  [31] DirectSum(Tensor<double> const&, Tensor<double> const&) [46] Tensor<double>::Tensor(Tensor<double> const&) [96] void std::vector<Tensor<double>, std::allocator<Tensor<double> > >::_M_emplace_back_aux<Tensor<double> >(Tensor<double>&&)
+  [80] DirectSum(Tensor<double> const&, Tensor<double> const&, bool) [89] Tensor<double>::~Tensor() [100] std::vector<Tensor<double>, std::allocator<Tensor<double> > >::vector(unsigned long, std::allocator<Tensor<double> > const&)
+  [24] Superblock::InitBlocks() [58] Tensor<double>::operator=(Tensor<double>&&) [95] std::vector<Tensor<double>, std::allocator<Tensor<double> > >::~vector()
+  [13] Superblock::SetPos(MPS::Pos) [53] Tensor<double>::operator=(Tensor<double> const&) [77] std::vector<Tensor<double>, std::allocator<Tensor<double> > >::operator=(std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&)
+  [23] Superblock::Superblock(std::vector<MPS*, std::allocator<MPS*> > const&) [70] Tensor<double>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [63] std::vector<MPS*, std::allocator<MPS*> >::vector(std::initializer_list<MPS*>, std::allocator<MPS*> const&)
+ [103] Superblock::~Superblock() [28] Tensor<double>::operator+=(Tensor<double> const&) [64] std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::~vector()
+  [82] Superblock::operator=(Superblock&&) [7] Lanczos<SuperTensor, Tensor<double> >::Iterate() [73] std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)
+  [19] SuperTensor::SuperTensor(Tensor<double> const&, Tensor<double> const&, std::vector<Tensor<double>, std::allocator<Tensor<double> > > const&) [104] Lanczos<SuperTensor, Tensor<double> >::~Lanczos() [74] void std::vector<int, std::allocator<int> >::_M_insert_aux<int const&>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int const&)
+  [65] TensorNotation<Tensor<double> >::TensorNotation(Tensor<double>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [5] DMRG_0_gs::set_gs(MPS const&) [52] void std::vector<int, std::allocator<int> >::_M_emplace_back_aux<int>(int&&)
+  [93] TensorNotation<Tensor<double> >::~TensorNotation() [6] DMRG_0_gs::Solve_gs() [38] std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&)
+   [9] TensorNotation<Tensor<double> > TensorNotation<Tensor<double> >::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [4] DMRG_0_gs::reset_gs() [45] std::vector<int, std::allocator<int> >::operator=(std::vector<int, std::allocator<int> > const&)
+  [72] TensorNotation<Tensor<double>&>::TensorNotation(Tensor<double>&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [11] DMRG_0_gs::Solve_res() [91] std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::function(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&)
+  [14] TensorNotation<Tensor<double>&>& TensorNotation<Tensor<double>&>::operator=<Tensor<double> >(TensorNotation<Tensor<double> > const&) [17] Superblock::Oper() const [101] std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)>::operator=(std::function<std::array<std::vector<double, std::allocator<double> >, 2ul> (bool, double const*, int, int)> const&)
+  [10] TensorNotation<Tensor<double> > TensorNotation<Tensor<double>&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [22] Superblock::value() const [57] __gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  [55] TensorNotation<Tensor<double> const&>::TensorNotation(Tensor<double> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [94] Superblock::Transfer(int) const [20] Tensor<double> operator*<double>(Tensor<double> const&, std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >)
+  [15] TensorNotation<Tensor<double> > TensorNotation<Tensor<double> const&>::operator*<Tensor<double> const&>(TensorNotation<Tensor<double> const&> const&) [8] SuperTensor::operator*(Tensor<double> const&) const [16] Tensor<double> operator*<double>(std::vector<Tensor<double> const*, std::allocator<Tensor<double> const*> >, Tensor<double> const&)
+  [35] MPS::SweepRight()      [29] MPSSum::toMPS() const  [47] frame_dummy

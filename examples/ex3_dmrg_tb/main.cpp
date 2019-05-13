@@ -1,5 +1,5 @@
 #include <iostream>
-#include"dmrg_0_gs.h"
+#include"dmrg_res_gs.h"
 
 using namespace std;
 

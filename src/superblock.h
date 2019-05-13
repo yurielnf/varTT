@@ -34,7 +34,7 @@ class Superblock
         prod=one;
         for(int i=length-2;i>=pos.i;i--)
             b2[i]=prod=Transfer(i+1)*prod;
-        b2[length-1]=one;
+//        b2[length-1]=one;
     }
     double norm_factor() const
     {
@@ -42,15 +42,28 @@ class Superblock
         for(const MPS* x:mps) prod*=x->norm_factor();
         return prod;
     }
+    const TensorD& Left(int nSites) const
+    {
+        int ini=pos.i-(nSites-1)/2;
+        if (pos.vx==1 && nSites>0) ini--;
+        return ini<0 ? one : b1[ini];
+    }
+    const TensorD& Right(int nSites) const
+    {
+        int ini=pos.i-(nSites-1)/2;
+        if (pos.vx==1 && nSites>0) ini--;
+        int fin=ini+nSites;
+        return fin>length-2 ? one : b2[fin];
+    }
     void UpdateBlocks()
     {
         const auto& left= pos.i==0 ? one
                                    : b1[pos.i-1];
         const auto& right= pos.i==length-2 ? one
                                            : b2[pos.i+1];
-        if (pos.vx==1)
+//        if (pos.vx==-1)
             b1[pos.i]=left*Transfer(pos.i);
-        else
+//        else
             b2[pos.i]=Transfer(pos.i+1)*right;
     }
 
@@ -61,25 +74,25 @@ class Superblock
         else // size()==2
             return { b1[pos.i]*norm_factor(), b2[pos.i]};
     }
-    SuperTensor Oper1() const
+    SuperTensor Oper(int nSites) const
     {
-        const auto& left= pos.i==0 ? one
-                                   : b1[pos.i-1];
+        const auto& left=Left(nSites);
+        const auto& right=Right(nSites);
         if(mps.size()==3)
-            return { left*norm_factor(), b2[pos.i]
-                    ,{mps[1]->CentralMat1()} };
+            return { left*norm_factor(), right
+                    ,{mps[1]->CentralMat(nSites)} };
         else // size()==2
-            return { left*norm_factor(), b2[pos.i] };
+            return { left*norm_factor(), right };
     }
     double value() const
     {
         TensorD Cp=Oper()*mps.front()->C;
         return Dot(mps.back()->C,Cp);
     }
-    double value1() const
+    double value(int nSites) const
     {
-        TensorD Cp=Oper1()*mps.front()->CentralMat1();
-        return Dot(mps.back()->CentralMat1(),Cp);
+        TensorD Cp=Oper(nSites)*mps.front()->CentralMat(nSites);
+        return Dot(mps.back()->CentralMat(nSites),Cp);
     }
     void SetPos(MPS::Pos p)
     {

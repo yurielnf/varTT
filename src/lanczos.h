@@ -58,12 +58,12 @@ struct Lanczos
 
     void Iterate()
     {
-        if (b[iter]< lambda0*std::numeric_limits<double>::epsilon() )
-        {
-            r.FillRandu(); r*=(1.0/Norm(r));
-            Orthogonalize(r,v,iter-1);
-            b[iter]=Norm(r);
-        }
+//        if (b[iter]< lambda0*std::numeric_limits<double>::epsilon() )
+//        {
+//            r.FillRandu(); r*=(1.0/Norm(r));
+//            Orthogonalize(r,v,iter-1);
+//            b[iter]=Norm(r);
+//        }
         v.push_back( r*(1.0/b[iter]) );
         r=A*v[iter];
         if (iter>0) r+=v[iter-1]*(-b[iter]);
@@ -81,7 +81,7 @@ struct Lanczos
     Ket GetState()
     {
         Ket x=v[0]*evec[0];
-        for(uint i=1;i<a.size();i++)
+        for(int i=1;i<iter;i++)
             x+=v[i]*evec[i];
         return x;
     }
@@ -89,14 +89,14 @@ struct Lanczos
     void DoIt(int nIter, double tol)
     {
 //        tol=std::max(tol,nIter*std::numeric_limits<double>::epsilon());
-        double tolr=0;
+//        double tolr=0;
         for(int i=0;i<nIter;i++)
         {
-            tolr=std::max(tol*fabs(lambda0),tol);
-            if (error<tolr) break;
+//            tolr=std::max(tol*fabs(lambda0),tol);
+            if (error<tol) break;
             Iterate();
         }
-        if (error>tolr)
+        if (error>tol)
             std::cout<<"lanczos failed, residual_norm = "<<error<<std::endl;
     }
 };
@@ -108,7 +108,7 @@ Lanczos<LinearOperator,Ket> create_Lanczos(const LinearOperator& A, const Ket& r
 }
 
 template<class Hamiltonian, class Ket>                                      //Portal method
-Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,Ket& wf,int nIter,double tol)
+Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,const Ket& wf,int nIter,double tol)
 {
     Lanczos<Hamiltonian,Ket> lan(H,wf);
     lan.DoIt(nIter, tol);

@@ -140,8 +140,7 @@ public:
         TensorD psi=ApplyC();
         ++pos;
         ExtractNorm(psi);
-        std::array<TensorD,2> uv;
-        uv=psi.Decomposition(false,decomposer);
+        auto uv=psi.Decomposition(false,decomposer);
         M[pos.i]=uv[0];
         C=uv[1];
     }
@@ -151,10 +150,9 @@ public:
         TensorD psi=ApplyC();
         --pos;
         ExtractNorm(psi);
-        std::array<TensorD,2> uv;
-        uv=psi.Decomposition(true,decomposer);
-        M[pos.i+1]=uv[1];
+        auto uv=psi.Decomposition(true,decomposer);
         C=uv[0];
+        M[pos.i+1]=uv[1];
     }
     void SetPos(Pos p)
     {
@@ -163,10 +161,41 @@ public:
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
-    TensorD CentralMat1() const
+    TensorD CentralMat(int nSites) const
     {
-        return pos.vx==-1 ? C*M[pos.i+1]
-                          : M[pos.i]*C;
+        int ini=pos.i-(nSites-1)/2;
+        if (pos.vx==1 && nSites>0) ini--;
+        int fin=ini+nSites;
+
+        TensorD tr;
+        for(int i=ini;i<=fin;i++)
+        {
+            if (i>ini && i>=0 && i<length)
+                tr= tr.rank() ? tr*M[i] : M[i];
+
+            if (i==pos.i)
+                tr= tr.rank() ? tr*C : C;
+        }
+        return tr;
+
+//        return pos.vx==-1 ? C*M[pos.i+1]
+//                          : M[pos.i]*C;
+    }
+    void setCentralMat(const TensorD& t) // <----------------------------- Generalize!
+    {
+
+        if (pos.vx==1)
+        {
+            auto ac=t.Decomposition(false,decomposer);
+            M[pos.i]=ac[0];
+            C=ac[1];
+        }
+        else
+        {
+            auto cb=t.Decomposition(true,decomposer);
+            C=cb[0];
+            M[pos.i+1]=cb[1];
+        }
     }
     double norm_factor() const { return pow(norm_n,length); }
     double norm() const  { return pow(norm_n,length)*Norm(C); }
@@ -263,9 +292,16 @@ private:
     {
         double nr=Norm(psi);
         if (nr==0)
-            throw std::logic_error("mps:ExtractNorm() null matrix");
-        norm_n*=pow(nr,1.0/length);
-        psi*=1.0/nr;
+        {
+//            throw std::logic_error("mps:ExtractNorm() null matrix");
+            std::cerr<<"mps:ExtractNorm() null matrix";
+            norm_n=0;
+        }
+        else
+        {
+            norm_n*=pow(nr,1.0/length);
+            psi*=1.0/nr;
+        }
     }
 
     double norm_n=1;                //norm(MPS)^(1/n)
@@ -292,7 +328,7 @@ struct MPSSum
     MPS toMPS() const
     {
         auto vc=v;
-        return VecReduce(vc.data(),vc.size()).Canonicalize().Sweep();
+        return VecReduce(vc.data(),vc.size());
     }
 };
 
@@ -300,10 +336,15 @@ typedef MPS MPO;
 
 //---------------------------- Helpers ---------------------------
 
- MPO MPOIdentity(int length);
+ MPO MPOIdentity(int length, int d);
+ MPO Sz(int i, int length);
+ MPO Sp(int i, int length);
+ MPO Sm(int i, int length);
  MPO Fermi(int i, int L, bool dagged);
  MPO MPOEH(int length);
 
+ MPO HamS1(int L,bool periodic);
+ MPO SpinFlipGlobal(int len);
  MPO HamTbAuto(int L,bool periodic);
  MPO HamTBExact(int L);
 

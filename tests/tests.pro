@@ -16,5 +16,5 @@ SOURCES +=\
     test_tensor_notation.cpp \
     test_superblock.cpp \
     test_mpo.cpp \
-    test_dmrg_0_tb.cpp \
-    test_dmrg_tb.cpp
+    test_dmrg_tb.cpp \
+    test_dmrg_res_tb.cpp

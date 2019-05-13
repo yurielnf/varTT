@@ -37,14 +37,14 @@ array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol,
     int D=std::min(Dmax,(int)s.size());
     if (D==0)
     {
-        D=s.size();}
+        D=s.size();
         for(uint i=0;i<D;i++)
             if(fabs(s[i])<=tol) {D=i;break;}
-
+    }
     double sum=0;
-    for(int i=0;i<D;i++) sum+=s[i]*s[i];
+    for(int i=D-1;i>=0;i--) sum+=s[i]*s[i];
     mat Ua=U.head_cols(D);
-    mat Sa=diagmat(s.head(D)/sum);
+    mat Sa=diagmat(s.head(D)/sqrt(sum));
     mat Vt=V.head_cols(D).t();
     if (is_right)
         return {conv_to<stdvec>::from(vectorise(Ua*Sa)),

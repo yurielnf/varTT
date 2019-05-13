@@ -1,10 +1,10 @@
-#ifndef DMRG_GS_H
-#define DMRG_GS_H
+#ifndef DMRG1_GS_H
+#define DMRG1_GS_H
 
 #include"superblock.h"
 #include"lanczos.h"
 
-struct DMRG_gs
+struct DMRG1_gs
 {
     int nIterMax=128,iter;
     double tol_diag=1e-13;
@@ -12,7 +12,7 @@ public:
     MPS gs,mpo,z2_sym;
     Superblock sb,sb_sym;
 
-    DMRG_gs(const MPO& ham,int m,MPO z2_sym=MPO())
+    DMRG1_gs(const MPO& ham,int m,MPO z2_sym=MPO())
         :mpo(ham), z2_sym(z2_sym)
     {
         int d=mpo.at(0).dim[1];
@@ -43,11 +43,13 @@ public:
     }
     void Solve()
     {
-        auto Heff=sb.Oper();
-        auto lan=Diagonalize(Heff, gs.C, nIterMax, tol_diag);
+        auto Heff=sb.Oper(1);
+        auto lan=Diagonalize(Heff, gs.CentralMat(1), nIterMax, tol_diag);
         iter=lan.iter;
-        gs.C=lan.GetState();        
+        gs.setCentralMat(lan.GetState());
         gs.Normalize();
+        sb.UpdateBlocks();
+        if (sb_sym.length>0) sb_sym.UpdateBlocks();
     }
     void Print() const
     {
@@ -57,4 +59,4 @@ public:
     }
 };
 
-#endif // DMRG_GS_H
+#endif // DMRG1_GS_H

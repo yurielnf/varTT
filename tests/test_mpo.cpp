@@ -20,7 +20,7 @@ TEST_CASE("auto mpo","[mpo]")
         }
         SECTION( "1 operator" )
         {
-            MPO s=MPOIdentity(len);
+            MPO s=MPOIdentity(len,2);
             double nr=pow(2,len/2.);
             REQUIRE( s.norm()==Approx(nr) );
             REQUIRE( (s*3).norm()==Approx(3*nr) );
@@ -30,14 +30,14 @@ TEST_CASE("auto mpo","[mpo]")
     }
     SECTION( "MPSSum" )
     {
-        MPO s=MPOIdentity(len);
+        MPO s=MPOIdentity(len,2);
         double nr=pow(2,len/2.);
         REQUIRE( s.norm()==Approx(nr) );
         MPSSum sum(50,MatSVDFixedTol(1e-14));
         for(int i=0;i<50;i++)
             sum+=s;
         REQUIRE( sum.toMPS().norm()==Approx(50*nr) );
-        REQUIRE( sum.toMPS().MaxVirtDim()==s.MaxVirtDim() );
+        REQUIRE( sum.toMPS().Sweep().MaxVirtDim()==s.MaxVirtDim() );
     }
     SECTION( "MPO for TB Hamiltonian" )
     {

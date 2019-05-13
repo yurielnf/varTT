@@ -3,17 +3,65 @@
 
 //---------------------------- Helpers ---------------------------
 
-MPO MPOIdentity(int length)
+MPO MPOIdentity(int length,int d)
 {
+    static std::vector<double> id(d*d);
+    MatFillEye(id.data(),d);
     std::vector<TensorD> O(length);
-    std::vector<double> id={1,0,0,1};
-    for(auto& x:O) x=TensorD({1,2,2,1}, id);
+    for(auto& x:O) x=TensorD({1,d,d,1}, id);
+    return O;
+}
+MPO Pauli1Sz(int i,int L)
+{
+    static TensorD
+            one( {1,3,3,1}, {1,0,0,
+                             0,1,0,
+                             0,0,1} ),
+            sz( {1,3,3,1}, {-1,0,0,
+                             0,0,0,
+                             0,0,1} );
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? sz
+                     : one ;
+    return O;
+}
+MPO Pauli1Sp(int i,int L)
+{
+    const double r2=sqrt(2);
+    static TensorD
+            one( {1,3,3,1}, {1,0,0,
+                             0,1,0,
+                             0,0,1} ),
+            sp ( {1,3,3,1}, {0,r2,0,
+                             0,0,r2,
+                             0,0,0} );
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? sp
+                     : one ;
+    return O;
+}
+MPO Pauli1Sm(int i,int L)
+{
+    const double r2=sqrt(2);
+    static TensorD
+            one( {1,3,3,1}, {1,0,0,
+                             0,1,0,
+                             0,0,1} ),
+            sm ( {1,3,3,1}, {0,0,0,
+                             r2,0,0,
+                             0,r2,0} );
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? sm
+                     : one ;
     return O;
 }
 MPO Fermi(int i, int L, bool dagged)
 {
     static TensorD
-            id( {1,2,2,1}, {1,0,0,1} ),
+            one( {1,2,2,1}, {1,0,0,1} ),
             sg( {1,2,2,1}, {1,0,0,-1} ),
             cd( {1,2,2,1}, {0,1,0,0} ),
             c ( {1,2,2,1}, {0,0,1,0} );
@@ -24,7 +72,7 @@ MPO Fermi(int i, int L, bool dagged)
     {
         O[j]= (j <i) ? sg :
                        (j==i) ? fe :
-                                id ;
+                                one ;
     }
     return O;
 }
@@ -40,6 +88,29 @@ MPO MPOEH(int length)
     return O;
 }
 
+MPO HamS1(int L,bool periodic)
+{
+    const int m=10;
+    MPSSum h(m,MatSVDFixedTol(1e-13));
+    for(int i=0;i<L-1+periodic; i++)
+    {
+        h += Pauli1Sz(i,L) * Pauli1Sz((i+1)%L,L) ;
+        h += Pauli1Sp(i,L) * Pauli1Sm((i+1)%L,L) * 0.5;
+        h += Pauli1Sm(i,L) * Pauli1Sp((i+1)%L,L) * 0.5;
+    }
+    return h.toMPS();
+}
+MPO SpinFlipGlobal(int length)
+{
+    const stdvec sf={0,0,1,
+                     0,1,0,
+                     1,0,0} ;
+    std::vector<TensorD> O(length);
+    for(uint i=0;i<O.size();i++)
+            O[i]=TensorD({1,3,3,1}, sf);
+    return O;
+}
+
 MPO HamTbAuto(int L,bool periodic)
 {
     const int m=4;
@@ -48,18 +119,6 @@ MPO HamTbAuto(int L,bool periodic)
     {
         h += Fermi(i,L,true)*Fermi((i+1)%L,L,false)*(-1.0) ;
         h += Fermi((i+1)%L,L,true)*Fermi(i,L,false)*(-1.0) ;
-    }
-    return h.toMPS();
-}
-
-MPO HamHubbardAuto(int L)
-{
-    const int m=4;
-    MPSSum h(m,MatSVDFixedTol(1e-13));
-    for(int i=0;i<L-1; i++)
-    {
-        h += Fermi(i,L,true)*Fermi(i+1,L,false)*(-1.0) ;
-        h += Fermi(i+1,L,true)*Fermi(i,L,false)*(-1.0) ;
     }
     return h.toMPS();
 }

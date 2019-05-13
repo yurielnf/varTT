@@ -1,6 +1,11 @@
 #include"catch.hpp"
+
 #include"dmrg_gs.h"
 #include"dmrg_se_gs.h"
+#include"dmrg_wse_gs.h"
+
+#include"dmrg1_gs.h"
+#include"dmrg1_wse_gs.h"
 
 static double ExactEnergyTB(int L, int nPart,bool periodic)
 {
@@ -20,45 +25,114 @@ static double ExactEnergyTB(int L, int nPart,bool periodic)
 TEST_CASE( "dmrg tight-binding", "[dmrg_tb]" )
 {
     srand(time(NULL));
-    int len=30, m=128;
+    int len=10, m=128;
     std::cout<<std::setprecision(15);
     SECTION( "dmrg" )
     {
         auto op=HamTbAuto(len,false); op.PrintSizes("Htb=");
+        op.decomposer=MatChopDecompFixedTol(0);
 //        auto op=HamTBExact(len); op.PrintSizes("HtbExact=");
-        DMRG_gs sol(op,m);
-        sol.Solve();
-        for(int k=0;k<5;k++)
-        for(auto i:MPS::SweepPosSec(len))
+        DMRG1_gs sol(op,m);
+        for(int k=0;k<2;k++)
         {
-            sol.Solve();
-            sol.SetPos(i);
-            sol.Print();
+            for(auto p:MPS::SweepPosSec(len))
+            {
+                sol.SetPos(p);
+                sol.Solve();
+                if ((p.i+1) % (len/10) ==0) sol.Print();
+            }
+            std::cout<<"ener ="<<sol.sb.value(1)<<"\n";
         }
-        std::cout<<"ener ="<<sol.sb.value()<<"\n";
         std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
     }
 }
 
-TEST_CASE( "dmrg with subspace-expansion tight-binding", "[dmrg_se_tb]" )
+TEST_CASE( "dmrg S=1", "[dmrg_s1]" )
 {
     srand(time(NULL));
-    int len=30, m=128;
+    int len=10, m=128;
+    std::cout<<std::setprecision(15);
+    SECTION( "dmrg" )
+    {
+        auto op=HamS1(len,true); op.PrintSizes("Hs1=");
+        op.decomposer=MatChopDecompFixedTol(0);
+        auto sf=SpinFlipGlobal(len); sf.decomposer=MatChopDecompFixedTol(0);
+//        op+=op*sf*(1.0);
+//        op+=sf*op*(1.0);
+//        op+=sf*op*sf;
+//        op*=0.5;
+//        op.decomposer=MatChopDecompFixedTol(0);
+        DMRG_gs sol(op,m);
+        sol.tol_diag=1e-3;
+        for(int k=0;k<10;k++)
+        {
+            for(auto p:MPS::SweepPosSec(len))
+            {
+                sol.SetPos(p);
+                sol.Solve();
+                if ((p.i+1) % (len/10) ==0) sol.Print();
+            }
+            if (k>=3) {sol.tol_diag=1e-9; }
+            if (k>=8) {sol.tol_diag=1e-11;}
+
+//            std::cout<<"sf="<<sol.sb_sym.value()<<"\n";
+//            sol.Reset_gs();
+        }
+    }
+}
+
+TEST_CASE( "dmrg with White subspace-expansion tight-binding", "[dmrg_wse_tb]" )
+{
+    srand(time(NULL));
+    int len=10, m=128;
     std::cout<<std::setprecision(15);
     SECTION( "dmrg" )
     {
         auto op=HamTbAuto(len,false); op.PrintSizes("Htb=");
+        op.decomposer=MatChopDecompFixedTol(0);
 //        auto op=HamTBExact(len); op.PrintSizes("HtbExact=");
-        DMRG_se_gs sol(op,m);
-        sol.Solve();
-        for(int k=0;k<5;k++)
-        for(auto i:MPS::SweepPosSec(len))
+        DMRG1_wse_gs sol(op,m);
+        for(int k=0;k<10;k++)
         {
-            /*if (k<4) */sol.Solve();
-            sol.SetPos(i);
-            sol.Print();
+            for(auto p:MPS::SweepPosSec(len))
+            {
+                sol.SetPos(p);
+                sol.Solve();
+                if ((p.i+1) % (len/10) ==0) sol.Print();
+            }
+            std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
         }
-        std::cout<<"ener ="<<sol.sb.value()<<"\n";
-        std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
+    }
+}
+
+
+TEST_CASE( "dmrg with White subspace-expansion S=1", "[dmrg_wse_s1]" )
+{
+    srand(time(NULL));
+    int len=10, m=128;
+    std::cout<<std::setprecision(15);
+    SECTION( "dmrg" )
+    {
+        auto op=HamS1(len,true); op.PrintSizes("Hs1=");
+        op.decomposer=MatChopDecompFixedTol(0);
+        auto sf=SpinFlipGlobal(len); sf.decomposer=MatChopDecompFixedTol(0);
+        DMRG1_wse_gs sol(op,m);
+        sol.tol_diag=1e-6;
+        for(int k=0;k<20;k++)
+        {
+            for(auto p:MPS::SweepPosSec(len))
+            {
+                sol.SetPos(p);
+                sol.Solve();
+                if ((p.i+1) % (len/10) ==0) sol.Print();
+            }
+            std::cout<<"sweep "<<k+1<<"\n";
+//            std::cout<<"sf="<<sol.sb_sym.value()<<"\n";
+//            sol.Reset_gs();
+            if (k>=3) {sol.tol_diag=1e-9; }
+            if (k>=8) {sol.tol_diag=1e-11; }
+            if (k>=12){sol.tol_diag=1e-13; }
+//            if (k>=16){sol.alpha=0;}
+        }
     }
 }

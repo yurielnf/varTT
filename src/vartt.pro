@@ -9,8 +9,9 @@ SOURCES +=\
     mps.cpp \
     dmrg_gs.cpp \
     supertensor.cpp \
-    dmrg_0_gs.cpp \
-    dmrg_se_gs.cpp
+    dmrg_se_gs.cpp \
+    dmrg_oe_gs.cpp \
+    dmrg_wse_gs.cpp
 
 HEADERS += \
     tensor.h \
@@ -21,6 +22,10 @@ HEADERS += \
     dmrg_gs.h \
     supertensor.h \
     lanczos.h \
-    dmrg_0_gs.h \
-    dmrg_se_gs.h
+    dmrg_se_gs.h \
+    dmrg_oe_gs.h \
+    dmrg_res_gs.h \
+    dmrg_wse_gs.h \
+    dmrg1_gs.h \
+    dmrg1_wse_gs.h
 

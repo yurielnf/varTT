@@ -10,16 +10,16 @@ struct DMRG_se_gs
     int nIterMax=128,iter;
     double ener,tol_diag=1e-13;
 
-    MPS gs,dgs;
-    MPO mpo;
+    MPS gs,mpo;
     Superblock sb;
     stdvec a,b;
 
     DMRG_se_gs(const MPO& ham,int m)
         :mpo(ham),a(2),b(1)
     {
-        gs= MPS(mpo.length,m,MatSVDFixedDim(m))
-                      .FillRandu({m,2,m})
+        int d=mpo.at(0).dim[1];
+        gs= MPS(mpo.length,m)
+                      .FillRandu({m,d,m})
                       .Canonicalize()
                       .Normalize() ;
         sb=Superblock({&gs,&mpo,&gs});
@@ -29,9 +29,10 @@ struct DMRG_se_gs
     {
         auto lan=Diagonalize(sb.Oper(), gs.C, nIterMax, tol_diag);  //Lanczos
         iter=lan.iter;
-        if (lan.lambda0 > ener) return;
+//        if (lan.lambda0 > ener) return;
         ener=lan.lambda0;
         gs.C=lan.GetState();
+        gs.Normalize();
 
         if (sb.pos.vx==1)
         {
@@ -39,9 +40,11 @@ struct DMRG_se_gs
             auto &C=gs.C;
             std::array<TensorD,2> AC={A,C};
             auto M=A*C;
-            auto Mb= sb.Oper1()*M - M*ener;
+            auto Mb= sb.Oper(1)*M - M*ener;
             a[0]=ener;
-            b[0]=Norm(Mb); Mb*=1.0/b[0];
+            b[0]=Norm(Mb);
+            if (b[0]<1e-13) return;
+            Mb*=1.0/b[0];
             auto ACb=Mb.Decomposition(false,MatQRDecomp);
             A=ACb[0]; C=ACb[1];  //<-------------------  setCentralMat1(Mb)
             sb.UpdateBlocks();
@@ -53,7 +56,7 @@ struct DMRG_se_gs
             C=DirectSum(AC[1],
                        ACb[1], false);
             sb.UpdateBlocks();
-            AC=A.Decomposition(false,MatQRDecomp);
+            AC=A.Decomposition(false,MatQRDecomp/*MatSVDFixedDim(gs.m)*/);
             A=AC[0]; C=AC[1]*C;
             sb.UpdateBlocks();
             double ener2=sb.value();

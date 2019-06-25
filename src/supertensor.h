@@ -27,7 +27,12 @@ struct SuperTensor
     {
         TensorD tr;
         if (_A.rank()==2)
-            tr("kK")=_A("ik")*psi("iI")*_B("IK");
+        {
+            if (psi.rank()==2)
+                tr("kK")=_A("ik")*psi("iI")*_B("IK");
+            else if (psi.rank()==3)
+                tr("kaK")=_A("ik")*psi("iaI")*_B("IK");
+        }
         else if (_A.rank()==3)
             tr("kK")=_A("ijk")*psi("iI")*_B("IjK");
         else if(_A.rank()==5)

@@ -34,17 +34,20 @@ array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol,
     mat U,V;
     vec s;
     svd_econ(U, s, V, mX);
+    double sum0=0;
+    for(int i=s.size()-1;i>=0;i--) sum0+=s[i]*s[i];
     int D=std::min(Dmax,(int)s.size());
     if (D==0)
     {
         D=s.size();
         for(uint i=0;i<D;i++)
-            if(fabs(s[i])<=tol) {D=i;break;}
+            if(i>0 && fabs(s[i])<=tol) {D=i;break;}
     }
     double sum=0;
     for(int i=D-1;i>=0;i--) sum+=s[i]*s[i];
+    if (sum<=0.0) sum=1;
     mat Ua=U.head_cols(D);
-    mat Sa=diagmat(s.head(D)/sqrt(sum));
+    mat Sa=diagmat(s.head(D)/sqrt(sum/sum0));
     mat Vt=V.head_cols(D).t();
     if (is_right)
         return {conv_to<stdvec>::from(vectorise(Ua*Sa)),
@@ -68,7 +71,8 @@ vector<int> FindNonZeroCols(const double*  X, int n1,int n2,double tol)
         if ( std::abs(mc) > tol ) cols.push_back(j);
     }
     if (cols.empty())
-        throw runtime_error("FindNonZeroCols with cero col");
+        //throw runtime_error("FindNonZeroCols empty");
+        cols.push_back(0);
     return cols;
 }
 
@@ -142,9 +146,45 @@ array<stdvec,2> MatQRDecomp(bool is_right, const double*  X, int n1, int n2)
 }
 
 
-//void CubeTranspose(const double*  X, double *result, int d1, int d2,int d3)
-//{
-//    const cube mX((double* const)X,d1,d2,d3,false);
-//    cube res(result,d3,d2,d1,false);
-//    res=mX.t();
-//}
+
+MatDensityFixedDimDecomp::MatDensityFixedDimDecomp(stdvec rho,int _m)
+    :m(_m)
+{
+    vec eval;
+    mat evec;
+    int n=sqrt(rho.size());
+    mat rhom(rho.data(),n,n,false);
+    eig_sym(eval,evec,rhom);
+    m=std::min(n,m);
+    double sum=0;
+    for(uint i=0;i<m;i++) sum+=eval[n-m+i];
+    if (fabs(1.0-sum)>1e-9) std::cout<<" peso descartado "<<1.0-sum<<" tr(rho)="<<arma::trace(rhom)<<"\n";
+    mat evecT=evec.tail_cols(m);
+    rot=stdvec(evecT.begin(),evecT.end());
+}
+
+std::array<stdvec,2> MatDensityFixedDimDecomp::operator()(bool is_right, const double*  X, int n1,int n2) const
+{
+    const mat mX((double* const)X,n1,n2,false);
+    int mr=rot.size()/m;
+    const mat mrot((double* const) rot.data(),mr,m,false);
+    if (!is_right)
+    {
+        if (mr!=n1)
+            throw std::invalid_argument("MatDensityDecomp left rotation incompatible");
+        mat mrott=mrot.t();
+        mat C=mrott*mX;
+        return {stdvec(mrot.begin(),mrot.end()),
+                stdvec(C.begin(),C.end())};
+    }
+    else
+    {
+        if (mr!=n2)
+            throw std::invalid_argument("MatDensityDecomp right rotation incompatible");
+
+        mat mrott=mrot.t();
+        mat C=mX*mrot;
+        return {stdvec(C.begin(),C.end()),
+                stdvec(mrott.begin(),mrott.end())};
+    }
+}

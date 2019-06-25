@@ -126,6 +126,7 @@ public:
 
     void Save(std::ostream& out) const
     {
+        out<<rank()<<"\n";
         for(int x:dim) out<<x<<" ";
         out<<"\n";
         VecSave(data(),size(),out);
@@ -136,7 +137,12 @@ public:
     }
     void Load(std::istream& in)
     {
-        for(int x:dim) in>>x;
+        int r;
+        in>>r;
+        dim.resize(r);
+        for(int& x:dim) in>>x;
+        *this=Tensor(dim);
+//        in.ignore(1);
         VecLoad(data(),size(),in);
     }
     void Load(std::string filename)
@@ -150,8 +156,9 @@ public:
     }
     void operator+=(const Tensor& t2)
     {
+        if(rank()==0) {*this=t2; return;}
         if (dim!=t2.dim)
-            throw std::invalid_argument("Tensor::operator-= incompatible");
+            throw std::invalid_argument("Tensor::operator+= incompatible");
 
         VecPlusInplace(data(),t2.data(),size());
     }
@@ -350,8 +357,8 @@ public:
 //    }
     friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
     {
-        if (t1.rank()!=t2.rank())
-            throw std::invalid_argument("TensorSum incompatible rank");
+//        if (t1.rank()!=t2.rank())
+//            throw std::invalid_argument("TensorSum incompatible rank");
 
         Tensor A=t1.ReShape({1,t1.rank()-1});
         Tensor B=t2.ReShape({1,t1.rank()-1});
@@ -360,11 +367,15 @@ public:
         Index dimr=t1.dim,delta={0,0,0};
         if (!left)
         {
+            if (A.dim[2]!=B.dim[2])
+                throw std::invalid_argument("TensorSum incompatible right index");
             dimr.front()=t1.dim.front()+t2.dim.front();
             delta[0]=A.dim[0];
         }
         else
         {
+            if (A.dim[0]!=B.dim[0])
+                throw std::invalid_argument("TensorSum incompatible left index");
             dimr.back()=t1.dim.back()+t2.dim.back();
             delta[2]=A.dim[2];
         }

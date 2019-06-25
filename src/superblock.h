@@ -36,12 +36,7 @@ class Superblock
             b2[i]=prod=Transfer(i+1)*prod;
 //        b2[length-1]=one;
     }
-    double norm_factor() const
-    {
-        double prod=1;
-        for(const MPS* x:mps) prod*=x->norm_factor();
-        return prod;
-    }
+
     const TensorD& Left(int nSites) const
     {
         int ini=pos.i-(nSites-1)/2;
@@ -66,13 +61,18 @@ class Superblock
 //        else
             b2[pos.i]=Transfer(pos.i+1)*right;
     }
-
+    double norm_factor() const
+    {
+        double prod=1;
+        for(const MPS* x:mps) prod*=x->norm_factor();
+        return prod;
+    }
     SuperTensor Oper() const
     {
         if(mps.size()==3)
-            return { b1[pos.i]*norm_factor(), b2[pos.i], {mps[1]->C} };
+            return { b1[pos.i], b2[pos.i], {mps[1]->C*mps[1]->norm_factor()} };
         else // size()==2
-            return { b1[pos.i]*norm_factor(), b2[pos.i]};
+            return { b1[pos.i], b2[pos.i]};
     }
     SuperTensor Oper(int nSites) const
     {
@@ -86,8 +86,10 @@ class Superblock
     }
     double value() const
     {
-        TensorD Cp=Oper()*mps.front()->C;
-        return Dot(mps.back()->C,Cp);
+        TensorD Cp=Oper()*mps.front()->C ;
+        return Dot(mps.back()->C,Cp)
+                * mps.back()->norm_factor()
+                * mps.front()->norm_factor();
     }
     double value(int nSites) const
     {

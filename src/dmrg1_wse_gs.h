@@ -30,7 +30,7 @@ struct DMRG1_wse_gs
         if ( fabs(d_opt)<epsilon || fabs(d_trunc)<epsilon )
         {
             if (fabs(d_trunc)>epsilon) f=0.9;
-            else f=1.1;
+            else f=1.001;
         }
         else
         {
@@ -75,31 +75,19 @@ struct DMRG1_wse_gs
             P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
             P=P.ReShape({1,2}).Clone();
             P*=1.0/Norm(P);
-//            P=P.Decomposition(false,MatQRDecomp)[0];
-            TensorD zero( {P.dim.back(), B.dim[1], B.dim[2]} );
-            zero.FillZeros();
-            M=DirectSum(M, P*alpha, true);
-            B=DirectSum(B, zero, false);
-            auto AC=M.Decomposition(false,MatSVDFixedDim(gs.m));
+            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
             A=AC[0]; C=AC[1];
-            sb.UpdateBlocks();
-            if (z2_sym.length>0) sb_sym.UpdateBlocks();
         }
         else
         {
             P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
             P=P.ReShape({2,3}).Clone();
             P*=1.0/Norm(P);
-//            P=P.Decomposition(true,MatQRDecomp)[1];
-            TensorD zero( { A.dim[0], A.dim[1], P.dim.front() } );
-            zero.FillZeros();
-            A=DirectSum(A, zero, true);
-            M=DirectSum(M, P*alpha, false);
-            auto CB=M.Decomposition(true,MatSVDFixedDim(gs.m));
+            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
             C=CB[0]; B=CB[1];
-            sb.UpdateBlocks();
-            if (z2_sym.length>0) sb_sym.UpdateBlocks();
         }
+        sb.UpdateBlocks();
+        if (z2_sym.length>0) sb_sym.UpdateBlocks();
         gs.Normalize();
         double Etrunc=sb.value();
         alpha=AdaptAlpha(alpha,Eini,Eopt,Etrunc);

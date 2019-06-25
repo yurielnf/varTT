@@ -3,6 +3,8 @@
 #include"dmrg1_wse_gs.h"
 #include"dmrg_res_cv.h"
 #include"tensor.h"
+#include"parameters.h"
+
 #include<armadillo>
 
 using namespace std;
@@ -39,11 +41,11 @@ MPO Ham2CK1(int L)
 {
     int m=1000;
     double lambda=6;
-    double V=0.4;
-    double U1=3000;
-    double U2=1000;
-    double Jh=1000;
-    double e=-1;
+    double V=1.13;
+    double U1=30;
+    double U2=10;
+    double Jh=10;
+    double e=-2;
     double D=0;
 
     MPSSum h(m,MatSVDFixedTol(1e-12));
@@ -193,52 +195,101 @@ MPO NImp(int L)
     return npart.toMPS();
 }
 
-void CalculaGS()
-{
-    int len=10, m=128, mMax=m;
+//---------------------------- Test DMRG basico -------------------------------------------
 
-    auto op=HamTbAuto(len,true); op.Sweep(); op.PrintSizes("Hamtb=");
+void TestDMRGBasico(const Parameters &param)
+{
+    int len=param.length, m=param.m, mMax=m;
+
+    auto op=Ham2CK1(len); op.Sweep(); op.PrintSizes("Hamtb=");
     op.decomposer=MatChopDecompFixedTol(0);
     auto nop=NParticle(len),nimp=NImp(len);
     DMRG_0_gs sol(op,m,mMax,1.0);
-    for(int k=0;k<10;k++)
+    for(int k=0;k<param.nsweeps;k++)
     {
-        std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<"\n";
+        std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<" --------------------------------------\n";
         sol.DoIt_gs();
         Superblock np({&sol.gs,&nop,&sol.gs});
         Superblock ni({&sol.gs,&nimp,&sol.gs});
         cout<<"nImp="<<ni.value()<<" nT="<<np.value()<<endl;
-        if (k<9) sol.DoIt_res();
+        if (k<param.nsweeps-1) sol.DoIt_res();
     }
     ofstream out("gs.dat");
     sol.gs.Save(out);
 }
 
-void CalculaGreen()
-{
-    int len=10, m=128;
+//---------------------------- Test DMRG-CV ---------------------------------------------
 
-    auto op=HamTbAuto(len,true); op.Sweep(); op.PrintSizes("Hamtb=");
+vector<cmpx> ReadWFile(const string& name)
+{
+    vector<cmpx> ws;
+    double x,y;
+    complex<double> z;
+    ifstream in(name);
+    if (!in.is_open())
+        throw invalid_argument("TestDMRGCV_Impuritynn::ReadWFile file not found");
+    while (!in.eof())
+    {
+        in>>x>>y; z={x,y};
+        ws.push_back(z);
+        if (in.eof()) {ws.pop_back(); break;}
+        in.ignore(1000,'\n');
+    }
+    return ws;
+}
+
+vector<cmpx> LocalInterval(const vector<cmpx>& ws, int dw,int iid)
+{
+    vector<cmpx> res;
+    int i0=0; //ws.size()/2;
+    if ( iid*dw>=int(ws.size()/2) ) i0=1;
+    for(int i=i0+dw*iid; i<i0+dw*(iid+1); i++)
+        res.push_back(ws[i]);
+    return res;
+}
+
+double EtaMax(const vector<cmpx>& ws)
+{
+    double etam=ws[0].imag();
+    for(const cmpx& z:ws)
+        if (z.imag()>etam) etam=z.imag();
+    return etam;
+}
+
+void TestDMRGCV(const Parameters& param,int id, int n_id)
+{
+    int len=param.length, m=param.m;
+
+    auto op=Ham2CK1(len); op.Sweep(); op.PrintSizes("Ham=");
     op.decomposer=MatChopDecompFixedTol(0);
-//    DMRG_0_gs sol(op,m,mMax,1.0);
-//    for(int k=0;k<4;k++)
-//    {
-//        std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<"\n";
-//        sol.DoIt_gs();
-//        sol.DoIt_res();
-//    }
 
     MPS gs;
     ifstream in("gs.dat");
     gs.Load(in);
     double ener=Superblock({&gs,&op,&gs}).value();
 
-    double w1=-0.1, w2=1, eta=0.1,npoints=50;
-    MPS a=Fermi(0,len,false)*gs;
+    vector<cmpx> wsG=ReadWFile("ws.dat");
+    int dw=wsG.size()/n_id;
+    auto ws=LocalInterval(wsG,dw,id-1);
+    if ( id==n_id/2+1)
+    {
+        cmpx z=wsG[wsG.size()/2];
+        ws.insert(ws.begin(),z);
+    }
+    cout<<"\nener="<<ener;
+    cout<<" length="<<param.length<<" nsweeps="<<param.nsweeps<<" m="<<param.m<<endl;
+    cout<<"interval id="<<id<<" w1="<<ws.front()<<" w2="<<ws.back()<<endl;
+    double w1=ws.front().real();
+    double w2=ws.back().real();
+    double eta1=std::min( ws.front().imag()*param.etaFactor , EtaMax(wsG) );
+    double eta2=std::min( ws.back() .imag()*param.etaFactor , EtaMax(wsG) );
+
+    MPS a= (param.opType=='C')?Fermi(param.op1Pos,len,true)*gs
+                              :Fermi(param.op1Pos,len,false)*gs;
     a.Canonicalize();
-    DMRG_0_cv solcv(op,m,a,ener,{w1,w2},{eta,eta});
+    DMRG_0_cv solcv(op,m,a,ener,{w1,w2},{eta1,eta2});
     std::cout<<"\n\n\nstarting CV\n\n";
-    for(int k=0;k<4;k++)
+    for(int k=0;k<param.nsweeps;k++)
     {
         std::cout<<"sweep "<<k+1<<"\n";
         for(auto p:MPS::SweepPosSec(len))
@@ -248,22 +299,39 @@ void CalculaGreen()
             solcv.Print();
         }
     }
-    auto ws=UniformPartition(cmpx(w1,eta),cmpx(w2,eta),npoints);
-    auto green=solcv.Green(a,ws);
-    ofstream out("green.dat");
+    MPS b= (param.opType=='C')?Fermi(param.op2Pos,len,true)*gs
+                              :Fermi(param.op2Pos,len,false)*gs;
+    b.Canonicalize();
+    auto green=solcv.Green(b,ws);
+    ofstream out( string("green")+
+                  param.opType+
+                  to_string(param.op1Pos)+
+                  to_string(param.op2Pos)+
+                  to_string(id)+
+                  ".dat");
     for(uint i=0;i<ws.size();i++)
         out<<ws[i].real()<<" "<<ws[i].imag()<<" "<<green[i].real()<<" "<<green[i].imag()<<"\n";
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     cout << "Hello World!" << endl;
     std::cout<<std::setprecision(15);
     time_t t0=time(NULL);
     srand(time(NULL));
 
-    CalculaGS();
-    CalculaGreen();
+    if (argc==3 && string(argv[2])=="basic")  // ./a.out parameters.dat basic
+    {
+        Parameters param;
+        param.ReadParameters(argv[1]);
+        TestDMRGBasico(param);
+    }
+    else if (argc==4) // ./a.out parameters.dat <interval id> <n intervals>
+    {
+        Parameters param;
+        param.ReadParameters(argv[1]);
+        TestDMRGCV(param,atoi(argv[2]),atoi(argv[3]));
+    }
 
     cout<<"\nDone in "<<difftime(time(NULL),t0)<<"s"<<endl;
     return 0;

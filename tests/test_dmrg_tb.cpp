@@ -117,7 +117,7 @@ TEST_CASE( "dmrg with White subspace-expansion S=1", "[dmrg_wse_s1]" )
         op.decomposer=MatChopDecompFixedTol(0);
         auto sf=SpinFlipGlobal(len); sf.decomposer=MatChopDecompFixedTol(0);
         DMRG1_wse_gs sol(op,m);
-        sol.tol_diag=1e-6;
+        sol.tol_diag=1e-9;
         for(int k=0;k<20;k++)
         {
             for(auto p:MPS::SweepPosSec(len))

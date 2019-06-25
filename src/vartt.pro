@@ -11,7 +11,8 @@ SOURCES +=\
     supertensor.cpp \
     dmrg_se_gs.cpp \
     dmrg_oe_gs.cpp \
-    dmrg_wse_gs.cpp
+    dmrg_wse_gs.cpp \
+    parameters.cpp
 
 HEADERS += \
     tensor.h \
@@ -27,5 +28,11 @@ HEADERS += \
     dmrg_res_gs.h \
     dmrg_wse_gs.h \
     dmrg1_gs.h \
-    dmrg1_wse_gs.h
+    dmrg1_wse_gs.h \
+    dmrg1_res_gs.h \
+    dmrg_res_cv.h \
+    correctionvector.h \
+    gmres_m.h \
+    parameters.h \
+    dmrg_0_jd_gs.h
 

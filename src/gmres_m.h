@@ -86,7 +86,7 @@ struct Gmmres
     const Operator& A;
     Operator *M;
     Ket b,x;
-    int m,nMaxIter,cIter=0;
+    int m,nMaxIter,iter=0;
     double tol,error;
 
     Gmmres(const Operator& A, const Ket&b, const Ket& x0,
@@ -103,7 +103,7 @@ struct Gmmres
     void Iterate()
     {
         Ket res=b-A*x;
-        while (!IterateInner(res) && cIter<nMaxIter)
+        while (!IterateInner(res) && iter<nMaxIter)
             res=b-A*x;
 
 //        if (error<tol) std::cout<<"cIter="<<cIter<<" error="<<error<<"; ";
@@ -118,7 +118,7 @@ private:
         vector<vector<double>> H;
         for(int i=0;i<m;i++)
         {
-            arn.Iterate(); cIter++; s.push_back(0);
+            arn.Iterate(); iter++; s.push_back(0);
             auto hi=arn.h[i];
             for (int k = 0; k < i; ++k)
                 J[k].Apply(hi.data(),k);
@@ -129,13 +129,24 @@ private:
             J.push_back(rot); H.push_back(hi);
             error=fabs(s[i+1]);
             //std::cout<<cIter<<" error="<<error<<std::endl;
-            if(error<tol || cIter>=nMaxIter) break;
+            if(error<tol || iter>=nMaxIter) break;
         }
         auto y=SolveUpperBackware(H,s);
         for(uint i=0;i<J.size();++i) x+=arn.v[i]*y[i];
         return error<tol;
     }
 };
+
+//---------------------------------- portal -------------------------
+
+template<class Hamiltonian, class Ket>                                      //Portal method
+Gmmres<Hamiltonian,Ket> SolveGMMRES(const Hamiltonian& H,const Ket& b,const Ket x0,
+                                         int nIter, double tol)
+{
+    Gmmres<Hamiltonian,Ket> sol(H,b,x0,nIter,nIter,tol);
+    sol.Iterate();
+    return sol;
+}
 
 #endif // GMRES_M
 

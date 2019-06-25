@@ -31,7 +31,7 @@ struct CorrectionVector  // To obtain the Im[c] for the problem: (w + i eta - H)
         this->eta=eta;
         Gmmres<CorrectionVector,Ket> sol(*this,a*(-eta),x0,nInner,nIter,tol);
         sol.Iterate();
-        cIter=sol.cIter;
+        cIter=sol.iter;
         xI=sol.x;
 
         xR=(H*xI-xI*w)*(1.0/eta);
@@ -73,7 +73,7 @@ struct CorrectionVectorC // To obtain the Im[c] for the problem: (w + i eta - H)
         this->eta=eta;
         Gmmres<CorrectionVectorC,Ket> sol(*this,ar*(-eta)+ai*w-H*ai,x0,nInner,nIter,tol);
         sol.Iterate();
-        cIter=sol.cIter;
+        cIter=sol.iter;
         xI=sol.x;
 
         xR=(H*xI-xI*w+ai)*(1.0/eta);
@@ -110,7 +110,7 @@ struct CorrectionVector2  // To obtain c for the problem: (w + i eta - H) |c> = 
         valarray<Ket> b={a,a-a},x0={x0R,x0I};
         Gmmres<CorrectionVector2,valarray<Ket> > sol(*this,b,x0,nInner,nIter,tol);
         sol.Iterate();
-        cIter=sol.cIter;
+        cIter=sol.iter;
         xR=sol.x[0];
         xI=sol.x[1];
         greenR=Dot(a,xR);

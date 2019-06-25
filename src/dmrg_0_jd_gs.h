@@ -1,21 +1,21 @@
-#ifndef DMRG_0_GS_H
-#define DMRG_0_GS_H
-
+#ifndef DMRG_0_JD_GS_H
+#define DMRG_0_JD_GS_H
 
 #include"superblock.h"
 #include"lanczos.h"
+#include"gmres_m.h"
 
-struct DMRG_0_gs
+struct DMRG_0_JD_gs
 {
     int nIterMax=256,iter;
-    double ener, alpha=1e-3, tol_diag=1e-13,error=1;
+    double ener,enerl, tol_diag=1e-13,error=1;
 public:
     MPS gs,dgs;
     MPO mpo,z2_sym;
     Superblock sb_h11, sb_o12, sb_h12,sb_h22, sb_sym;
     stdvec a,b;
 
-    DMRG_0_gs(const MPO& mpo,int m,int mMax,double mfactor=1,MPO z2_sym=MPO())
+    DMRG_0_JD_gs(const MPO& mpo,int m,int mMax,double mfactor=1,MPO z2_sym=MPO())
         :mpo(mpo),z2_sym(z2_sym),a(2),b(1)
     {
         int d=mpo.at(0).dim[1];
@@ -41,6 +41,7 @@ public:
         }
         dgs.Normalize();
         set_states(gs,dgs);
+        enerl=ener;
 
 //        Solve_gs();
 //        Solve_res();
@@ -65,6 +66,7 @@ public:
         auto eigen=GSTridiagonal(a.data(),b.data(),2);
         std::cout<<"enerL="<<eigen.eval<<"\n";
         error=fabs(ener-eigen.eval); //fabs(b[0]*eigen.evec[1]);
+        enerl=eigen.eval;
 //        if (error<tol_diag) {set_states(gs,dgs); return;}
 //        error=tol_diag;
 //        if (error==0.0)
@@ -88,7 +90,7 @@ public:
 //        }
         MPSSum gsn(gs.m,MatSVDFixedDim(gs.m));
         gsn+=gs*eigen.evec[0];
-        gsn+=dgs*eigen.evec[1];        
+        gsn+=dgs*eigen.evec[1];
 
         MPSSum dgsn(dgs.m,MatSVDFixedDim(dgs.m));
         dgsn+=gs*eigen.evec[1];
@@ -96,62 +98,58 @@ public:
 
         set_states( gsn .toMPS().Normalize(),
                     dgsn.toMPS().Normalize() );
+        set_states( gsn .toMPS().Normalize(), dgs);
     }
     void Solve_gs()
     {
         double errord=std::max(error/gs.length,tol_diag);
         auto lan=Diagonalize(sb_h11.Oper(), gs.C, nIterMax, errord);  //Lanczos
         iter=lan.iter;
-        if (lan.lambda0 > ener) return;
+//        if (lan.lambda0 > ener) return;
         ener=lan.lambda0;
         gs.C=lan.GetState();
         gs.Normalize();
     }
-    bool Solve_res()
+    struct JDOper
     {
-        auto d_psiC= sb_h12.Oper()*gs.C
-                    -sb_o12.Oper()*gs.C*ener;
-        a[0]=ener;
-        b[0]=Norm(d_psiC);
-        if (b[0]<1e-16) return false;
-//        auto psi2=d_psiC*(1.0/b[0]);
-//        auto h2=Dot(psi2,sb_h22.Oper()*psi2);
-//        if (h2-ener<2*b[0]) return false;
-        dgs.C=d_psiC*(1.0/b[0]);
-        dgs.Normalize();        
-        return true;
-    }
-    bool Solve_res1()
-    {
-        auto d_psiM= sb_h12.Oper(1)*gs.CentralMat(1)
-                    -sb_o12.Oper(1)*gs.CentralMat(1)*ener;
-        a[0]=ener;
-        b[0]=Norm(d_psiM);
-        if (b[0]<1e-16) return false;
-//        auto psi2=d_psiC*(1.0/b[0]);
-//        auto h2=Dot(psi2,sb_h22.Oper()*psi2);
-//        if (h2-ener<2*b[0]) return false;
-        dgs.setCentralMat( d_psiM*(1.0/b[0]) );
-        dgs.Normalize();
-        a[1]=sb_h22.value();
-        return true;
-    }
+        SuperTensor H22;
+        TensorD cH, cO;
+        double ener,enerl;
+        JDOper(const SuperTensor& H22,const TensorD& cH,const TensorD& cO,
+               double ener,double enerl)
+            :H22(H22),cH(cH),cO(cO),ener(ener), enerl(enerl) {}
+        TensorD operator*(const TensorD& psi) const
+        {
+            auto y=H22*psi;
+            y+=cO*(-Dot(cH,psi));
+            y+=cH*(-Dot(cO,psi));
+            y+=cO*( Dot(cO,psi)*ener);
+            y+=cO*( Dot(cO,psi)*enerl);
+            y+=psi*(-enerl);
+            return y;
+        }
+    };
+
     void Solve_res_opt()
     {
-        auto d_psiC= sb_h12.Oper()*gs.C
-                    -sb_o12.Oper()*gs.C*ener;
-        a[0]=ener;
-        {
-            auto phi=sb_o12.Oper()*gs.C;
-            dgs.C+=phi*(-Dot(phi,dgs.C));
-            double errord=std::max(error/10,tol_diag);
-            auto lan=Diagonalize(sb_h22.Oper(), dgs.C, nIterMax, errord);  //Lanczos
-            iter=lan.iter;
-            dgs.C=lan.GetState();
-            dgs.Normalize();
-            b[0]=Dot(dgs.C,d_psiC);
-        }
-        a[1]=sb_h22.value();
+        auto cH=sb_h12.Oper()*gs.C;
+        auto cO=sb_o12.Oper()*gs.C;
+        auto beff=cH+cO*(-ener);
+//        beff*=1.0/Norm(beff);
+
+//        double nr=Norm(dgs.WaveFunction());
+//        a[0]=ener;
+//        b[0]=sb_h12.value()/nr;
+//        a[1]=sb_h22.value()/(nr*nr);
+//        auto eigen=GSTridiagonal(a.data(),b.data(),2);
+//        std::cout<<" enerl="<<eigen.eval<<" ";
+        auto A=JDOper(sb_h22.Oper(),cH,cO,ener,std::min(ener,enerl));
+//        double errord=std::max(error/10,tol_diag);
+        auto x=dgs.WaveFunction(); //x.FillZeros();
+        double errord=std::max(error/gs.length,tol_diag);
+        auto lan=SolveGMMRES(A,beff,x,nIterMax,errord);
+        iter=lan.iter;
+        dgs.SetWaveFunction(lan.x);
     }
     void SetPos_gs(MPS::Pos p)
     {
@@ -162,7 +160,7 @@ public:
     {
         sb_o12.SetPos(p);
         sb_h12.SetPos(p);
-//        sb_h22.SetPos(p);
+        sb_h22.SetPos(p);
     }
     void Print() const
     {
@@ -172,7 +170,6 @@ public:
     }
     void Print_res() const
     {
-        if (iter==1) {std::cout<<gs.pos.i+1<<" "; std::cout.flush(); return;}
         std::cout<<" opt expansion ";
         sb_h22.Print();
         std::cout<<"; "<<iter<<" lancz\n";
@@ -184,31 +181,42 @@ public:
         {
             SetPos_gs(p);
             Solve_gs();
-//            SetPos_res(p);
-//            Solve_res();
-            if (gs.length<10 || (p.i+1) % (gs.length/10)==0) Print();
-//            if (p.i==gs.length-2 && p.vx==1) reset_gs();
-        }       
+            if ((p.i+1)*10 % gs.length ==0) Print();
+        }
     }
     void DoIt_res()
     {
         sb_h12=Superblock({&gs,&mpo,&dgs});
         sb_o12 =Superblock({&gs,&dgs});
-        iter=1;
-        bool opt=false;
+        sb_h22=Superblock({&dgs,&mpo,&dgs});
+        iter=0;
+//        nr=Norm(sb_h12.Oper()*gs.C+sb_o12.Oper()*gs.C*(-ener));
         for(int i=0;i<2;i++)
             for(auto p:MPS::SweepPosSec(gs.length))
             {
                 //            SetPos_gs(p);
                 SetPos_res(p);
-                /*if (!opt) opt=!*/Solve_res();
-                if (opt) Solve_res_opt();
-                if (gs.length<10 || (p.i+1) % (gs.length/10)==0) Print_res();
+                Solve_res_opt();
+                if ((p.i+1)*10 % gs.length ==0) Print_res();
             }
-        sb_h22=Superblock({&dgs,&mpo,&dgs});
+
+        {
+            MPSSum dgsn(dgs.m);
+            dgsn+=gs*(-sb_o12.value());
+            dgsn+=dgs;
+            dgs=dgsn.toMPS();
+            sb_h12=Superblock({&gs,&mpo,&dgs});
+            sb_o12 =Superblock({&gs,&dgs});
+            sb_h22=Superblock({&dgs,&mpo,&dgs});
+        }
+
+        dgs.Normalize();
+        a[0]=sb_h11.value();
+        b[0]=sb_h12.value();
         a[1]=sb_h22.value();
+        dgs.decomposer=MatSVDFixedDim(dgs.m); dgs.Sweep();
         reset_states();
     }
 };
 
-#endif // DMRG_0_GS_H
+#endif // DMRG_0_JD_GS_H

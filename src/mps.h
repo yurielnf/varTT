@@ -10,9 +10,9 @@
 
 class MPS
 {
-private:
-    std::vector<TensorD> M;
 public:
+
+    std::vector<TensorD> M;
     TensorD C;
     int length, m;
 //    typedef std::array<int,2> Pos;
@@ -73,6 +73,8 @@ public:
     MPS& FillRandu(Index dim) { FillNone(dim); return FillRandu(); }
     const TensorD& at(int i) const { return M[i]; }
     TensorD& at(int i) { return M[i]; }
+    const TensorD& left() const { return M[pos.i]; }
+    const TensorD& right() const { return M[pos.i+1]; }
     void PrintSizes(const char str[]="") const
     {
         std::cout<<str<<"\n";
@@ -94,6 +96,28 @@ public:
             if (i==pos.i) tr=tr*C;
         }
         return tr*one;
+    }
+    void Save(std::ostream& out) const
+    {
+        out<<length<<" "<<pos.i<<"\n";
+        for(int i=0;i<length;i++)
+        {
+            M[i].Save(out);
+            if (i==pos.i) C.Save(out);
+        }
+    }
+    void Load(std::istream& in)
+    {
+        in>>length>>pos.i;
+        pos.vx=1;
+        M.resize(length);
+        for(int i=0;i<length;i++)
+        {
+            M[i].Load(in);
+            if (i==pos.i) C.Load(in);
+        }
+        decomposer=MatQRDecomp;
+        m=MaxVirtDim();
     }
     MPS& Normalize() {norm_n=1; C*=1.0/Norm(C); return *this;}
     MPS& Canonicalize()
@@ -161,6 +185,8 @@ public:
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
+    TensorD WaveFunction() const { return C*norm_factor(); }
+    void SetWaveFunction(const TensorD& t) { C=t*(1.0/norm_factor()); ExtractNorm(C);}
     TensorD CentralMat(int nSites) const
     {
         int ini=pos.i-(nSites-1)/2;
@@ -204,7 +230,8 @@ public:
     {
         double nr=std::fabs(c);
         norm_n*=pow(nr,1.0/length);
-        C*=c/nr;
+        if (nr==0.0) C.FillZeros();
+        else C*=c/nr;
     }
     MPS operator*(double c) const { MPS A=*this; A*=c; return A; }
     void operator+=(const MPS& mps2)
@@ -294,7 +321,7 @@ private:
         if (nr==0)
         {
 //            throw std::logic_error("mps:ExtractNorm() null matrix");
-            std::cerr<<"mps:ExtractNorm() null matrix";
+//            std::cerr<<"mps:ExtractNorm() null matrix";
             norm_n=0;
         }
         else
@@ -321,6 +348,7 @@ struct MPSSum
 
     void operator+=(const MPS& mps)
     {
+        if (mps.norm()==0.0) return;
         v.push_back(mps);
         v.back().m=m;
         v.back().decomposer=decomposer;

@@ -58,12 +58,12 @@ struct Lanczos
 
     void Iterate()
     {
-//        if (b[iter]< lambda0*std::numeric_limits<double>::epsilon() )
-//        {
-//            r.FillRandu(); r*=(1.0/Norm(r));
-//            Orthogonalize(r,v,iter-1);
-//            b[iter]=Norm(r);
-//        }
+        if (b[iter]< fabs(lambda0*std::numeric_limits<double>::epsilon()) )
+        {
+            r.FillRandu(); r*=(1.0/Norm(r));
+            Orthogonalize(r,v,iter-1);
+            b[iter]=Norm(r);
+        }
         v.push_back( r*(1.0/b[iter]) );
         r=A*v[iter];
         if (iter>0) r+=v[iter-1]*(-b[iter]);
@@ -130,8 +130,8 @@ inline LEigenPair GSTridiagonal(double *a, double *b, int size, double tol)
     int info=LAPACKE_dstevx(LAPACK_COL_MAJOR,'V','I', size, a, b,
                    0.0, 0.0,nEvals,nEvals,tol,&M,&eigen.eval,eigen.evec.data(),size,ifail.data());
     if (info!=0)
-//        throw std::runtime_error("GSTridiagonal: LAPACKE_dstevx info!=0");
-        std::cout<<"GSTridiagonal: LAPACKE_dstevx info!=0\n";
+        throw std::runtime_error("GSTridiagonal: LAPACKE_dstevx info!=0");
+//        std::cout<<"GSTridiagonal: LAPACKE_dstevx info!=0\n";
     return eigen;
 }
 

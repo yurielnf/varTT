@@ -88,13 +88,14 @@ public:
 //            eigen.evec[0]=sqrt(1-eigen.evec[1]*eigen.evec[1]);
 //            std::cout<<"evec={1,0}\n";
 //        }
+        double o=sb_o12.value(), nr=1.0/sqrt(1-o*o);
         MPSSum gsn(gs.m,MatSVDFixedDim(gs.m));
-        gsn+=gs*eigen.evec[0];
-        gsn+=dgs*eigen.evec[1];
+        gsn+=gs*(eigen.evec[0]-eigen.evec[1]*nr*o);
+        gsn+=dgs*(eigen.evec[1]*nr);
 
         MPSSum dgsn(dgs.m,MatSVDFixedDim(dgs.m));
-        dgsn+=gs*eigen.evec[1];
-        dgsn+=dgs*(-eigen.evec[0]);
+        dgsn+=gs*(eigen.evec[1]-eigen.evec[0]*nr*o);
+        dgsn+=dgs*(-eigen.evec[0]*nr);
 
         set_states( gsn .toMPS().Normalize(),
                     dgsn.toMPS().Normalize() );
@@ -200,21 +201,22 @@ public:
                 if ((p.i+1)*10 % gs.length ==0) Print_res();
             }
 
-        {
-            MPSSum dgsn(dgs.m);
-            dgsn+=gs*(-sb_o12.value());
-            dgsn+=dgs;
-            dgs=dgsn.toMPS();
-            sb_h12=Superblock({&gs,&mpo,&dgs});
-            sb_o12 =Superblock({&gs,&dgs});
-            sb_h22=Superblock({&dgs,&mpo,&dgs});
-        }
+//        {
+//            MPSSum dgsn(dgs.m);
+//            dgsn+=gs*(-sb_o12.value());
+//            dgsn+=dgs;
+//            dgs=dgsn.toMPS();
+//            sb_h12=Superblock({&gs,&mpo,&dgs});
+//            sb_o12 =Superblock({&gs,&dgs});
+//            sb_h22=Superblock({&dgs,&mpo,&dgs});
+//        }
 
         dgs.Normalize();
+        double o=sb_o12.value(), nr=1.0/sqrt(1-o*o);
         a[0]=sb_h11.value();
-        b[0]=sb_h12.value();
-        a[1]=sb_h22.value();
-        dgs.decomposer=MatSVDFixedDim(dgs.m); dgs.Sweep();
+        b[0]=(sb_h12.value()-a[0]*o)*nr;
+        a[1]=(sb_h22.value()-2*o*sb_h12.value()+o*o*a[0])*nr*nr;
+//        dgs.decomposer=MatSVDFixedDim(dgs.m); dgs.Sweep();
         reset_states();
     }
 };

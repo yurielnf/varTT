@@ -9,18 +9,18 @@ struct SuperTensor
     TensorD _A,_B;
     SuperTensor(const TensorD& A,const TensorD& B,
                 const std::vector<TensorD>& C={})
-        :_A(A),_B(B)
+        :_B(B)
     {
-        if (C.size()==1)
+        if (C.empty())
+            _A=A;
+        else
         {
             if (C[0].rank()==2)
-                _A("iJk")=_A("ijk")*C[0]("jJ");
+                _A("iJk")=A("ijk")*C[0]("jJ");
             else if(C[0].rank()==4)
-            {
-                TensorD t;
-                t("iaJbk")=_A("ijk")*C[0]("jabJ");
-                _A=t;
-            }
+                _A("iaJbk")=A("ijk")*C[0]("jabJ");
+            else
+                throw std::invalid_argument("SuperTensor()");
         }
     }
     TensorD operator*(const TensorD& psi) const
@@ -37,6 +37,8 @@ struct SuperTensor
             tr("kK")=_A("ijk")*psi("iI")*_B("IjK");
         else if(_A.rank()==5)
             tr("kbK")=_A("iajbk")*psi("iaI")*_B("IjK");
+        else
+            throw std::invalid_argument("SuperTensor*psi");
         return tr;
     }
 };

@@ -1,7 +1,9 @@
 ﻿#include"catch.hpp"
+#include"parameters.h"
 #include"dmrg_res_gs.h"
 #include"dmrg1_res_gs.h"
-#include"dmrg_0_jd_gs.h"
+#include"dmrg_jd_gs.h"
+#include"dmrg1_jd_gs.h"
 
 static double ExactEnergyTB(int L, int nPart,bool periodic)
 {
@@ -51,28 +53,18 @@ TEST_CASE( "dmrg0 spin1", "[dmrg_0_s1]" )
 
     SECTION( "dmrg" )
     {
-        auto op=HamS1(len,true); op.PrintSizes("Hs1=");
-        op.decomposer=MatChopDecompFixedTol(0);
+        auto op=HamS(3,len,false); op.PrintSizes("Hs1=");
+        op.decomposer=MatQRDecomp;
+//        op.decomposer=MatChopDecompFixedTol(0);
 //        auto sf=SpinFlipGlobal(len);
 //        sf.decomposer=MatChopDecompFixedTol(0);
-        DMRG_0_gs sol(op,m,mMax,1.0); sol.error=10;
+        DMRG_0_gs sol(op,m,mMax,2.0); sol.error=1;
+        sol.DoIt_gs();
         for(int k=0;k<8;k++)
         {
-//            std::cout<<"sf="<<sol.sb_sym.value()<<"\n";
+            sol.DoIt_resExact();
             std::cout<<"\nsweep "<<k<<"; error="<<sol.error<<"\n\n";
             sol.DoIt_gs();
-            sol.DoIt_res();
-//            if (k>2 && error/sol.error<1.1) break;
-        }
-        for(int k=0;k<0;k++)
-        {
-            std::cout<<"\nsweep "<<k+20<<"\n\n";
-            for(auto p:MPS::SweepPosSec(len))
-            {
-                sol.SetPos_gs(p);
-                sol.Solve_gs();
-                if ((p.i+1) % (len/10) ==0) sol.Print();
-            }
         }
     }
 }
@@ -80,22 +72,80 @@ TEST_CASE( "dmrg0 spin1", "[dmrg_0_s1]" )
 TEST_CASE( "dmrg0 Jacobi-Davidson spin1", "[dmrg_0_jd_s1]" )
 {
     srand(time(NULL));
-    int len=100, m=200, mMax=m;
     std::cout<<std::setprecision(15);
+    Parameters par;
+    par.ReadParameters("param.txt");
 
     SECTION( "dmrg" )
     {
-        auto op=HamS1(len,true); op.PrintSizes("Hs1=");
-        op.decomposer=MatChopDecompFixedTol(0);
+        auto op=HamS(par.spin,par.length,par.periodic); op.PrintSizes("Hs1=");
+        op.decomposer=MatQRDecomp;
 //        auto sf=SpinFlipGlobal(len);
 //        sf.decomposer=MatChopDecompFixedTol(0);
-        DMRG_0_JD_gs sol(op,m,mMax,1.0); sol.error=10;
-        for(int k=0;k<8;k++)
+        DMRG1_JD_gs sol(op,par.m,par.m); sol.error=1;
+        sol.DoIt_gs();
+        for(int k=0;k<par.nsweep;k++)
         {
-//            std::cout<<"sf="<<sol.sb_sym.value()<<"\n";
+            sol.DoIt_res(par.nsweep_resid);
             std::cout<<"\nsweep "<<k<<"; error="<<sol.error<<"\n\n";
+            sol.reset_states();
             sol.DoIt_gs();
-            sol.DoIt_res();
         }
     }
 }
+
+//--------------- n-step residual correction -----
+#include"dmrg_krylov_gs.h"
+#include"dmrg_jacobi_davidson_gs.h"
+
+TEST_CASE( "dmrg0 Krylov spin1", "[dmrg_0_k_s1]" )
+{
+    srand(time(NULL));
+    std::cout<<std::setprecision(15);
+    Parameters par;
+    par.ReadParameters("param.txt");
+
+    SECTION( "dmrg" )
+    {
+        auto op=HamS(par.spin,par.length,par.periodic); op.PrintSizes("Hs1=");
+        op.decomposer=MatQRDecomp;//MatChopDecompFixedTol(0);
+        DMRG_krylov_gs sol(op,par.m,par.nkrylov);
+        sol.nsite_gs=par.nsite_gs;
+        sol.nsite_resid=par.nsite_resid;
+        sol.DoIt_gs();
+        for(int k=0;k<par.nsweep;k++)
+        {
+            sol.DoIt_res(par.nsweep_resid);
+            std::cout<<"\nsweep "<<k+1<<"; error="<<sol.error<<"\n\n";
+            sol.reset_states();
+            sol.DoIt_gs();
+        }
+    }
+}
+
+TEST_CASE( "dmrg0 JD spin1", "[dmrg_0_jacobi_s1]" )
+{
+    srand(time(NULL));
+    std::cout<<std::setprecision(15);
+    Parameters par;
+    par.ReadParameters("param.txt");
+
+    SECTION( "dmrg" )
+    {
+        auto op=HamS(par.spin,par.length,par.periodic); op.PrintSizes("Hs1=");
+        op.decomposer=MatQRDecomp;//MatChopDecompFixedTol(0);
+        DMRG_Jacobi_Davidson_gs sol(op,par.m,par.nkrylov);
+        sol.nsite_gs=par.nsite_gs;
+        sol.nsite_resid=par.nsite_resid;
+        sol.nsite_jd=par.nsite_jd;
+        sol.DoIt_gs();
+        for(int k=0;k<par.nsweep;k++)
+        {
+            sol.DoIt_res(par.nsweep_resid,par.nsweep_jd);
+            std::cout<<"\nsweep "<<k+1<<"; error="<<sol.error<<"\n\n";
+            sol.reset_states();
+            sol.DoIt_gs();
+        }
+    }
+}
+

@@ -40,7 +40,7 @@ struct DMRG_wse_gs
     static double AdaptAlpha(double alpha,double Eini,double Eopt,double Etrunc)
     {
         const double epsilon=1e-9;
-        double d_opt=Eini-Eopt, f, r;
+        double d_opt=Eini-Eopt, f=0.9, r;
         double d_trunc=Etrunc-Eopt;
         if ( fabs(d_opt)<epsilon || fabs(d_trunc)<epsilon )
         {
@@ -56,81 +56,41 @@ struct DMRG_wse_gs
         }
         f=std::max(0.1,std::min(2.,f));
         alpha*=f;
-        alpha=std::max(1e-11,std::min(100.,alpha));
+        alpha=std::max(1e-11,std::min(1e2,alpha));
         return alpha;
     }
     void Solve()
     {
-        double Eini=sb.value();
-        auto lan=Diagonalize(sb.Oper(), gs.C, nIterMax, tol_diag);  //Lanczos
-//        gs.C=lan.GetState();
-//        auto M=gs.CentralMat(1);
-
-//        auto lan=Diagonalize(sb.Oper(1), gs.CentralMat(1), nIterMax, tol_diag);  //Lanczos
-//        auto M=lan.GetState();
-//        gs.setCentralMat(M);
-//        sb.UpdateBlocks();
-//        if (z2_sym.length>0) sb_sym.UpdateBlocks();
-
-        double  Eopt=lan.lambda0;
-        iter=lan.iter;
-//        if (lan.lambda0 > ener) return;
         auto& A=gs.at(gs.pos.i);
         auto& C=gs.C;
         auto& B=gs.at(gs.pos.i+1);
-        TensorD P;
-        if (sb.pos.vx==1)
+        for(int i=0;i<7;i++)
         {
-            auto M=A*lan.GetState();
-            P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
-            P=P.ReShape({1,2}).Clone();
-            P*=1.0/Norm(P);
-            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
-            A=AC[0]; C=AC[1];
+            double Eini=sb.value();
+            auto lan=Diagonalize(sb.Oper(), gs.C, nIterMax, tol_diag);  //Lanczos
+            double Eopt=lan.lambda0;
+            TensorD P;
+            if (sb.pos.vx==1)
+            {
+                auto M=A*lan.GetState();
+                P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
+                auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
+//                auto AC=M.Decomposition(false,gs.decomposer);
+                A=AC[0]; C=AC[1];
+            }
+            else
+            {
+                auto M=lan.GetState()*B;
+                P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
+                auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
+//                auto CB=M.Decomposition(true,gs.decomposer);
+                C=CB[0]; B=CB[1];
+            }
+            sb.UpdateBlocks();
+            gs.Normalize();
+            double Etrunc=sb.value();
+            alpha=AdaptAlpha(alpha,Eini,Eopt,Etrunc);
         }
-        else
-        {
-            auto M=lan.GetState()*B;
-            P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
-            P=P.ReShape({2,3}).Clone();
-            P*=1.0/Norm(P);
-            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
-            C=CB[0]; B=CB[1];
-        }
-
-        /*
-        if (sb.pos.vx==1)
-        {            
-            P("kJI")=C("iI")*sb.b1[gs.pos.i]("ijk")*sb.mps[1]->C("jJ");
-            P=P.ReShape(1).Clone();
-            P*=1.0/Norm(P);
-//            P=P.Decomposition(false,MatQRDecomp)[0];
-            TensorD zero( {P.dim.back(), B.dim[1], B.dim[2]} );
-            zero.FillZeros();
-            C=DirectSum(C, P*alpha, true);
-            B=DirectSum(B, zero, false);
-            auto AC=C.Decomposition(false,MatSVDFixedDim(gs.m));
-            A=A*AC[0]; C=AC[1];
-        }
-        else
-        {
-            P("ijK")=C("iI")*sb.b2[gs.pos.i]("IJK")*sb.mps[1]->C("jJ");
-            P=P.ReShape(2).Clone();
-            P*=1.0/Norm(P);
-//            P=P.Decomposition(true,MatQRDecomp)[1];
-            TensorD zero( { A.dim[0], A.dim[1], P.dim.front() } );
-            zero.FillZeros();
-            A=DirectSum(A, zero, true);
-            C=DirectSum(C, P*alpha, false);
-            auto CB=C.Decomposition(true,MatSVDFixedDim(gs.m));
-            C=CB[0]; B=CB[1]*B;
-        }
-        */
-        sb.UpdateBlocks();
-        if (z2_sym.length>0) sb_sym.UpdateBlocks();
-        gs.Normalize();
-        double Etrunc=sb.value();
-        alpha=AdaptAlpha(alpha,Eini,Eopt,Etrunc);
     }
     void SetPos(MPS::Pos p)
     {

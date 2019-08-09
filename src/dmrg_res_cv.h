@@ -8,6 +8,7 @@
 struct DMRG_0_cv
 {
     int n, nIterMax=2048,iter;
+    int nsite=1;
     MPO mpo;
     MPS a;
     double ener;
@@ -27,7 +28,7 @@ public:
         ,wR(wR),wI(wI)
         ,cvR(n), cvI(n)
     {
-//        int d=mpo.at(0).dim[1];
+        //        int d=mpo.at(0).dim[1];
         cvy= a;/*MPS(mpo.length,m)
                 .FillRandu({m,d,m})
                 .Canonicalize()
@@ -41,8 +42,8 @@ public:
         cvy2.Sweep();
         sb=Superblock( {&cvy,&mpo,&cvy} );
         sb_ya=Superblock( {&a,&cvy} );
-        cvI[0]=cvy.WaveFunction();
-        cvI[1]=cvy2.WaveFunction();
+        cvI[0]=cvy.CentralMat(nsite);
+        cvI[1]=cvy2.CentralMat(nsite);
     }
     struct Target
     {
@@ -74,8 +75,8 @@ public:
     }
     void Solve()
     {
-        auto Heff=sb.Oper();
-        auto aeff=sb_ya.Oper()* a.WaveFunction();
+        auto Heff=sb.Oper(nsite);
+        auto aeff=sb_ya.Oper(nsite)* a.CentralMat(nsite);
         for(int i=0;i<n;i++)
         {
             auto sol=FindCV(Heff,aeff,cvI[i],wR[i]+ener,wI[i],nIterMax);
@@ -83,9 +84,8 @@ public:
             cvI[i]=sol.xI;
             iter=sol.cIter;
         }
-        cvy.SetWaveFunction(cvI[0]);
-        cvy2.SetWaveFunction(cvI[1]);
-
+        cvy.setCentralMat(cvI[0]);
+        cvy2.setCentralMat(cvI[1]);
         if (sb.pos.vx==1)
         {
             int mnext=cvy.right().dim.back();
@@ -95,10 +95,16 @@ public:
                 mnext=cvy.right().dim.front();
                 rpos=1;
             }
-
+            if (nsite)
+            {
+                for (TensorD &t:cvR)
+                    t=t.Decomposition(false,cvy.decomposer)[1];
+                for (TensorD &t:cvI)
+                    t=t.Decomposition(false,cvy.decomposer)[1];
+            }
             auto rho=DensityMatrix(true,rpos);
             auto dcm=MatDensityFixedDimDecomp(rho.vec(),mnext);
-            rot=rot=TensorD({rho.dim[0],mnext},dcm.rot);
+            rot=TensorD({rho.dim[0],mnext},dcm.rot);
             cvy.decomposer=cvy2.decomposer=dcm;
         }
         else
@@ -110,11 +116,22 @@ public:
                 mnext=cvy.left().dim.back();
                 rpos=2;
             }
-
+            if (nsite)
+            {
+                for (TensorD &t:cvR)
+                    t=t.Decomposition(true,cvy.decomposer)[0];
+                for (TensorD &t:cvI)
+                    t=t.Decomposition(true,cvy.decomposer)[0];
+            }
             auto rho=DensityMatrix(false,rpos);
             auto dcm=MatDensityFixedDimDecomp(rho.vec(),mnext);
             rot=TensorD({rho.dim[0],mnext},dcm.rot);
             cvy.decomposer=cvy2.decomposer=dcm;
+        }
+        if (nsite)
+        {
+            sb.UpdateBlocks();
+            sb_ya.UpdateBlocks();
         }
     }
     void SetPos(MPS::Pos p)
@@ -122,8 +139,8 @@ public:
         sb.SetPos(p);
         sb_ya.SetPos(p);
         cvy2.SetPos(p);
-        cvI[0]=cvy.WaveFunction();
-        cvI[1]=cvy2.WaveFunction();
+        cvI[0]=cvy.CentralMat(nsite);
+        cvI[1]=cvy2.CentralMat(nsite);
     }
     std::vector<cmpx> Green(MPS& b,std::vector<cmpx> vz)
     {
@@ -136,10 +153,10 @@ public:
             Solve();
             Print();
         }
-        auto cI0=cvI[0];
-        auto Heff=sb.Oper();
-        auto aeff=sb_ya.Oper()*a.WaveFunction();
-        auto beff=sb_yb.Oper()*b.WaveFunction();
+        auto cI0=cvy.CentralMat(nsite);
+        auto Heff=sb.Oper(nsite);
+        auto aeff=sb_ya.Oper(nsite)*a.CentralMat(nsite);
+        auto beff=sb_yb.Oper(nsite)*b.CentralMat(nsite);
         for(cmpx z:vz)
         {
             double w=z.real(), eta=z.imag();

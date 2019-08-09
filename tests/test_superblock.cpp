@@ -66,9 +66,8 @@ TEST_CASE( "superblock for mpo", "[superblock]" )
             {
                 sb.SetPos(p);
                 REQUIRE( sb.value()==Approx(e) );
-                REQUIRE( sb.value(1)==Approx(e) );
             }
-            if (k%100==0) std::cout<<sb.value()<<" "<<sb.value(1)<<"\n";
+            if (k%100==0) std::cout<<sb.value()<<"\n";
         }
     }
 }

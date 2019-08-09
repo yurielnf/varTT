@@ -58,6 +58,56 @@ MPO Pauli1Sm(int i,int L)
                      : one ;
     return O;
 }
+
+MPO SpinSz(int s,int i,int L)
+{
+    int n=2*s+1;
+    TensorD one({n,n}), sz({n,n});
+    one.FillEye(1);
+    sz.FillZeros();
+    int c=0;
+    for(int m=-s;m<=s;m++,c++)\
+        sz[{c,c}]=1.0*m;
+
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? TensorD({1,n,n,1},sz.vec())
+                     : TensorD({1,n,n,1},one.vec());
+    return O;
+}
+MPO SpinSplus(int s,int i,int L)
+{
+    int n=2*s+1;
+    TensorD one({n,n}), op({n,n});
+    one.FillEye(1);
+    op.FillZeros();
+    int c=0;
+    for(int m=-s;m<s;m++,c++)\
+        op[{c+1,c}]=sqrt(s*(s+1)-m*(m+1));
+
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? TensorD({1,n,n,1},op.vec())
+                     : TensorD({1,n,n,1},one.vec());
+    return O;
+}
+MPO SpinSminus(int s,int i,int L)
+{
+    int n=2*s+1;
+    TensorD one({n,n}), op({n,n});
+    one.FillEye(1);
+    op.FillZeros();
+    int c=0;
+    for(int m=-s;m<s;m++,c++)\
+        op[{c,c+1}]=sqrt(s*(s+1)-m*(m+1));
+
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? TensorD({1,n,n,1},op.vec())
+                     : TensorD({1,n,n,1},one.vec());
+    return O;
+}
+
 MPO Fermi(int i, int L, bool dagged)
 {
     static TensorD
@@ -97,6 +147,18 @@ MPO HamS1(int L,bool periodic)
         h += Pauli1Sz(i,L) * Pauli1Sz((i+1)%L,L) ;
         h += Pauli1Sp(i,L) * Pauli1Sm((i+1)%L,L) * 0.5;
         h += Pauli1Sm(i,L) * Pauli1Sp((i+1)%L,L) * 0.5;
+    }
+    return h.toMPS();
+}
+MPO HamS(int s,int L,bool periodic)
+{
+    const int m=3;
+    MPSSum h(m,MatSVDFixedTol(1e-13));
+    for(int i=0;i<L-1+periodic; i++)
+    {
+        h += SpinSz(s,i,L) * SpinSz(s,(i+1)%L,L) ;
+        h += SpinSplus(s,i,L) * SpinSminus(s,(i+1)%L,L) * 0.5;
+        h += SpinSminus(s,i,L) * SpinSplus(s,(i+1)%L,L) * 0.5;
     }
     return h.toMPS();
 }

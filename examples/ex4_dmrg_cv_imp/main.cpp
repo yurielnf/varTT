@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include"dmrg_res_gs.h"
 #include"dmrg1_wse_gs.h"
+#include"dmrg_krylov_gs.h"
 #include"dmrg_res_cv.h"
 #include"tensor.h"
 #include"parameters.h"
@@ -37,7 +38,7 @@ MPO HamTb1(int L,bool periodic)
     return h.toMPS();
 }
 
-MPO Ham2CK1(int L)
+MPO Ham2CK1(int L,double DSz2)
 {
     int m=1000;
     double lambda=6;
@@ -46,7 +47,7 @@ MPO Ham2CK1(int L)
     double U2=10;
     double Jh=10;
     double e=-2;
-    double D=0;
+    double D=DSz2;
 
     MPSSum h(m,MatSVDFixedTol(1e-12));
 
@@ -197,25 +198,26 @@ MPO NImp(int L)
 
 //---------------------------- Test DMRG basico -------------------------------------------
 
-void TestDMRGBasico(const Parameters &param)
+void TestDMRGBasico(const Parameters &par)
 {
-    int len=param.length, m=param.m, mMax=m;
-
-    auto op=Ham2CK1(len); op.Sweep(); op.PrintSizes("Hamtb=");
-    op.decomposer=MatChopDecompFixedTol(0);
+    int len=par.length;
+    auto op=Ham2CK1(len,par.DSz2); op.Sweep(); op.PrintSizes("Hamtb=");
+    op.decomposer=MatQRDecomp;
     auto nop=NParticle(len),nimp=NImp(len);
-    DMRG_0_gs sol(op,m,mMax,1.0);
-    for(int k=0;k<param.nsweeps;k++)
+    DMRG_krylov_gs sol(op,par.m,par.nkrylov);
+    sol.DoIt_gs();
+    for(int k=0;k<par.nsweep;k++)
     {
+        sol.DoIt_res(par.nsweep_resid);
         std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<" --------------------------------------\n";
+        sol.reset_states();
         sol.DoIt_gs();
-        Superblock np({&sol.gs,&nop,&sol.gs});
-        Superblock ni({&sol.gs,&nimp,&sol.gs});
+        Superblock np({&sol.gs[0],&nop,&sol.gs[0]});
+        Superblock ni({&sol.gs[0],&nimp,&sol.gs[0]});
         cout<<"nImp="<<ni.value()<<" nT="<<np.value()<<endl;
-        if (k<param.nsweeps-1) sol.DoIt_res();
     }
     ofstream out("gs.dat");
-    sol.gs.Save(out);
+    sol.gs[0].Save(out);
 }
 
 //---------------------------- Test DMRG-CV ---------------------------------------------
@@ -260,8 +262,8 @@ void TestDMRGCV(const Parameters& param,int id, int n_id)
 {
     int len=param.length, m=param.m;
 
-    auto op=Ham2CK1(len); op.Sweep(); op.PrintSizes("Ham=");
-    op.decomposer=MatChopDecompFixedTol(0);
+    auto op=Ham2CK1(len,param.DSz2); op.Sweep(); op.PrintSizes("Ham=");
+    op.decomposer=MatQRDecomp;
 
     MPS gs;
     ifstream in("gs.dat");
@@ -277,7 +279,7 @@ void TestDMRGCV(const Parameters& param,int id, int n_id)
         ws.insert(ws.begin(),z);
     }
     cout<<"\nener="<<ener;
-    cout<<" length="<<param.length<<" nsweeps="<<param.nsweeps<<" m="<<param.m<<endl;
+    cout<<" length="<<param.length<<" nsweeps="<<param.nsweep<<" m="<<param.m<<endl;
     cout<<"interval id="<<id<<" w1="<<ws.front()<<" w2="<<ws.back()<<endl;
     double w1=ws.front().real();
     double w2=ws.back().real();
@@ -289,7 +291,7 @@ void TestDMRGCV(const Parameters& param,int id, int n_id)
     a.Canonicalize();
     DMRG_0_cv solcv(op,m,a,ener,{w1,w2},{eta1,eta2});
     std::cout<<"\n\n\nstarting CV\n\n";
-    for(int k=0;k<param.nsweeps;k++)
+    for(int k=0;k<param.nsweep;k++)
     {
         std::cout<<"sweep "<<k+1<<"\n";
         for(auto p:MPS::SweepPosSec(len))

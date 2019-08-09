@@ -93,8 +93,8 @@ struct Lanczos
         for(int i=0;i<nIter;i++)
         {
 //            tolr=std::max(tol*fabs(lambda0),tol);
-            if (error<tol) break;
             Iterate();
+            if (error<tol) break;
         }
         if (error>tol)
             std::cout<<"lanczos failed, residual_norm = "<<error<<std::endl;

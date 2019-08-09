@@ -15,7 +15,7 @@ public:
     std::vector<TensorD> M;
     TensorD C;
     int length, m;
-//    typedef std::array<int,2> Pos;
+    //    typedef std::array<int,2> Pos;
 
     struct Pos
     {
@@ -51,7 +51,7 @@ public:
     MPS(const std::vector<TensorD>& tensors,int m=0,
         TensorD::mat_decomp decomposer=MatQRDecomp)
         :M(tensors),length(tensors.size()),m(m),decomposer(decomposer)
-    {        
+    {
         int n0=M[0].dim.back();
         C=TensorD({n0,n0});
         C.FillEye(1);
@@ -73,8 +73,6 @@ public:
     MPS& FillRandu(Index dim) { FillNone(dim); return FillRandu(); }
     const TensorD& at(int i) const { return M[i]; }
     TensorD& at(int i) { return M[i]; }
-    const TensorD& left() const { return M[pos.i]; }
-    const TensorD& right() const { return M[pos.i+1]; }
     void PrintSizes(const char str[]="") const
     {
         std::cout<<str<<"\n";
@@ -119,34 +117,35 @@ public:
         decomposer=MatQRDecomp;
         m=MaxVirtDim();
     }
-    MPS& Normalize() {norm_n=1; C*=1.0/Norm(C); return *this;}
+    MPS& Normalize() {norm_n=1; C*=1.0/Norm(C); return *this;}  // <--------- Only canonical MPS
     MPS& Canonicalize()
     {
-//        SetPos(0);
-//        SetPos(length/2-1);
-//        auto cC=C;
-//        C=TensorD({1,1},{1});
-//        pos=length-2;
-//        SetPos(length/2-1);
-//        C=cC*C;
-//        ExtractNorm(C);
+        //        SetPos(0);
+        //        SetPos(length/2-1);
+        //        auto cC=C;
+        //        C=TensorD({1,1},{1});
+        //        pos=length-2;
+        //        SetPos(length/2-1);
+        //        C=cC*C;
+        //        ExtractNorm(C);
         auto decom=decomposer;
         decomposer=MatQRDecomp;
         Sweep();
         decomposer=decom;
         return *this;
     }
-    MPS& Sweep()
+    MPS& Sweep(int n=1)
     {
-        for(auto pi:SweepPosSec(length))
-            SetPos(pi);
+        for(int i=0;i<n;i++)
+            for(auto pi:SweepPosSec(length))
+                SetPos(pi);
         return *this;
     }
     TensorD ApplyC()
     {
         return pos.vx==1 ? C*M[pos.i+1] : M[pos.i]*C;
-    }
-/*    void SweepG()
+        }
+        /*    void SweepG()
 //    {
 //        TensorD psi=ApplyC();
 //        ExtractNorm(psi);
@@ -158,8 +157,8 @@ public:
 //        C=uv[1-vxb];
 //    }
 */
-    void SweepRight()
-    {
+        void SweepRight()
+        {
         if ( pos.i==length-2 && pos.vx==1 ) return;
         TensorD psi=ApplyC();
         ++pos;
@@ -185,44 +184,90 @@ public:
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
-    TensorD WaveFunction() const { return C*norm_factor(); }
-    void SetWaveFunction(const TensorD& t) { C=t*(1.0/norm_factor()); ExtractNorm(C);}
-    TensorD CentralMat(int nSites) const
+    //    TensorD WaveFunction() const { return C*norm_factor(); }
+    //    void SetWaveFunction(const TensorD& t) { C=t*(1.0/norm_factor()); ExtractNorm(C);}
+    //    TensorD CentralMat(int nSites=0) const
+    //    {
+    //        int ini=pos.i-(nSites-1)/2;
+    //        if (pos.vx==1 && nSites>0) ini--;
+    //        int fin=ini+nSites;
+
+    //        TensorD tr;
+    //        for(int i=ini;i<=fin;i++)
+    //        {
+    //            if (i>ini && i>=0 && i<length)
+    //                tr= tr.rank() ? tr*M[i] : M[i];
+
+    //            if (i==pos.i)
+    //                tr= tr.rank() ? tr*C : C;
+    //        }
+    //        return tr*norm_factor();
+
+    ////        return pos.vx==-1 ? C*M[pos.i+1]
+    ////                          : M[pos.i]*C;
+    //    }
+
+    const TensorD& left() const { return M[pos.i]; }
+    const TensorD& right() const { return M[pos.i+1]; }
+
+    TensorD CentralMat(int nSites=0) const
     {
-        int ini=pos.i-(nSites-1)/2;
-        if (pos.vx==1 && nSites>0) ini--;
-        int fin=ini+nSites;
+        if (nSites==0) return C*norm_factor();
 
-        TensorD tr;
-        for(int i=ini;i<=fin;i++)
-        {
-            if (i>ini && i>=0 && i<length)
-                tr= tr.rank() ? tr*M[i] : M[i];
-
-            if (i==pos.i)
-                tr= tr.rank() ? tr*C : C;
-        }
-        return tr;
-
-//        return pos.vx==-1 ? C*M[pos.i+1]
-//                          : M[pos.i]*C;
+        if (pos.vx==-1) return  C*M[pos.i+1]*norm_factor();
+        else return M[pos.i]*C*norm_factor();
     }
     void setCentralMat(const TensorD& t) // <----------------------------- Generalize!
     {
-
-        if (pos.vx==1)
+        if (t.rank()==3)
         {
-            auto ac=t.Decomposition(false,decomposer);
-            M[pos.i]=ac[0];
-            C=ac[1];
+            auto Mb=t*(1.0/norm_factor());
+            if (pos.vx==1)
+            {
+                auto ac=Mb.Decomposition(false,decomposer);
+                M[pos.i]=ac[0];
+                C=ac[1];
+                ExtractNorm(C);
+            }
+            else
+            {
+                auto cb=Mb.Decomposition(true,decomposer);
+                C=cb[0];
+                ExtractNorm(C);
+                M[pos.i+1]=cb[1];
+            }
         }
-        else
+        else if (t.rank()==2)
         {
-            auto cb=t.Decomposition(true,decomposer);
-            C=cb[0];
-            M[pos.i+1]=cb[1];
+            C=t*(1.0/norm_factor()); ExtractNorm(C);
         }
+        else throw std::invalid_argument("MPS::setCentralMat() t.rank() not 2,3");
     }
+    //    void setCentralMat(const TensorD& t) // <----------------------------- Generalize!
+    //    {
+    //        if (t.rank()==3)
+    //        {
+    //            if (pos.vx==1)
+    //            {
+    //                auto ac=t.Decomposition(false,decomposer);
+    //                M[pos.i]=ac[0];
+    //                //C=ac[1];
+    //                C=ac[1]*(1.0/norm_factor()); ExtractNorm(C);
+    //            }
+    //            else
+    //            {
+    //                auto cb=t.Decomposition(true,decomposer);
+    //                //C=cb[0];
+    //                C=cb[0]*(1.0/norm_factor()); ExtractNorm(C);
+    //                M[pos.i+1]=cb[1];
+    //            }
+    //        }
+    //        else if (t.rank()==2)
+    //        {
+    //            C=t*(1.0/norm_factor()); ExtractNorm(C);
+    //        }
+    //        else throw std::invalid_argument("MPS::setCentralMat() t.rank() not 2,3");
+    //    }
     double norm_factor() const { return pow(norm_n,length); }
     double norm() const  { return pow(norm_n,length)*Norm(C); }
 
@@ -242,24 +287,29 @@ public:
         mps1.M.front() = DirectSum(mps1.M.front()*mps1.norm_n,
                                    mps2.M.front()*mps2.norm_n, true);
         for(int i=1;i<mps1.length-1;i++)
-                mps1.M[i]=DirectSum(mps1.M[i]*mps1.norm_n,
-                                    mps2.M[i]*mps2.norm_n);
+            mps1.M[i]=DirectSum(mps1.M[i]*mps1.norm_n,
+                                mps2.M[i]*mps2.norm_n);
         mps1.M.back() = DirectSum(mps1.M.back()*mps1.norm_n,
                                   mps2.M.back()*mps2.norm_n,false);
 
         mps1.C=DirectSum(mps1.C,mps2.C);
         mps1.norm_n=1;
-        mps1.Canonicalize();
+
         if ( mps1.MaxVirtDim()>m )
+        {
+            mps1.Canonicalize();
             for(int i=0;i<1;i++)
                 mps1.Sweep();
+        }
     }
+    MPS operator+(const MPS& mps2) const
+    {   MPS res=*this; res.m=m+mps2.m; res+=mps2; return res; }
     void operator*=(const MPS& mps2)
     {
         MPS& mps1=*this;
         if (mps1.length != mps2.length)
             throw std::invalid_argument("MPS*MPS incompatible length");
-//        MPS mps3(mps1.length,mps1.m*mps2.m);
+        //        MPS mps3(mps1.length,mps1.m*mps2.m);
         for(int i=0;i<length;i++)
         {
             TensorD tr;
@@ -278,7 +328,7 @@ public:
         tr("iIjJ")=mps1.C("ij")*mps2.C("IJ");
         mps1.C=tr.ReShape(2).Clone();
         mps1.norm_n = mps1.norm_n * mps2.norm_n;
-        if ( mps1.MaxVirtDim()>m ) mps1.Sweep();
+        //        if ( mps1.MaxVirtDim()>m ) mps1.Sweep();
     }
     MPS operator*(const MPS& mps2) const
     {   MPS res=*this; res*=mps2; return res; }
@@ -292,8 +342,8 @@ public:
             mm=std::max(mm,x.dim.back());
         }
         return mm;
-    }    
-//    static std::vector<Pos> SweepPosSec(int length)
+    }
+    /*    static std::vector<Pos> SweepPosSec(int length)
 //    {
 //        std::vector<Pos> pos;
 //        for(int i=length/2-1;i<length-1;i++) //Right
@@ -304,6 +354,7 @@ public:
 //            pos.push_back({i,1});
 //        return pos;
 //    }
+*/
     static std::vector<Pos> SweepPosSec(int length)
     {
         std::vector<Pos> pos;
@@ -320,8 +371,8 @@ private:
         double nr=Norm(psi);
         if (nr==0)
         {
-//            throw std::logic_error("mps:ExtractNorm() null matrix");
-//            std::cerr<<"mps:ExtractNorm() null matrix";
+            //            throw std::logic_error("mps:ExtractNorm() null matrix");
+            //            std::cerr<<"mps:ExtractNorm() null matrix";
             norm_n=0;
         }
         else
@@ -334,6 +385,8 @@ private:
     double norm_n=1;                //norm(MPS)^(1/n)
 
 };
+
+typedef MPS MPO;
 
 struct MPSSum
 {
@@ -360,20 +413,54 @@ struct MPSSum
     }
 };
 
-typedef MPS MPO;
+struct MPO_MPS
+{
+    MPO mpo;
+    MPS mps;
+
+    MPS toMPS(int m,double tol=1e-13) const
+    {
+        std::vector<TensorD> R(mps.length);
+        auto mh=mpo.at(0)*mpo.C*mpo.norm_factor();
+        auto ms=mps.at(0)*mps.C*mps.norm_factor();
+        TensorD M;
+        M("iIjlL")=mh("ijkl")*ms("IkL");
+        R[0]=M.ReShape({2,3}).Clone();
+        for(int i=1;i<mps.length;i++)
+        {
+            auto ac=R[i-1].Decomposition(false,MatSVDAdaptative(tol,m));
+            R[i-1]=ac[0];
+            TensorD M;
+            M("iIjlL")=mpo.at(i)("ijkl")*mps.at(i)("IkL");
+            auto Mn=M.ReShape({2,3}).Clone();
+            R[i]=ac[1]*Mn;
+        }
+        for(int i=mps.length-2;i>=0;i--)
+        {
+            auto cb=R[i+1].Decomposition(true,MatSVDAdaptative(tol,m));
+            R[i+1]=cb[1];
+            R[i]=R[i]*cb[0];
+        }
+        return MPS(R,m);
+    }
+};
 
 //---------------------------- Helpers ---------------------------
 
- MPO MPOIdentity(int length, int d);
- MPO Sz(int i, int length);
- MPO Sp(int i, int length);
- MPO Sm(int i, int length);
- MPO Fermi(int i, int L, bool dagged);
- MPO MPOEH(int length);
+MPO MPOIdentity(int length, int d);
+MPO Sz(int i, int length);
+MPO Sp(int i, int length);
+MPO Sm(int i, int length);
+MPO SpinSz(int s,int i,int L);
+MPO SpinSplus(int s,int i,int L);
+MPO SpinSminus(int s,int i,int L);
+MPO Fermi(int i, int L, bool dagged);
+MPO MPOEH(int length);
 
- MPO HamS1(int L,bool periodic);
- MPO SpinFlipGlobal(int len);
- MPO HamTbAuto(int L,bool periodic);
- MPO HamTBExact(int L);
+MPO HamS1(int L,bool periodic);
+MPO HamS(int s,int L,bool periodic);
+MPO SpinFlipGlobal(int len);
+MPO HamTbAuto(int L,bool periodic);
+MPO HamTBExact(int L);
 
 #endif // MPS_H

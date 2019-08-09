@@ -27,6 +27,17 @@ void MatFullDiag(double* const X,int n,double *evec,double *eval)
     eig_sym(meval,mevec,mX);
 }
 
+void MatFullDiagGen(double * const X, double * const O, int n, double *evec, double *eval)
+{
+    const mat mX(X,n,n,false);
+    const mat mO(O,n,n,false);
+    mat y,mevec(evec,n,n,false,true);
+    vec meval(eval,n,false);
+    mat Ri=chol(mO).i();
+    eig_sym(meval,y,Ri.t()*mX*Ri);
+    mevec=Ri*y;
+}
+
 
 array<stdvec,2> MatSVD(bool is_right,const double*  X, int n1,int n2,double tol,int Dmax)
 {

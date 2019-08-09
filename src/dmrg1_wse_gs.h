@@ -6,8 +6,8 @@
 
 struct DMRG1_wse_gs
 {
-    int nIterMax=128,iter;
-    double ener,alpha=1,tol_diag=1e-13;
+    int nIterMax=1024,iter;
+    double error=1,alpha=1,tol_diag=1e-13;
 
     MPS gs,mpo,z2_sym;
     Superblock sb,sb_sym;
@@ -25,7 +25,7 @@ struct DMRG1_wse_gs
     static double AdaptAlpha(double alpha,double Eini,double Eopt,double Etrunc)
     {
         const double epsilon=1e-9;
-        double d_opt=Eini-Eopt, f, r;
+        double d_opt=Eini-Eopt, f=1, r;
         double d_trunc=Etrunc-Eopt;
         if ( fabs(d_opt)<epsilon || fabs(d_trunc)<epsilon )
         {
@@ -61,8 +61,9 @@ struct DMRG1_wse_gs
     void Solve()
     {
         double Eini=sb.value();
-        auto lan=Diagonalize(sb.Oper(1), gs.CentralMat(1), nIterMax, tol_diag);  //Lanczos
-        double Eopt=ener=lan.lambda0;
+        double errord=std::max(std::min(1.0,error),tol_diag);
+        auto lan=Diagonalize(sb.Oper(1), gs.CentralMat(1), nIterMax, errord);  //Lanczos
+        double Eopt=lan.lambda0;
         iter=lan.iter;
 //        if (lan.lambda0 > ener) return;
         auto M=lan.GetState();
@@ -73,16 +74,16 @@ struct DMRG1_wse_gs
         if (sb.pos.vx==1)
         {
             P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
-            P=P.ReShape({1,2}).Clone();
-            P*=1.0/Norm(P);
+//            P=P.ReShape({1,2}).Clone();
+//            P*=1.0/Norm(P);
             auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
             A=AC[0]; C=AC[1];
         }
         else
         {
             P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
-            P=P.ReShape({2,3}).Clone();
-            P*=1.0/Norm(P);
+//            P=P.ReShape({2,3}).Clone();
+//            P*=1.0/Norm(P);
             auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
             C=CB[0]; B=CB[1];
         }
@@ -90,6 +91,7 @@ struct DMRG1_wse_gs
         if (z2_sym.length>0) sb_sym.UpdateBlocks();
         gs.Normalize();
         double Etrunc=sb.value();
+        error=fabs(Etrunc-Eopt);
         alpha=AdaptAlpha(alpha,Eini,Eopt,Etrunc);
     }
     void SetPos(MPS::Pos p)

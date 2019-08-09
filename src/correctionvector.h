@@ -2,6 +2,8 @@
 #define CORRECTIONVECTOR_H
 
 #include"gmres_m.h"
+#include"cg.h"
+#include"gmres.h"
 //#include"tools.h"
 
 template<class Operator, class Ket>
@@ -29,10 +31,14 @@ struct CorrectionVector  // To obtain the Im[c] for the problem: (w + i eta - H)
     {
         this->w=w;
         this->eta=eta;
-        Gmmres<CorrectionVector,Ket> sol(*this,a*(-eta),x0,nInner,nIter,tol);
-        sol.Iterate();
-        cIter=sol.iter;
-        xI=sol.x;
+//        Gmmres<CorrectionVector,Ket> sol(*this,a*(-eta),x0,nInner,nIter,tol);
+//        sol.Iterate();
+//        cIter=sol.iter;
+        cIter=nIter;
+        double error=tol;
+        xI=x0;
+//        CG(*this,xI,a*(-eta),cIter,error);
+        GMRES(*this,xI,a*(-eta),nIter,cIter,error);
 
         xR=(H*xI-xI*w)*(1.0/eta);
         greenR=Dot(a,xR);

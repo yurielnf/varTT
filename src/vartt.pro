@@ -34,5 +34,12 @@ HEADERS += \
     correctionvector.h \
     gmres_m.h \
     parameters.h \
-    dmrg_0_jd_gs.h
+    dmrg_jd_gs.h \
+    dmrg1_jd_gs.h \
+    dmrg_krylov_gs.h \
+    cg.h \
+    gmres.h \
+    dmrg_jacobi_davidson_gs.h
+
+DISTFILES +=
 

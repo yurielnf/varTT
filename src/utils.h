@@ -130,6 +130,8 @@ void MatFillEye(T *dat, int n)
 void MatTranspose(const double*  X, double *result, int nrow, int ncol);
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);
+void MatFullDiagGen(double * const X, double * const O, int n, double *evec, double *eval);
+
 std::array<stdvec,2> MatSVD(bool is_right, const double*  X, int n1, int n2, double tol, int Dmax);
 std::array<stdvec,2> MatChopDecomp(bool is_right, const double*  X, int n1, int n2, double tol);
 std::array<stdvec,2> MatQRDecomp(bool is_right, const double*  X, int n1, int n2);

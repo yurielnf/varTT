@@ -5,14 +5,19 @@
 struct Parameters
 {
     int length=10,
-        nsweeps=4,
-        m=128;
+        nsweep=4, nsweep_resid=2, nsweep_jd=1,
+        m=128,
+        nkrylov=2,
+        nsite_gs=0, nsite_resid=1, nsite_jd=0,
+        spin=1,
+        periodic=0;
     char opType='C';
     int op1Pos=0,
          op2Pos=0;
-    double etaFactor=1;
+    double etaFactor=1,
+           DSz2=0;
 
-    void ReadParameters(char filename[]);
+    void ReadParameters(const char filename[]);
 };
 
 

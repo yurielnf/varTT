@@ -61,28 +61,25 @@ class Superblock
 //        else
             b2[pos.i]=Transfer(pos.i+1)*right;
     }
-    double norm_factor() const
-    {
-        double prod=1;
-        for(const MPS* x:mps) prod*=x->norm_factor();
-        return prod;
-    }
-    SuperTensor Oper() const
+//    double norm_factor() const
+//    {
+//        double prod=1;
+//        for(const MPS* x:mps) prod*=x->norm_factor();
+//        return prod;
+//    }
+//    SuperTensor Oper() const
+//    {
+//        if(mps.size()==3)
+//            return { b1[pos.i], b2[pos.i], {mps[1]->CentralMat()} };
+//        else // size()==2
+//            return { b1[pos.i], b2[pos.i]};
+//    }
+    SuperTensor Oper(int nSites=0) const
     {
         if(mps.size()==3)
-            return { b1[pos.i], b2[pos.i], {mps[1]->C*mps[1]->norm_factor()} };
+            return { Left(nSites), Right(nSites), {mps[1]->CentralMat(nSites)} };
         else // size()==2
-            return { b1[pos.i], b2[pos.i]};
-    }
-    SuperTensor Oper(int nSites) const
-    {
-        const auto& left=Left(nSites);
-        const auto& right=Right(nSites);
-        if(mps.size()==3)
-            return { left*norm_factor(), right
-                    ,{mps[1]->CentralMat(nSites)} };
-        else // size()==2
-            return { left*norm_factor(), right };
+            return { Left(nSites), Right(nSites) };
     }
     double value() const
     {
@@ -90,11 +87,6 @@ class Superblock
         return Dot(mps.back()->C,Cp)
                 * mps.back()->norm_factor()
                 * mps.front()->norm_factor();
-    }
-    double value(int nSites) const
-    {
-        TensorD Cp=Oper(nSites)*mps.front()->CentralMat(nSites);
-        return Dot(mps.back()->CentralMat(nSites),Cp);
     }
     void SetPos(MPS::Pos p)
     {

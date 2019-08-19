@@ -1,7 +1,12 @@
 # varTT
 
-Variational optimization for tensor train using zero-site DMRG.
+Variational tensor train (or MPS) optimized using zero-site DMRG.
 Both the Lanczos and Jacobi-Davidson corrections are implemented to avoid local minima.
+Intelligent tensor contractions are supported:
+
+```
+t2("il")=t1("ijk") * t1("ljk");
+```
 
 ### External dependencies
 

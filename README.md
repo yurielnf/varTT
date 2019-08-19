@@ -1,6 +1,7 @@
 # varTT
 
-Variational optimization for tensor train (or tree tensor)
+Variational optimization for tensor train using zero-site DMRG.
+Both the Lanczos and Jacobi-Davidson corrections are implemented to avoid local minima.
 
 ### External dependencies
 
@@ -15,12 +16,8 @@ This project can be edited and build using the [`qtcreator`](https://github.com/
 
 ### Running the test suite
 
-The tests are in the tests/ folder
-
-```
-$ make tests
-```
+The tests are in the tests/ folder using [catch2]. (https://github.com/catchorg/Catch2)
 
 ### Examples
 
-Several example codes are provided.
+Several example codes are provided at examples/ folder.

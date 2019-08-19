@@ -16,7 +16,7 @@ This project can be edited and build using the [`qtcreator`](https://github.com/
 
 ### Running the test suite
 
-The tests are in the tests/ folder using [catch2]. (https://github.com/catchorg/Catch2)
+The tests are in the tests/ folder using [catch2](https://github.com/catchorg/Catch2).
 
 ### Examples
 

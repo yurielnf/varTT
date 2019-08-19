@@ -5,7 +5,7 @@ Both the Lanczos and Jacobi-Davidson corrections are implemented to avoid local 
 Intelligent tensor contractions are supported:
 
 ```
-t2("il")=t1("ijk") * t1("ljk");
+t2("li")=t1("ijk") * t1("ljk");
 ```
 
 ### External dependencies

@@ -138,10 +138,10 @@ struct DMRG_krylov_gs
     {
         int i=ck-1;
         auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
-//        auto cH=beff;
+        //auto cH=beff;
 //        for(int j=0;j<i;j++)
 //        {
-//            auto cO=sb_o[i+j*nk].Oper(nsite_pert)*gs[j].CentralMat(nsite_pert);
+//            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
 //            beff -= cO*hmat[j+(i-1)*nk];
 //        }
         gs[i].setCentralMat( beff );

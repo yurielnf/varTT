@@ -13,7 +13,7 @@
 #include"utils.h"
 #include"index.h"
 
-template<class T> class Tensor;
+template<class T> struct Tensor;
 template<class Tensor> struct TensorNotation;
 
 using TensorD=Tensor<double>;
@@ -128,12 +128,7 @@ public:
     {
         out<<rank()<<"\n";
         for(int x:dim) out<<x<<" ";
-        out<<"\n";
-        VecSave(data(),size(),out);
-    }
-    void Save(std::string filename) const
-    {
-        std::ofstream out(filename); Save(out);
+        VecSave(data(),size(),out,false);
     }
     void Load(std::istream& in)
     {
@@ -142,8 +137,12 @@ public:
         dim.resize(r);
         for(int& x:dim) in>>x;
         *this=Tensor(dim);
-//        in.ignore(1);
-        VecLoad(data(),size(),in);
+        in.ignore(1);
+        VecLoad(data(),size(),in,false);
+    }
+    void Save(std::string filename) const
+    {
+        std::ofstream out(filename); Save(out);
     }
     void Load(std::string filename)
     {
@@ -205,7 +204,6 @@ public:
         auto dim_v=SplitIndex(dim,splitPos);
         return {{ Prod(dim_v[0]), Prod(dim_v[1])}, const_cast<T*>(data())};
     }
-
     Tensor ReShape(std::vector<int> splitPos)
     {
         auto dim_v=SplitIndex(dim,splitPos);
@@ -446,8 +444,9 @@ public:
     {
         return VecNorm(t.data(),t.size());
     }
-    friend std::array<Tensor,2> EigenDecomposition(const Tensor& t,int splitPos)
+    std::array<Tensor,2> EigenDecomposition(int splitPos)
     {
+        const Tensor& t=*this;
         auto mt=t.ReShape(splitPos);
         if (mt.dim[0]!=mt.dim[1])
             throw std::invalid_argument("Tensor:: EigenDecomposition non-square matrix");

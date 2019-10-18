@@ -126,15 +126,18 @@ MPO Fermi(int i, int L, bool dagged)
     }
     return O;
 }
-MPO MPOEH(int length)
+
+MPO ElectronHoleMPO(int L)
 {
-    std::vector<TensorD> O(length);
-    std::vector<double> eh={1.3,-2,-1,0}, id={1,0,0,1};
-    for(uint i=0;i<O.size();i++)
-        if(i%2==0)
-            O[i]=TensorD({1,2,2,1}, eh);
+    static stdvec j={0,1,1,0}, jm={0,-1,-1,0};
+    std::vector<TensorD> O(L);
+    for(int i=0;i<L;i++)
+    {
+        if (i%2==0)
+            O[i]=TensorD({1,2,2,1},j);
         else
-            O[i]=TensorD({1,2,2,1}, id);
+            O[i]=TensorD({1,2,2,1},jm);
+    }
     return O;
 }
 

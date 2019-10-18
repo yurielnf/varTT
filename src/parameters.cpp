@@ -3,6 +3,7 @@
 #include<iostream>
 #include<string>
 #include<stdexcept>
+#include<sstream>
 
 using namespace std;
 
@@ -47,6 +48,20 @@ void Parameters::ReadParameters(const char filename[])
             in>>etaFactor;
         else if(param=="DSz2")
             in>>DSz2;
+        else if(param=="hallW_file")
+            in>>hallW_file;
+        else if(param=="renyi_q")
+        {
+            getline(in,param);
+            istringstream iss(param);
+            string word;
+            while(iss >> word)
+                renyi_q.push_back(stod(word));
+        }
+        else if(param=="freeFermionLx")
+            in>>freeFermionLx;
+        else if(param=="muHall")
+            in>>muHall;
         in.ignore(1000,'\n');
     }
 }

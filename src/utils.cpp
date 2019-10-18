@@ -33,7 +33,10 @@ void MatFullDiagGen(double * const X, double * const O, int n, double *evec, dou
     const mat mO(O,n,n,false);
     mat y,mevec(evec,n,n,false,true);
     vec meval(eval,n,false);
-    mat Ri=chol(mO).i();
+    mat Ri;
+    try {Ri=chol(mO).i(); }
+    catch (std::exception e){
+        mO.print("Chol failed, O=");}
     eig_sym(meval,y,Ri.t()*mX*Ri);
     mevec=Ri*y;
 }
@@ -199,3 +202,22 @@ std::array<stdvec,2> MatDensityFixedDimDecomp::operator()(bool is_right, const d
                 stdvec(mrott.begin(),mrott.end())};
     }
 }
+
+double Entropy(const double* eval,int n_elem)
+{
+    double sum=0;
+    for(uint i=0;i<n_elem;i++)
+        if (fabs(eval[i])>1e-12)
+            sum-=eval[i]*log2(eval[i]);
+    return sum;
+}
+double EntropyRenyi(const double* eval,int n_elem, double q)
+{
+    if (q==1) return Entropy(eval,n_elem);
+    double sum=0;
+    for(uint i=0;i<n_elem;i++)
+        if (fabs(eval[i])>1e-12)
+            sum+=pow(eval[i],q);
+    return log2(sum)*1.0/(1-q);
+}
+

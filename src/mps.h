@@ -4,6 +4,7 @@
 #include<iostream>
 #include<vector>
 #include<functional>
+#include<fstream>
 #include"tensor.h"
 
 
@@ -103,9 +104,11 @@ public:
             M[i].Save(out);
             if (i==pos.i) C.Save(out);
         }
-    }
+    }    
     void Load(std::istream& in)
     {
+        if (!in)
+            throw std::invalid_argument("I couldn't open file to read tensor");
         in>>length>>pos.i;
         pos.vx=1;
         M.resize(length);
@@ -116,6 +119,14 @@ public:
         }
         decomposer=MatQRDecomp;
         m=MaxVirtDim();
+    }
+    void Load(std::string filename)
+    {
+        std::ifstream in(filename);  Load(in);
+    }
+    void Save(std::string filename) const
+    {
+        std::ofstream out(filename); Save(out);
     }
     MPS& Normalize() {norm_n=1; C*=1.0/Norm(C); return *this;}  // <--------- Only canonical MPS
     MPS& Canonicalize()
@@ -143,8 +154,8 @@ public:
     }
     TensorD ApplyC()
     {
-        return pos.vx==1 ? C*M[pos.i+1] : M[pos.i]*C;
-        }
+        return (pos.vx==1) ? C*M[pos.i+1] : M[pos.i]*C;
+    }
         /*    void SweepG()
 //    {
 //        TensorD psi=ApplyC();
@@ -157,8 +168,8 @@ public:
 //        C=uv[1-vxb];
 //    }
 */
-        void SweepRight()
-        {
+    void SweepRight()
+    {
         if ( pos.i==length-2 && pos.vx==1 ) return;
         TensorD psi=ApplyC();
         ++pos;
@@ -184,7 +195,8 @@ public:
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
     }
-    //    TensorD WaveFunction() const { return C*norm_factor(); }
+
+    /*    TensorD WaveFunction() const { return C*norm_factor(); }
     //    void SetWaveFunction(const TensorD& t) { C=t*(1.0/norm_factor()); ExtractNorm(C);}
     //    TensorD CentralMat(int nSites=0) const
     //    {
@@ -205,7 +217,7 @@ public:
 
     ////        return pos.vx==-1 ? C*M[pos.i+1]
     ////                          : M[pos.i]*C;
-    //    }
+    //    }*/
 
     const TensorD& left() const { return M[pos.i]; }
     const TensorD& right() const { return M[pos.i+1]; }
@@ -455,7 +467,7 @@ MPO SpinSz(int s,int i,int L);
 MPO SpinSplus(int s,int i,int L);
 MPO SpinSminus(int s,int i,int L);
 MPO Fermi(int i, int L, bool dagged);
-MPO MPOEH(int length);
+MPO ElectronHoleMPO(int L);
 
 MPO HamS1(int L,bool periodic);
 MPO HamS(int s,int L,bool periodic);

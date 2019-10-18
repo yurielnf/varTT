@@ -89,7 +89,8 @@ struct DMRG_krylov_gs
         {
             MPSSum sum(m,MatSVDFixedDim(m));
             for(int i=1;i<nk;i++)
-                sum+=gs[i]*evec[i];
+                if (fabs(evec[i])>tol_diag)
+                    sum+=gs[i]*evec[i];
             gs[0].decomposer=MatSVDFixedDim(m);
             gs[0]*=evec[0];
             gs[0]+=sum.toMPS().Sweep();
@@ -139,11 +140,11 @@ struct DMRG_krylov_gs
         int i=ck-1;
         auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
         //auto cH=beff;
-//        for(int j=0;j<i;j++)
-//        {
-//            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
-//            beff -= cO*hmat[j+(i-1)*nk];
-//        }
+        for(int j=0;j<i;j++)
+        {
+            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
+            beff -= cO*hmat[j+(i-1)*nk];
+        }
         gs[i].setCentralMat( beff );
         gs[i].Normalize();
         if (nsite_resid)

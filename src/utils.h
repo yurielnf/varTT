@@ -39,29 +39,28 @@ void VecFillZeros(T *vec, int nelem)
 }
 
 template<class T>
-void VecSave(const T* vec, int nelem, std::ostream& out)
+void VecSave(const T* vec, int nelem, std::ostream& out,bool binary=true)
 {
-//    if (binary)
-//        out.write(reinterpret_cast<const char*>(vec),nelem*sizeof(T));
-//    else
-//    {
+    if (binary)
+        out.write(reinterpret_cast<const char*>(vec),nelem*sizeof(T));
+    else
+    {
         out<<std::setprecision(17);
         for(int i=0;i<nelem;i++)
             out<<vec[i]<<" ";
-//    }
-    out<<"\n";
+    }
 }
 
 template<class T>
-void VecLoad(T* vec, int nelem, std::istream& in)
+void VecLoad(T* vec, int nelem, std::istream& in, bool binary=true)
 {
-//    if (binary)
-//        in.read(reinterpret_cast<char*>(vec),nelem*sizeof(T));
-//    else
-//    {
+    if (binary)
+        in.read(reinterpret_cast<char*>(vec),nelem*sizeof(T));
+    else
+    {
         for(int i=0;i<nelem;i++)
             in>>vec[i];
-//    }
+    }
 }
 
 template<class T>
@@ -118,6 +117,9 @@ std::vector<T> UniformPartition(const T& x1,const T& x2, int nX)
     for(int i=0;i<nX;i++) res[i]=x1+dx*T(i);
     return res;
 }
+
+double Entropy(const double eval[],int n_elem);
+double EntropyRenyi(const double eval[],int n_elem, double q);
 
 //---------------------------------- Matrix -----------------------
 template<class T>
@@ -232,6 +234,8 @@ struct MatDensityFixedDimDecomp
     MatDensityFixedDimDecomp(stdvec rho,int m);
     std::array<stdvec,2> operator()(bool is_right, const double*  X, int n1,int n2) const;
 };
+
+
 
 //--------------------------------- Cube --------------------------
 

@@ -29,6 +29,8 @@ TEST_CASE( "tensor level 1", "[tensor]" )
     }
     SECTION( "save/load" )
     {
+        TensorD t({1000,2,1000});
+        t.FillRandu();
         auto &t1=t;
         t1.Save("t1.txt");
         TensorD t2(t1.dim);

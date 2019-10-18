@@ -4,6 +4,7 @@
 
 #include"superblock.h"
 #include"lanczos.h"
+#include"gmres.h"
 
 struct DMRG_Jacobi_Davidson_gs
 {

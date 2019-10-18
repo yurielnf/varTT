@@ -8,6 +8,12 @@ Intelligent tensor contractions are supported:
 t2("li")=t1("ijk") * t1("ljk");
 ```
 
+together with the MPO automatic construction as in:
+
+```
+h += Fermi(i,L,true) * Fermi(i+1,L,false);
+```
+
 ### External dependencies
 
 - [armadillo](https://gitlab.com/conradsnicta/armadillo-code)

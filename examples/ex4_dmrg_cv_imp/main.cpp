@@ -188,8 +188,9 @@ MPO HamICTP1(int L, double BF)
     double B=BF;
     double e=-2;
     //---interaccion-QD-bandas
-    double V1=1.7;
-    double V2=-1.13;
+    double V=0.8;
+    double V1=1.5*V;
+    double V2=-V;
 
     MPSSum h(m,MatSVDFixedTol(1e-12));
 
@@ -216,66 +217,66 @@ MPO HamICTP1(int L, double BF)
 
     //---------------------------canales------------------------------
     //-----------------------hoppings NRG-----------------------------
-
-    for(int i=1;i<L/4-1;i++)
-        for(int j=0;j<4;j++)
-        {
-            int d=j*L/4;
-            kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
-        }
-
-    //---------------------------hibridizacion------------------------
-
-        kin(0,1)=V1;
-        kin(1,0)=V1;
-        kin(L/4,L/4+1)=V1;
-        kin(L/4+1,L/4)=V1;
-        kin(L/2,L/2+1)=V2;
-        kin(L/2+1,L/2)=V2;
-        kin(3*L/4,3*L/4+1)=V2;
-        kin(3*L/4+1,3*L/4)=V2;
-
-    //----------------------------formaestrella-----------------------
-
-        mat u = zeros<mat>(L,L);
-
-    //----------------------------sitiosimpurezas---------------------
-
-        u(0,0)=1.0;
-        u(L/4,L/4)=1.0;
-        u(L/2,L/2)=1.0;
-        u(3*L/4,3*L/4)=1.0;
-
-    //---------------------------hamiltoniano-banda-------------------
-
-        mat h22 = zeros<mat>(L/4-1,L/4-1);
-        for(int i=0;i<L/4-2;i++)
-            h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
+    //
+    // for(int i=1;i<L/4-1;i++)
+    //     for(int j=0;j<4;j++)
+    //     {
+    //         int d=j*L/4;
+    //         kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
+    //     }
+    //
+    // //---------------------------hibridizacion------------------------
+    //
+    //     kin(0,1)=V1;
+    //     kin(1,0)=V1;
+    //     kin(L/4,L/4+1)=V1;
+    //     kin(L/4+1,L/4)=V1;
+    //     kin(L/2,L/2+1)=V2;
+    //     kin(L/2+1,L/2)=V2;
+    //     kin(3*L/4,3*L/4+1)=V2;
+    //     kin(3*L/4+1,3*L/4)=V2;
+    //
+    // //----------------------------formaestrella-----------------------
+    //
+    //    mat u = zeros<mat>(L,L);
+    //
+    // //----------------------------sitiosimpurezas---------------------
+    //
+    //     u(0,0)=1.0;
+    //     u(L/4,L/4)=1.0;
+    //     u(L/2,L/2)=1.0;
+    //     u(3*L/4,3*L/4)=1.0;
+    //
+    // //---------------------------hamiltoniano-banda-------------------
+    //
+    //     mat h22 = zeros<mat>(L/4-1,L/4-1);
+    //     for(int i=0;i<L/4-2;i++)
+    //         h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
 
         //--------------------------matriz-que-diagonaliza-h22------------
-
-        vec eigval;
-        mat eigvec;
-
-        eig_sym(eigval,eigvec,h22);
-
-    //-----------------------------K-----------------------------------
-
-        for(int i=0; i<L/4-1;i++)
-        {
-            for(int j=0; j<L/4-1; j++)
-            {
-                u(i+1,j+1)=u(i+L/4+1,j+L/4+1)=u(i+L/2+1,j+L/2+1)=u(i+3*L/4+1,j+3*L/4+1)=eigvec(i,j);
-            }
-        }
-        mat udaga = u.t();
-        mat k;
-        k = udaga*kin*u;
+    //
+    //     vec eigval;
+    //     mat eigvec;
+    //
+    //     eig_sym(eigval,eigvec,h22);
+    //
+    // //-----------------------------K-----------------------------------
+    //
+    //     for(int i=0; i<L/4-1;i++)
+    //     {
+    //         for(int j=0; j<L/4-1; j++)
+    //         {
+    //             u(i+1,j+1)=u(i+L/4+1,j+L/4+1)=u(i+L/2+1,j+L/2+1)=u(i+3*L/4+1,j+3*L/4+1)=eigvec(i,j);
+    //         }
+    //     }
+    //     mat udaga = u.t();
+    //     mat k;
+    //     k = udaga*kin*u;
 
         for(int i=0; i<L;i++)
             for(int j=0; j<L;j++)
-                if( fabs( k(i,j) ) > 1e-13 )
-                    h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
+                if( fabs( kin(i,j) ) > 1e-13 )
+                    h += Fermi(i,L,true)*Fermi(j,L,false)*kin(i,j);
 
     //-----------------Termino---0.5*Ec*N^2---------------------------------
 

@@ -44,6 +44,7 @@ struct DMRG_krylov_gs
         else //if (gs[i].length==0)
         {
             gs[i]=ExactRes(i);
+            if (gs[i].norm()<tol_diag) gs[i].FillRandu().Canonicalize();
             gs[i].Normalize();
             sb_h[i+(i-1)*nk]=Superblock({&gs[i-1],&mpo,&gs[i]});  //reverse list
         }
@@ -83,7 +84,7 @@ struct DMRG_krylov_gs
     }
     void reset_states()
     {
-        if (error<tol_diag) return;
+        if (error<tol_diag) {ck=1; return;}
         int m=gs[0].m;
 //        for(int j=0;j<1;j++)
         {
@@ -91,10 +92,13 @@ struct DMRG_krylov_gs
             for(int i=1;i<nk;i++)
                 if (fabs(evec[i])>tol_diag)
                     sum+=gs[i]*evec[i];
-            gs[0].decomposer=MatSVDFixedDim(m);
-            gs[0]*=evec[0];
-            gs[0]+=sum.toMPS().Sweep();
-            gs[0].decomposer=MatQRDecomp;
+            if (!sum.v.empty())
+            {
+                gs[0].decomposer=MatSVDFixedDim(m);
+                gs[0]*=evec[0];
+                gs[0]+=sum.toMPS().Sweep();
+                gs[0].decomposer=MatQRDecomp;
+            }
         }
         ck=0;
         add_MPS();
@@ -145,6 +149,8 @@ struct DMRG_krylov_gs
             auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
             beff -= cO*hmat[j+(i-1)*nk];
         }
+        if (Norm(beff)<tol_diag)
+            beff.FillRandu();
         gs[i].setCentralMat( beff );
         gs[i].Normalize();
         if (nsite_resid)
@@ -188,7 +194,6 @@ struct DMRG_krylov_gs
                 {
                     SetPos(p);
                     Solve_res();
-//                    if (mpo.length<10 || (p.i+1) % (mpo.length/10)==0) Print_res();
                 }
                 CalculateEner();
                 Print_res();
@@ -225,8 +230,8 @@ struct DMRG_krylov_gs
                 hm[i+j*ck]=hmat[i+j*nk];
                 om[i+j*ck]=omat[i+j*nk];
             }
-        for(auto x:om) std::cout<<x<<" ";
-        std::cout<<"\n";
+        for(auto x:hm) std::cout<<x<<" "; std::cout<<"\n";
+        for(auto x:om) std::cout<<x<<" "; std::cout<<"\n";
         eval.resize(ck);
         evec.resize(ck*ck);
         MatFullDiagGen(hm.data(), om.data(), ck, evec.data(), eval.data());

@@ -26,6 +26,7 @@ public:
 
     void Load()
     {
+        cout<<"Loading "<<in_W<<endl;
         if (!W.load(in_W,arma::raw_ascii))
             throw std::invalid_argument("W.dat file not found");
         W=W.t();

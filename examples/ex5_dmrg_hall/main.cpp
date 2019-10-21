@@ -31,7 +31,7 @@ void TestDMRGBasico(const Parameters &par)
     hh.mu=par.muHall;
     hh.periodic=par.periodic;
     hh.Load();
-    hh.d_cut_exp=len; hh.d_cut_Fourier=len; hh.tol=1e-10;
+    hh.d_cut_exp=len; hh.d_cut_Fourier=len; hh.tol=1e-12;
     auto op=hh.Hamiltonian(); op.Sweep(); op.PrintSizes("HamHall=");
     op.decomposer=MatQRDecomp;
     auto nop=NParticle(len), eh_op=ElectronHoleMPO(len);

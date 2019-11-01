@@ -31,7 +31,7 @@ void TestDMRGBasico(const Parameters &par)
     hh.mu=par.muHall;
     hh.periodic=par.periodic;
     hh.Load();
-    hh.d_cut_exp=len; hh.d_cut_Fourier=len; hh.tol=1e-12;
+    hh.d_cut_exp=len; hh.d_cut_Fourier=len; hh.tol=1e-6;
     auto op=hh.Hamiltonian(); op.Sweep(); op.PrintSizes("HamHall=");
     op.decomposer=MatQRDecomp;
     auto nop=NParticle(len), eh_op=ElectronHoleMPO(len);
@@ -48,7 +48,7 @@ void TestDMRGBasico(const Parameters &par)
         std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<" --------------------------------------\n";
         sol.reset_states();
         sol.DoIt_gs();
-        gss=MPO_MPS{Proj,sol.gs[0]}.toMPS(sol.m).Normalize();
+        gss=(par.muHall!=0)? sol.gs[0] : MPO_MPS{Proj,sol.gs[0]}.toMPS(sol.m).Normalize();
         Superblock np({&gss,&nop,&gss});
         Superblock eh({&gss,&eh_op,&gss});
         cout<<" nT="<<np.value()<<", eh="<<eh.value()<<endl;

@@ -98,8 +98,8 @@ TEST_CASE( "dmrg0 Jacobi-Davidson spin1", "[dmrg_0_jd_s1]" )
 #include"dmrg_krylov_gs.h"
 #include"dmrg_jacobi_davidson_gs.h"
 
-template<class DMRG0>
-void TypicalRunDMRG0(MPO op,int nsweep,int m, int nkrylov,int nsweep_resid,
+template<class DMRG0=DMRG_krylov_gs>
+void TypicalRunDMRG0(MPO op,int nsweep,int m, int nkrylov=2,int nsweep_resid=2,
                      int nsite_gs=0, int nsite_resid=1, int nsite_jd=0)
 {
     std::cout<<std::setprecision(15);
@@ -127,6 +127,9 @@ TEST_CASE( "dmrg0 Krylov spin1", "[dmrg_0_k_s1]" )
         TypicalRunDMRG0<DMRG_krylov_gs>( HamS(par.spin,par.length,par.periodic),
                          par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
                          par.nsite_gs,par.nsite_resid,par.nsweep_jd);
+        auto h=HamS(par.spin,par.length,par.periodic);
+        int nsweep=4, m=200;
+        TypicalRunDMRG0(h,nsweep,m);
     }
 }
 

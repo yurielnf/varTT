@@ -13,6 +13,9 @@ together with the MPO automatic construction as in:
 ```
 h += Fermi(i,L,true) * Fermi(j,L,false) * t(i,j);
 h += Fermi(i,L,true) * Fermi(i,L,false) * Fermi(i+1,L,true) * Fermi(i+1,L,false);
+
+int nsweep=8, m=200;
+TypicalRunDMRG0(h,nsweep,m);
 ```
 
 ### External dependencies

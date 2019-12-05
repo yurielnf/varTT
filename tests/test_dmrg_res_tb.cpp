@@ -94,58 +94,98 @@ TEST_CASE( "dmrg0 Jacobi-Davidson spin1", "[dmrg_0_jd_s1]" )
     }
 }
 
-//--------------- n-step residual correction -----
+//------------------------- n-step residual correction ----------------------
 #include"dmrg_krylov_gs.h"
 #include"dmrg_jacobi_davidson_gs.h"
 
+template<class DMRG0>
+void TypicalRunDMRG0(MPO op,int nsweep,int m, int nkrylov,int nsweep_resid,
+                     int nsite_gs=0, int nsite_resid=1, int nsite_jd=0)
+{
+    std::cout<<std::setprecision(15);
+    op.PrintSizes("Ham=");
+    op.decomposer=MatQRDecomp;
+    DMRG0 sol(op,m,nkrylov);
+    sol.nsite_gs=nsite_gs;
+    sol.nsite_resid=nsite_resid;
+    sol.nsite_jd=nsite_jd;
+    sol.DoIt_gs();
+    for(int k=0;k<nsweep;k++)
+    {
+        sol.DoIt_res(nsweep_resid);
+        std::cout<<"\nsweep "<<k+1<<"; error="<<sol.error<<"\n\n";
+        sol.reset_states();
+        sol.DoIt_gs();
+    }
+}
+
 TEST_CASE( "dmrg0 Krylov spin1", "[dmrg_0_k_s1]" )
 {
-    srand(time(NULL));
-    std::cout<<std::setprecision(15);
-    Parameters par;
-    par.ReadParameters("param.txt");
-
+    Parameters par("param.txt");
     SECTION( "dmrg" )
     {
-        auto op=HamS(par.spin,par.length,par.periodic); op.PrintSizes("Hs1=");
-        op.decomposer=MatQRDecomp;//MatChopDecompFixedTol(0);
-        DMRG_krylov_gs sol(op,par.m,par.nkrylov);
-        sol.nsite_gs=par.nsite_gs;
-        sol.nsite_resid=par.nsite_resid;
-        sol.DoIt_gs();
-        for(int k=0;k<par.nsweep;k++)
-        {
-            sol.DoIt_res(par.nsweep_resid);
-            std::cout<<"\nsweep "<<k+1<<"; error="<<sol.error<<"\n\n";
-            sol.reset_states();
-            sol.DoIt_gs();
-        }
+        TypicalRunDMRG0<DMRG_krylov_gs>( HamS(par.spin,par.length,par.periodic),
+                         par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
+                         par.nsite_gs,par.nsite_resid,par.nsweep_jd);
     }
 }
 
 TEST_CASE( "dmrg0 JD spin1", "[dmrg_0_jacobi_s1]" )
 {
-    srand(time(NULL));
-    std::cout<<std::setprecision(15);
-    Parameters par;
-    par.ReadParameters("param.txt");
-
+    Parameters par("param.txt");
     SECTION( "dmrg" )
     {
-        auto op=HamS(par.spin,par.length,par.periodic); op.PrintSizes("Hs1=");
-        op.decomposer=MatQRDecomp;//MatChopDecompFixedTol(0);
-        DMRG_Jacobi_Davidson_gs sol(op,par.m,par.nkrylov);
-        sol.nsite_gs=par.nsite_gs;
-        sol.nsite_resid=par.nsite_resid;
-        sol.nsite_jd=par.nsite_jd;
-        sol.DoIt_gs();
-        for(int k=0;k<par.nsweep;k++)
-        {
-            sol.DoIt_res(par.nsweep_resid,par.nsweep_jd);
-            std::cout<<"\nsweep "<<k+1<<"; error="<<sol.error<<"\n\n";
-            sol.reset_states();
-            sol.DoIt_gs();
-        }
+        TypicalRunDMRG0<DMRG_Jacobi_Davidson_gs>( HamS(par.spin,par.length,par.periodic),
+                         par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
+                         par.nsite_gs,par.nsite_resid,par.nsweep_jd);
+    }
+}
+
+TEST_CASE( "dmrg0 Krylov spin1/2", "[dmrg_0_k_sf1]" )
+{
+    Parameters par("param.txt");
+    SECTION( "dmrg" )
+    {
+        TypicalRunDMRG0<DMRG_krylov_gs>( HamSFermi(par.spin,par.length,par.periodic),
+                         par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
+                         par.nsite_gs,par.nsite_resid,par.nsweep_jd);
+    }
+}
+
+TEST_CASE( "dmrg0 JD spin1/2", "[dmrg_0_jacobi_sf1]" )
+{
+    Parameters par("param.txt");
+    SECTION( "dmrg" )
+    {
+        TypicalRunDMRG0<DMRG_Jacobi_Davidson_gs>( HamSFermi(par.spin,par.length,par.periodic),
+                         par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
+                         par.nsite_gs,par.nsite_resid,par.nsweep_jd);
+    }
+}
+
+
+TEST_CASE( "dmrg0 Krylov tigh binding", "[dmrg_0_k_tb]" )
+{
+
+    Parameters par("param.txt");
+    SECTION( "dmrg" )
+    {
+        TypicalRunDMRG0<DMRG_krylov_gs>( HamTbAuto(par.length,par.periodic),
+                         par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
+                         par.nsite_gs,par.nsite_resid,par.nsweep_jd);
+        std::cout<<"exact="<<ExactEnergyTB(par.length,par.length/2,par.periodic)<<"\n";
+    }
+}
+
+TEST_CASE( "dmrg0 JD tigh binding", "[dmrg_0_jacobi_tb]" )
+{
+    Parameters par("param.txt");
+    SECTION( "dmrg" )
+    {
+        TypicalRunDMRG0<DMRG_Jacobi_Davidson_gs>( HamTbAuto(par.length,par.periodic),
+                         par.nsweep,par.m,par.nkrylov,par.nsweep_resid,
+                         par.nsite_gs,par.nsite_resid,par.nsweep_jd);
+        std::cout<<"exact="<<ExactEnergyTB(par.length,par.length/2,par.periodic)<<"\n";
     }
 }
 

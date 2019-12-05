@@ -471,6 +471,7 @@ MPO ElectronHoleMPO(int L);
 
 MPO HamS1(int L,bool periodic);
 MPO HamS(int s,int L,bool periodic);
+MPO HamSFermi(int s,int L,bool periodic);
 MPO SpinFlipGlobal(int len);
 MPO HamTbAuto(int L,bool periodic);
 MPO HamTBExact(int L);

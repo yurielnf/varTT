@@ -48,6 +48,8 @@ void Parameters::ReadParameters(const char filename[])
             in>>etaFactor;
         else if(param=="DSz2")
             in>>DSz2;
+        else if(param=="BF")
+            in>>BF;
         else if(param=="hallW_file")
             in>>hallW_file;
         else if(param=="renyi_q")

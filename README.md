@@ -11,7 +11,8 @@ t2("li")=t1("ijk") * t1("ljk");
 together with the MPO automatic construction as in:
 
 ```
-h += Fermi(i,L,true) * Fermi(i+1,L,false);
+h += Fermi(i,L,true) * Fermi(j,L,false) * t(i,j);
+h += Fermi(i,L,true) * Fermi(i,L,false) * Fermi(i+1,L,true) * Fermi(i+1,L,false);
 ```
 
 ### External dependencies

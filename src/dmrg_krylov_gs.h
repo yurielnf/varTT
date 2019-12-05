@@ -8,7 +8,7 @@ struct DMRG_krylov_gs
 {
     MPO mpo;
     int m, nk, ck, nIterMax=256, iter;
-    int nsite_gs=0, nsite_resid=1;
+    int nsite_gs=0, nsite_resid=1, nsite_jd=0;
     double tol_diag=1e-13, error=1, errort;
 
     vector<MPS> gs;
@@ -70,7 +70,9 @@ struct DMRG_krylov_gs
     }*/
     MPS ExactRes(int i)
     {
-        MPS x=MPO_MPS{mpo,gs[i-1]}.toMPS(2*m,tol_diag*fabs(hmat[0]));
+        double errord=std::max(error,tol_diag)*fabs(hmat[0]);
+        MPS x=MPO_MPS{mpo,gs[i-1]}.toMPS(2*m,errord);//tol_diag*fabs(hmat[0])
+//        MPS x=mpo*gs[i-1];
         x.PrintSizes("residual");
         MPSSum sum(m,MatSVDFixedDim(m));
         for(int j=0;j<i;j++)
@@ -144,13 +146,13 @@ struct DMRG_krylov_gs
         int i=ck-1;
         auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
         //auto cH=beff;
-        for(int j=0;j<i;j++)
-        {
-            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
-            beff -= cO*hmat[j+(i-1)*nk];
-        }
-        if (Norm(beff)<tol_diag)
-            beff.FillRandu();
+//        for(int j=0;j<i;j++)
+//        {
+//            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
+//            beff -= cO*hmat[j+(i-1)*nk];
+//        }
+//        if (Norm(beff)<tol_diag)
+//            beff.FillRandu();
         gs[i].setCentralMat( beff );
         gs[i].Normalize();
         if (nsite_resid)

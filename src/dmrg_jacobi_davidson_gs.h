@@ -9,9 +9,9 @@
 struct DMRG_Jacobi_Davidson_gs
 {
     MPO mpo;
-    int m, nk, ck, nIterMax=128, iter;
+    int m, nk, ck, nIterMax=256, iter;
     int nsite_gs=0, nsite_resid=1, nsite_jd=0;
-    double tol_diag=1e-13, error=1, errort, enerl;
+    double tol_diag=1e-13, error=1,beta=1, errort, enerl;
 
     vector<MPS> gs;
     vector<Superblock> sb_h, sb_o;
@@ -69,7 +69,9 @@ struct DMRG_Jacobi_Davidson_gs
     }*/
     MPS ExactRes(int i)
     {
-        MPS x=MPO_MPS{mpo,gs[i-1]}.toMPS(2*m,tol_diag*fabs(hmat[0]));
+        double errord=std::max(error,tol_diag)*fabs(hmat[0]);
+        MPS x=MPO_MPS{mpo,gs[i-1]}.toMPS(2*m,errord);
+        //MPS x=mpo*gs[i-1];
         x.PrintSizes("residual");
         MPSSum sum(m,MatSVDFixedDim(m));
         for(int j=0;j<i;j++)
@@ -83,7 +85,7 @@ struct DMRG_Jacobi_Davidson_gs
     }
     void reset_states()
     {
-        if (error<tol_diag) return;
+        if (error<tol_diag) {ck=1; return;}
         int m=gs[0].m;
         vector<MPS> gsn(nk);
         for(int j=0;j<1;j++)
@@ -111,16 +113,15 @@ struct DMRG_Jacobi_Davidson_gs
     }
     void Solve_res()
     {
-//        int i=ck-1;
-//        TensorD /*cO,*/cH;
-//        for(int j=0;j<i;j++)
-//        {
-////            cO+=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
-//            cH+=sb_h[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
-//        }
-//        auto beff= cH;//+cO*(-eval[0]);
         int i=ck-1;
-        auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
+        TensorD cO,cH;
+        for(int j=0;j<i;j++)
+        {
+            cO+=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
+            cH+=sb_h[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
+        }
+        auto beff= cH+cO*(-eval[0]);
+//        auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
         gs[i].setCentralMat( beff );
         gs[i].Normalize();
         if (nsite_resid)
@@ -159,16 +160,17 @@ struct DMRG_Jacobi_Davidson_gs
             cH+=sb_h[i+j*nk].Oper(nsite_jd)*gs[j].CentralMat(nsite_jd)*evec[j];
         }
         auto beff= cH+cO*(-eval[0]);
+        if (fabs(beta)>tol_diag) beff*=1.0/beta;
 
         auto A=JDOper(sb_h[i+i*nk].Oper(nsite_jd),cH,cO,eval[0],enerl);
         auto x=gs[i].CentralMat(nsite_jd);
-        double errord=std::max(error/mpo.length,tol_diag);
+        double errord=std::max(error,tol_diag);
         errord=std::min(errord,1e-2);
+        //int nIterMax=20;
         iter=nIterMax;
         //        CG(A,x,beff,iter,errord);
         GMRES(A,x,beff,nIterMax,iter,errord);
         gs[i].setCentralMat( x );
-
         gs[i].Normalize();
         if (nsite_jd)
         {
@@ -319,6 +321,7 @@ struct DMRG_Jacobi_Davidson_gs
         evec.resize(ck*ck);
         MatFullDiagGen(hm.data(), om.data(), ck, evec.data(), eval.data());
         errort=fabs(hmat[0]-eval[0]);//fabs(hmat[ck-2+(ck-1)*nk]*evec[ck-1]);
+        beta=evec[0+ck*(ck-1)];
     }
     double CurrentEner()
     {
@@ -340,6 +343,7 @@ struct DMRG_Jacobi_Davidson_gs
         stdvec evec(ck*ck);
         MatFullDiagGen(hm.data(), om.data(), ck, evec.data(), eval.data());
         errort=fabs(hmat[0]-eval[0]);//fabs(hmat[ck-2+(ck-1)*nk]*evec[ck-1]);
+        beta=evec[0+ck*(ck-1)];
         enerl=eval[0];
         return eval[0];
     }

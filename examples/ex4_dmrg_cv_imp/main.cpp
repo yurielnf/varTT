@@ -181,14 +181,14 @@ MPO Ham2CK1(int L,double DSz2)
 
 MPO HamICTP1(int L, double BF)
 {
-    int m=1000;
+    int m=2;
     double lambda=6;
-    double Ec=10;
-    double J=1;
+    double Ec=5;
+    double J=0.0;
     double B=BF;
-    double e=-2;
+    double epsilon=-17;
     //---interaccion-QD-bandas
-    double V=0.8;
+    double V=0.67;
     double V1=1.5*V;
     double V2=-V;
 
@@ -211,31 +211,155 @@ MPO HamICTP1(int L, double BF)
 
     //-------------ENERGIAS-DIAGONALES-NIVELES-QD---------------------
 
-    kin(0,0)=kin(L/2,L/2)=e-2*Ec-0.5*B;
-    kin(L/4,L/4)=kin(3*L/4,3*L/4)=e-2*Ec+0.5*B;
+    kin(0,0)=kin(L/2,L/2)=epsilon-0.5*B;
+    kin(L/4,L/4)=kin(3*L/4,3*L/4)=epsilon+0.5*B;
 
 
     //---------------------------canales------------------------------
     //-----------------------hoppings NRG-----------------------------
-    //
-    // for(int i=1;i<L/4-1;i++)
-    //     for(int j=0;j<4;j++)
-    //     {
-    //         int d=j*L/4;
-    //         kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
-    //     }
-    //
-    // //---------------------------hibridizacion------------------------
-    //
-    //     kin(0,1)=V1;
-    //     kin(1,0)=V1;
-    //     kin(L/4,L/4+1)=V1;
-    //     kin(L/4+1,L/4)=V1;
-    //     kin(L/2,L/2+1)=V2;
-    //     kin(L/2+1,L/2)=V2;
-    //     kin(3*L/4,3*L/4+1)=V2;
-    //     kin(3*L/4+1,3*L/4)=V2;
-    //
+
+    for(int i=1;i<L/4-1;i++)
+        for(int j=0;j<4;j++)
+        {
+            int d=j*L/4;
+            kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
+        }
+
+    //---------------------------hibridizacion------------------------
+
+        kin(0,1)=V1;
+        kin(1,0)=V1;
+        kin(L/4,L/4+1)=V1;
+        kin(L/4+1,L/4)=V1;
+        kin(L/2,L/2+1)=V2;
+        kin(L/2+1,L/2)=V2;
+        kin(3*L/4,3*L/4+1)=V2;
+        kin(3*L/4+1,3*L/4)=V2;
+
+    //----------------------------formaestrella-----------------------
+
+       mat u = zeros<mat>(L,L);
+
+    //----------------------------sitiosimpurezas---------------------
+
+        u(0,0)=1.0;
+        u(L/4,L/4)=1.0;
+        u(L/2,L/2)=1.0;
+        u(3*L/4,3*L/4)=1.0;
+
+    //---------------------------hamiltoniano-banda-------------------
+
+        mat h22 = zeros<mat>(L/4-1,L/4-1);
+        for(int i=0;i<L/4-2;i++)
+            h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
+
+      //--------------------------matriz-que-diagonaliza-h22------------
+
+        vec eigval;
+        mat eigvec;
+
+        eig_sym(eigval,eigvec,h22);
+
+    //-----------------------------K-----------------------------------
+
+        for(int i=0; i<L/4-1;i++)
+        {
+            for(int j=0; j<L/4-1; j++)
+            {
+                u(i+1,j+1)=u(i+L/4+1,j+L/4+1)=u(i+L/2+1,j+L/2+1)=u(i+3*L/4+1,j+3*L/4+1)=eigvec(i,j);
+            }
+        }
+        mat udaga = u.t();
+        mat k;
+        k = udaga*kin*u;
+
+        for(int i=0; i<L;i++)
+            for(int j=0; j<L;j++)
+                if( fabs( kin(i,j) ) > 1e-13 )
+                    h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
+
+    //-----------------Termino---Ec*N^2---------------------------------
+
+    for(int i=0;i<4;i++)
+      {
+        int d=i*L/4;
+        for(int j=0;j<4;j++)
+        {
+          int q=j*L/4;
+          h += Fermi(d,L,true)*Fermi(d,L,false)*Fermi(q,L,true)*Fermi(q,L,false)*Ec;
+        }
+      }
+
+    //-------------Termino------J*S^2----------------------------------------
+      //------------Sx^2+Sy^2------------------------------------------------
+      h += Fermi(0,L,true)*Fermi(L/4,L,false)*Fermi(L/4,L,true)*Fermi(0,L,false)*(-0.5)*J;
+      h += Fermi(0,L,true)*Fermi(L/4,L,false)*Fermi(3*L/4,L,true)*Fermi(L/2,L,false)*(-0.5)*J;
+      h += Fermi(L/4,L,true)*Fermi(0,L,false)*Fermi(0,L,true)*Fermi(L/4,L,false)*(-0.5)*J;
+      h += Fermi(L/4,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(3*L/4,L,false)*(-0.5)*J;
+      h += Fermi(L/2,L,true)*Fermi(3*L/4,L,false)*Fermi(L/4,L,true)*Fermi(0,L,false)*(-0.5)*J;
+      h += Fermi(L/2,L,true)*Fermi(3*L/4,L,false)*Fermi(3*L/4,L,true)*Fermi(L/2,L,false)*(-0.5)*J;
+      h += Fermi(3*L/4,L,true)*Fermi(L/2,L,false)*Fermi(0,L,true)*Fermi(L/4,L,false)*(-0.5)*J;
+      h += Fermi(3*L/4,L,true)*Fermi(L/2,L,false)*Fermi(L/2,L,true)*Fermi(3*L/4,L,false)*(-0.5)*J;
+
+      //---------Sz^2-------------------------------------------------------
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(0,L,true)*Fermi(0,L,false)*(-0.25)*J;
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/4,L,true)*Fermi(L/4,L,false)*0.25*J;
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*(-0.25)*J;
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*0.25*J;
+
+      h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(0,L,true)*Fermi(0,L,false)*0.25*J;
+      h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(L/4,L,true)*Fermi(L/4,L,false)*(-0.25)*J;
+      h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*0.25*J;
+      h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*(-0.25)*J;
+
+      h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(0,L,true)*Fermi(0,L,false)*(-0.25)*J;
+      h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(L/4,L,true)*Fermi(L/4,L,false)*0.25*J;
+      h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*(-0.25)*J;
+      h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*0.25*J;
+
+      h += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*Fermi(0,L,true)*Fermi(0,L,false)*0.25*J;
+      h += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*Fermi(L/4,L,true)*Fermi(L/4,L,false)*(-0.25)*J;
+      h += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*0.25*J;
+      h += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*(-0.25)*J;
+
+
+    return h.toMPS().Sweep();
+}
+
+MPO Ham2SKtoy(int L, double BF, double Jh)
+{
+    int m=2;
+    double lambda=6;
+    double B=BF;
+    double J=Jh;
+    //---interaccion-QD-bandas
+    double Tk1=1;
+    double Tk2=10;
+
+    MPSSum h(m,MatSVDFixedTol(1e-12));
+
+    //-------------------parte kin------------------------------------
+
+    mat kin = zeros<mat>(L,L);
+
+    //-----------------------FORMA------------------------------------
+    //------------LVL1UP--BAÑO-UP---LVL1DOWN--BAÑO-DOWN---------------
+    //------------LVL2UP--BAÑO-UP---LVL2DOWN--BAÑO-DOWN---------------
+    //--------------------energia-sitios-impurezas--------------------
+
+    kin(0,0)=kin(L/2,L/2)=-0.5*B;
+    kin(L/4,L/4)=kin(3*L/4,3*L/4)=0.5*B;
+
+    //---------------------------canales------------------------------
+    //-----------------------hoppings NRG-----------------------------
+
+    for(int i=1;i<L/4-1;i++)
+        for(int j=0;j<4;j++)
+        {
+            int d=j*L/4;
+            kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
+        }
+
     // //----------------------------formaestrella-----------------------
     //
     //    mat u = zeros<mat>(L,L);
@@ -252,8 +376,8 @@ MPO HamICTP1(int L, double BF)
     //     mat h22 = zeros<mat>(L/4-1,L/4-1);
     //     for(int i=0;i<L/4-2;i++)
     //         h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
-
-        //--------------------------matriz-que-diagonaliza-h22------------
+    //
+    //   //--------------------------matriz-que-diagonaliza-h22------------
     //
     //     vec eigval;
     //     mat eigvec;
@@ -278,17 +402,263 @@ MPO HamICTP1(int L, double BF)
                 if( fabs( kin(i,j) ) > 1e-13 )
                     h += Fermi(i,L,true)*Fermi(j,L,false)*kin(i,j);
 
-    //-----------------Termino---0.5*Ec*N^2---------------------------------
+   //--------------------int imp1 canal1------------------------------------
 
-    for(int i=0;i<4;i++)
-      {
-        int d=i*L/4;
-        for(int j=0;j<4;j++)
+       h += Fermi(0,L,true)*Fermi(L/4,L,false)*Fermi(L/4+1,L,true)*Fermi(1,L,false)*(0.5)*Tk1;
+       h += Fermi(L/4,L,true)*Fermi(0,L,false)*Fermi(1,L,true)*Fermi(L/4+1,L,false)*(0.5)*Tk1;
+
+       h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(1,L,true)*Fermi(1,L,false)*(0.25)*Tk1;
+       h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/4+1,L,true)*Fermi(L/4+1,L,false)*(-0.25)*Tk1;
+       h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(1,L,true)*Fermi(1,L,false)*(-0.25)*Tk1;
+       h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(L/4+1,L,true)*Fermi(L/4+1,L,false)*(0.25)*Tk1;
+
+
+   //--------------------int imp2 canal2------------------------------------
+
+       h += Fermi(L/2,L,true)*Fermi(3*L/4,L,false)*Fermi(3*L/4+1,L,true)*Fermi(L/2+1,L,false)*(0.5)*Tk2;
+       h += Fermi(3*L/4,L,true)*Fermi(L/2,L,false)*Fermi(L/2+1,L,true)*Fermi(3*L/4+1,L,false)*(0.5)*Tk2;
+
+       h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(L/2+1,L,true)*Fermi(L/2+1,L,false)*(0.25)*Tk2;
+       h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(3*L/4+1,L,true)*Fermi(3*L/4+1,L,false)*(-0.25)*Tk2;
+       h += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*Fermi(L/2+1,L,true)*Fermi(L/2+1,L,false)*(-0.25)*Tk2;
+       h += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*Fermi(3*L/4+1,L,true)*Fermi(3*L/4+1,L,false)*(0.25)*Tk2;
+
+   //-----------------------Hund impurezas------------------------------------
+
+       h += Fermi(0,L,true)*Fermi(L/4,L,false)*Fermi(3*L/4,L,true)*Fermi(L/2,L,false)*(-0.5)*J;
+       h += Fermi(L/4,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(3*L/4,L,false)*(-0.5)*J;
+
+       h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*(-0.25)*J;
+       h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*(0.25)*J;
+       h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*(0.25)*J;
+       h += Fermi(L/4,L,true)*Fermi(L/4,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*(-0.25)*J;
+
+
+    return h.toMPS().Sweep();
+}
+
+MPO HamICTP1CK(int L, double BF)
+{
+    int m=2;
+    double lambda=6;
+    double Ec=5;
+    double J=1;
+    double B=BF;
+    double epsilon=-6.75;
+    //---interaccion-QD-bandas
+    double V1=0.89;
+
+    MPSSum h(m,MatSVDFixedTol(1e-12));
+
+    //--------------------------------------------------------------------
+    //-------------------------impurezas----------------------------------
+    //-----------------------CANALES-ESTRELLA-----------------------------
+
+    mat kin = zeros<mat>(L,L);
+
+    //-----------------------FORMA------------------------------------
+    //------------LVL1UP--BAÑO-UP---LVL1DOWN--BAÑO-DOWN---------------
+    //------------LVL2UP--BAÑO-UP---LVL2DOWN--BAÑO-DOWN---------------
+
+    //-------------ENERGIAS-DIAGONALES-NIVELES-QD---------------------
+
+    kin(0,0)=epsilon-0.5*B;
+    kin(L/2,L/2)=epsilon+0.5*B;
+
+
+    //---------------------------canales------------------------------
+    //-----------------------hoppings NRG-----------------------------
+
+    for(int i=1;i<L/2-1;i++)
+        for(int j=0;j<2;j++)
         {
-          int q=j*L/4;
-          h += Fermi(d,L,true)*Fermi(d,L,false)*Fermi(q,L,true)*Fermi(q,L,false)*0.5*Ec;
+            int d=j*L/2;
+            kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
+        }
+
+    //---------------------------hibridizacion------------------------
+
+        kin(0,1)=V1;
+        kin(1,0)=V1;
+        kin(L/2,L/2+1)=V1;
+        kin(L/2+1,L/2)=V1;
+
+    //----------------------------formaestrella-----------------------
+
+       mat u = zeros<mat>(L,L);
+
+    //----------------------------sitiosimpurezas---------------------
+
+        u(0,0)=1.0;
+        u(L/4,L/4)=1.0;
+        u(L/2,L/2)=1.0;
+        u(3*L/4,3*L/4)=1.0;
+
+    //---------------------------hamiltoniano-banda-------------------
+
+        mat h22 = zeros<mat>(L/2-1,L/2-1);
+        for(int i=0;i<L/2-2;i++)
+            h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
+
+      //--------------------------matriz-que-diagonaliza-h22------------
+
+        vec eigval;
+        mat eigvec;
+
+        eig_sym(eigval,eigvec,h22);
+
+    //-----------------------------K-----------------------------------
+
+        for(int i=0; i<L/2-1;i++)
+        {
+            for(int j=0; j<L/2-1; j++)
+            {
+                u(i+1,j+1)=u(i+L/2+1,j+L/2+1)=eigvec(i,j);
+            }
+        }
+        mat udaga = u.t();
+        mat k;
+        k = udaga*kin*u;
+
+        for(int i=0; i<L;i++)
+            for(int j=0; j<L;j++)
+                if( fabs( kin(i,j) ) > 1e-13 )
+                    h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
+
+    //-----------------Termino---Ec*N^2---------------------------------
+
+    for(int i=0;i<2;i++)
+      {
+        int d=i*L/2;
+        for(int j=0;j<2;j++)
+        {
+          int q=j*L/2;
+          h += Fermi(d,L,true)*Fermi(d,L,false)*Fermi(q,L,true)*Fermi(q,L,false)*Ec;
         }
       }
+
+    //-------------Termino------J*S^2----------------------------------------
+      //------------Sx^2+Sy^2------------------------------------------------
+      h += Fermi(0,L,true)*Fermi(L/2,L,false)*Fermi(L/2,L,true)*Fermi(0,L,false)*(-1.0)*J;
+
+      //---------Sz^2-------------------------------------------------------
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(0,L,true)*Fermi(0,L,false)*(-0.25)*J;
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*0.50*J;
+      h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*(-0.25)*J;
+
+    return h.toMPS().Sweep();
+}
+
+MPO Ham2Cdesac(int L, double BF)
+{
+    int m=2;
+    double lambda=6;
+    double Ec=5;
+    double U=4;
+    double J=0.0;
+    double B=BF;
+    double epsilon=-2;
+    //---interaccion-QD-bandas
+    double V=0.5;
+    double V1=1.5*V;
+    double V2=-V;
+
+    MPSSum h(m,MatSVDFixedTol(1e-12));
+
+    //--------------------------------------------------------------------
+    //-------------------------impurezas----------------------------------
+    //-----------------------CANALES-ESTRELLA-----------------------------
+
+    mat kin = zeros<mat>(L,L);
+
+    //------------LVL1UP--BAÑO-UP---LVL1DOWN--BAÑO-DOWN---------------
+    //------------LVL2UP--BAÑO-UP---LVL2DOWN--BAÑO-DOWN---------------
+
+    //-------------ENERGIAS-DIAGONALES-NIVELES-QD---------------------
+
+    kin(0,0)=kin(L/2,L/2)=epsilon-0.5*B;
+    kin(L/4,L/4)=kin(3*L/4,3*L/4)=epsilon+0.5*B;
+
+
+    //---------------------------canales------------------------------
+    //-----------------------hoppings NRG-----------------------------
+
+    for(int i=1;i<L/4-1;i++)
+        for(int j=0;j<4;j++)
+        {
+            int d=j*L/4;
+            kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
+        }
+
+    //---------------------------hibridizacion------------------------
+
+        kin(0,1)=V1;
+        kin(1,0)=V1;
+        kin(L/4,L/4+1)=V1;
+        kin(L/4+1,L/4)=V1;
+        kin(L/2,L/2+1)=V2;
+        kin(L/2+1,L/2)=V2;
+        kin(3*L/4,3*L/4+1)=V2;
+        kin(3*L/4+1,3*L/4)=V2;
+
+    //----------------------------formaestrella-----------------------
+
+       mat u = zeros<mat>(L,L);
+
+    //----------------------------sitiosimpurezas---------------------
+
+        u(0,0)=1.0;
+        u(L/4,L/4)=1.0;
+        u(L/2,L/2)=1.0;
+        u(3*L/4,3*L/4)=1.0;
+
+    //---------------------------hamiltoniano-banda-------------------
+
+        mat h22 = zeros<mat>(L/4-1,L/4-1);
+        for(int i=0;i<L/4-2;i++)
+            h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
+
+      //--------------------------matriz-que-diagonaliza-h22------------
+
+        vec eigval;
+        mat eigvec;
+
+        eig_sym(eigval,eigvec,h22);
+
+    //-----------------------------K-----------------------------------
+
+        for(int i=0; i<L/4-1;i++)
+        {
+            for(int j=0; j<L/4-1; j++)
+            {
+                u(i+1,j+1)=u(i+L/4+1,j+L/4+1)=u(i+L/2+1,j+L/2+1)=u(i+3*L/4+1,j+3*L/4+1)=eigvec(i,j);
+            }
+        }
+        mat udaga = u.t();
+        mat k;
+        k = udaga*kin*u;
+
+        for(int i=0; i<L;i++)
+            for(int j=0; j<L;j++)
+                if( fabs( k(i,j) ) > 1e-13 )
+                    h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
+
+    //-----------------Termino---Ec*N^2---------------------------------
+    //
+    // for(int i=0;i<4;i++)
+    //   {
+    //     int d=i*L/4;
+    //     for(int j=0;j<4;j++)
+    //     {
+    //       int q=j*L/4;
+    //       h += Fermi(d,L,true)*Fermi(d,L,false)*Fermi(q,L,true)*Fermi(q,L,false)*Ec;
+    //     }
+    //   }
+
+    //-----------------Termino---U--------------------------------------
+      h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/4,L,true)*Fermi(L/4,L,false)*U;
+      h += Fermi(L/2,L,true)*Fermi(L/2,L,false)*Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false)*U;
+
 
     //-------------Termino------J*S^2----------------------------------------
       //------------Sx^2+Sy^2------------------------------------------------
@@ -357,11 +727,47 @@ MPO NImp2up(int L)
 }
 MPO NImp2down(int L)
 {
-    int m=4;
+    int m=1;
     MPSSum npart(m,MatSVDFixedTol(1e-13));
     npart += Fermi(3*L/4,L,true)*Fermi(3*L/4,L,false) ;
     return npart.toMPS();
 }
+
+MPO NN(int i, int j,int L)
+{
+    return Fermi(i,L,true)*Fermi(i,L,false)*Fermi(j,L,true)*Fermi(j,L,false);
+}
+
+void CalculateNiNj(const Parameters par)
+{
+    MPS gs;
+    gs.Load("gs.dat");
+    ofstream out("ninj.dat");
+    int L=par.length;
+    vector<int> pos={0,L/4,L/2,3*L/4};
+
+    for(int i:pos)
+    {
+        for(int j:pos)
+        {
+            MPO rr=Fermi(i,L,true)*Fermi(i,L,false)*Fermi(j,L,true)*Fermi(j,L,false);
+            double ninj=Superblock({&gs,&rr,&gs}).value();
+            out<<ninj<<" ";
+        }
+        out<<endl;
+    }
+}
+
+// MPO NImp(int L)
+// {
+//   int m=4;
+//   MPSSum npart(m,MatSVDFixedTol(1e-13));
+//       npart += Fermi(0,L,true)*Fermi(0,L,false) ;
+//       npart += Fermi(L/2,L,true)*Fermi(L/2,L,false) ;
+//   return npart.toMPS();
+// }
+
+//--------------original---------------------------------------
 MPO NImp(int L)
 {
     int m=4;
@@ -376,10 +782,15 @@ MPO NImp(int L)
 void TestDMRGBasico(const Parameters &par)
 {
     int len=par.length;
-    auto op=HamICTP1(len,par.DSz2); op.Sweep(); op.PrintSizes("Hamtb=");
+    auto op=Ham2Cdesac(len,par.BF); op.Sweep(); op.PrintSizes("Ham2Cdesac=");
     op.decomposer=MatQRDecomp;
     auto nop=NParticle(len),nimp=NImp(len);
+    auto nimp1up=NImp1up(len),nimp2up=NImp2up(len);
+    auto nimp1down=NImp1down(len),nimp2down=NImp2down(len);
+
+
     DMRG_krylov_gs sol(op,par.m,par.nkrylov);
+    //sol.nsite_gs=1;
     sol.DoIt_gs();
     for(int k=0;k<par.nsweep;k++)
     {
@@ -389,6 +800,12 @@ void TestDMRGBasico(const Parameters &par)
         sol.DoIt_gs();
         Superblock np({&sol.gs[0],&nop,&sol.gs[0]});
         Superblock ni({&sol.gs[0],&nimp,&sol.gs[0]});
+        Superblock ni1u({&sol.gs[0],&nimp1up,&sol.gs[0]});
+        Superblock ni1d({&sol.gs[0],&nimp1down,&sol.gs[0]});
+        Superblock ni2u({&sol.gs[0],&nimp2up,&sol.gs[0]});
+        Superblock ni2d({&sol.gs[0],&nimp2down,&sol.gs[0]});
+        cout<<"nImp1up="<<ni1u.value()<<" nImp2up="<<ni2u.value()<< endl;
+        cout<<"nImp1dw="<<ni1d.value()<<" nImp2dw="<<ni2d.value()<< endl;
         cout<<"nImp="<<ni.value()<<" nT="<<np.value()<<endl;
     }
     ofstream out("gs.dat");
@@ -437,7 +854,7 @@ void TestDMRGCV(const Parameters& param,int id, int n_id)
 {
     int len=param.length, m=param.m;
 
-    auto op=Ham2CK1(len,param.DSz2); op.Sweep(); op.PrintSizes("Ham=");
+    auto op=Ham2Cdesac(len,param.BF); op.Sweep(); op.PrintSizes("Ham2Cdesac=");
     op.decomposer=MatQRDecomp;
 
     MPS gs;

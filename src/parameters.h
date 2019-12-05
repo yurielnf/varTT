@@ -16,11 +16,13 @@ struct Parameters
     int op1Pos=0,
          op2Pos=0;
     double etaFactor=1,
-           DSz2=0;
+           DSz2=0, BF=0;
     std::string hallW_file="W.dat";
     std::vector<double> renyi_q;
     int freeFermionLx=100;
     double muHall=0;
+    Parameters(){}
+    Parameters(const char file_name[]) {ReadParameters(file_name);}
 
     void ReadParameters(const char filename[]);
 };

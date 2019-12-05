@@ -81,59 +81,56 @@ TEST_CASE( "dmrg S=1", "[dmrg_s1]" )
     }
 }
 
-TEST_CASE( "dmrg with White subspace-expansion tight-binding", "[dmrg_wse_tb]" )
+
+//---------------------------------- Subspace expansion -----------------------------
+
+void TypicalRunWSE(MPO op,int nsweep,int m)
 {
-    srand(time(NULL));
-    int len=10, m=128;
     std::cout<<std::setprecision(15);
-    SECTION( "dmrg" )
+    op.PrintSizes("Ham=");
+    op.decomposer=MatQRDecomp;  //MatChopDecompFixedTol(0);
+    DMRG1_wse_gs sol(op,m);
+    sol.tol_diag=1e-12;
+    for(int k=0;k<=nsweep;k++)
     {
-        auto op=HamTbAuto(len,false); op.PrintSizes("Htb=");
-        op.decomposer=MatChopDecompFixedTol(0);
-//        auto op=HamTBExact(len); op.PrintSizes("HtbExact=");
-        DMRG1_wse_gs sol(op,m);
-        for(int k=0;k<10;k++)
+        for(auto p : MPS::SweepPosSec(op.length))
         {
-            for(auto p:MPS::SweepPosSec(len))
-            {
-                sol.SetPos(p);
-                sol.Solve();
-                if ((p.i+1) % (len/10) ==0) sol.Print();
-            }
-            std::cout<<"exact="<<ExactEnergyTB(len,len/2,false)<<"\n";
+            sol.SetPos(p);
+            sol.Solve();
+            if ((p.i+1) % (op.length/10) ==0) sol.Print();
         }
+        std::cout<<"sweep "<<k+1<<"\n";
+//        if (k>=3) {sol.tol_diag=1e-9; }
+//        if (k>=8) {sol.tol_diag=1e-11; }
+//        if (k>=12){sol.tol_diag=1e-13; }
     }
 }
 
+TEST_CASE( "dmrg with White subspace-expansion tight-binding", "[dmrg_wse_tb]" )
+{
+    Parameters par("param.txt");
+    SECTION( "dmrg" )
+    {
+        TypicalRunWSE( HamTbAuto(par.length,par.periodic),par.nsweep,par.m);
+        std::cout<<"exact="<<ExactEnergyTB(par.length,par.length/2,par.periodic)<<"\n";
+    }
+}
 
 TEST_CASE( "dmrg with White subspace-expansion S=1", "[dmrg_wse_s1]" )
 {
-    srand(time(NULL));
-    Parameters par;
-    par.ReadParameters("param.txt");
-    std::cout<<std::setprecision(15);
+    Parameters par("param.txt");
     SECTION( "dmrg" )
     {
-        auto op=HamS(par.spin, par.length, par.periodic); op.PrintSizes("Hs1=");
-        op.decomposer=MatChopDecompFixedTol(0);
-//        auto sf=SpinFlipGlobal(len); sf.decomposer=MatChopDecompFixedTol(0);
-        DMRG1_wse_gs sol(op,par.m);
-        sol.tol_diag=1e-6;
-        for(int k=0;k<par.nsweep;k++)
-        {
-            for(auto p : MPS::SweepPosSec(par.length))
-            {
-                sol.SetPos(p);
-                sol.Solve();
-                if ((p.i+1) % (par.length/10) ==0) sol.Print();
-            }
-            std::cout<<"sweep "<<k+1<<"\n";
-//            std::cout<<"sf="<<sol.sb_sym.value()<<"\n";
-//            sol.Reset_gs();
-            if (k>=3) {sol.tol_diag=1e-9; }
-            if (k>=8) {sol.tol_diag=1e-11; }
-            if (k>=12){sol.tol_diag=1e-13; }
-//            if (k>=16){sol.alpha=0;}
-        }
+        TypicalRunWSE( HamS(par.spin, par.length, par.periodic),par.nsweep,par.m);
     }
 }
+
+TEST_CASE( "dmrg with White subspace-expansion S=1/2", "[dmrg_wse_sf1]" )
+{
+    Parameters par("param.txt");
+    SECTION( "dmrg" )
+    {
+        TypicalRunWSE( HamSFermi(par.spin, par.length, par.periodic),par.nsweep,par.m);
+    }
+}
+

@@ -59,7 +59,7 @@ MPO Pauli1Sm(int i,int L)
     return O;
 }
 
-MPO SpinSz(int s,int i,int L)
+MPO SpinSz(int s,int i,int L)    // https://en.wikipedia.org/wiki/Spin_(physics)#Higher_spins
 {
     int n=2*s+1;
     TensorD one({n,n}), sz({n,n});
@@ -107,6 +107,58 @@ MPO SpinSminus(int s,int i,int L)
                      : TensorD({1,n,n,1},one.vec());
     return O;
 }
+
+
+MPO SpinSzF(int s,int i,int L)    // for spin 3/2, s=3
+{
+    int n=s+1;
+    TensorD one({n,n}), sz({n,n});
+    one.FillEye(1);
+    sz.FillZeros();
+    int c=0;
+    for(int m=-s;m<=s;m+=2,c++)\
+        sz[{c,c}]=0.5*m;
+
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? TensorD({1,n,n,1},sz.vec())
+                     : TensorD({1,n,n,1},one.vec());
+    return O;
+}
+MPO SpinSplusF(int s,int i,int L)
+{
+    int n=s+1;
+    TensorD one({n,n}), op({n,n});
+    one.FillEye(1);
+    op.FillZeros();
+    int c=0;
+    for(int m=-s;m<s;m+=2,c++)\
+        op[{c+1,c}]=sqrt(0.25*s*(s+2)-0.25*m*(m+2));
+
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? TensorD({1,n,n,1},op.vec())
+                     : TensorD({1,n,n,1},one.vec());
+    return O;
+}
+MPO SpinSminusF(int s,int i,int L)
+{
+    int n=s+1;
+    TensorD one({n,n}), op({n,n});
+    one.FillEye(1);
+    op.FillZeros();
+    int c=0;
+    for(int m=-s;m<s;m+=2,c++)\
+        op[{c,c+1}]=sqrt(0.25*s*(s+2)-0.25*m*(m+2));
+
+    std::vector<TensorD> O(L);
+    for(int j=0;j<L;j++)
+        O[j]= (j==i) ? TensorD({1,n,n,1},op.vec())
+                     : TensorD({1,n,n,1},one.vec());
+    return O;
+}
+
+
 
 MPO Fermi(int i, int L, bool dagged)
 {
@@ -165,6 +217,20 @@ MPO HamS(int s,int L,bool periodic)
     }
     return h.toMPS();
 }
+
+MPO HamSFermi(int s,int L,bool periodic)
+{
+    const int m=3;
+    MPSSum h(m,MatSVDFixedTol(1e-13));
+    for(int i=0;i<L-1+periodic; i++)
+    {
+        h += SpinSzF(s,i,L) * SpinSzF(s,(i+1)%L,L) ;
+        h += SpinSplusF(s,i,L) * SpinSminusF(s,(i+1)%L,L) * 0.5;
+        h += SpinSminusF(s,i,L) * SpinSplusF(s,(i+1)%L,L) * 0.5;
+    }
+    return h.toMPS();
+}
+
 MPO SpinFlipGlobal(int length)
 {
     const stdvec sf={0,0,1,

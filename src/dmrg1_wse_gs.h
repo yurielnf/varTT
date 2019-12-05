@@ -76,15 +76,15 @@ struct DMRG1_wse_gs
             P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
 //            P=P.ReShape({1,2}).Clone();
 //            P*=1.0/Norm(P);
-            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
+            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*(alpha/Norm(P))).vec()));
             A=AC[0]; C=AC[1];
         }
         else
         {
             P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
 //            P=P.ReShape({2,3}).Clone();
-//            P*=1.0/Norm(P);
-            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*alpha).vec()));
+            P*=1.0/Norm(P);
+            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*(alpha/Norm(P))).vec()));
             C=CB[0]; B=CB[1];
         }
         sb.UpdateBlocks();

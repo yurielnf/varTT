@@ -135,7 +135,7 @@ GMRES(const Operator &A, Ket &x, const Ket &b, const int &m, int &max_iter, Real
             return 0;
         }
     }
-    std::cout<<"gmres failed, error="<<resid<<"\n";
+//    std::cout<<"gmres failed, error="<<resid<<"\n";
     tol = resid;
     return 1;
 }

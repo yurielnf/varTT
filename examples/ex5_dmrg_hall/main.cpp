@@ -28,7 +28,7 @@ void TestDMRGBasico(const Parameters &par)
     int len=par.length;
     auto hh=HamHall(len);
     hh.in_W=par.hallW_file;
-    hh.mu=par.muHall;
+    hh.mu=par.mu;
     hh.periodic=par.periodic;
     hh.Load();
     hh.d_cut_exp=len; hh.d_cut_Fourier=len; hh.tol=1e-6;
@@ -48,7 +48,7 @@ void TestDMRGBasico(const Parameters &par)
         std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<" --------------------------------------\n";
         sol.reset_states();
         sol.DoIt_gs();
-        gss=(par.muHall!=0)? sol.gs[0] : MPO_MPS{Proj,sol.gs[0]}.toMPS(sol.m).Normalize();
+        gss=(par.mu!=0)? sol.gs[0] : MPO_MPS{Proj,sol.gs[0]}.toMPS(sol.m).Normalize();
         Superblock np({&gss,&nop,&gss});
         Superblock eh({&gss,&eh_op,&gss});
         cout<<" nT="<<np.value()<<", eh="<<eh.value()<<endl;
@@ -98,7 +98,7 @@ void ExportSTable(string filename,const stdvec& qs,const TensorD& s)
     for(int i=0;i<s.dim[0];i++)
     {
         out<<i<<" ";
-        for(int j=0;j<qs.size();j++)
+        for(uint j=0;j<qs.size();j++)
             out<<s[{i,j}]<<" ";
         out<<endl;
     }
@@ -115,11 +115,11 @@ void CalculateS(const Parameters &par)
         gs.SetPos({i,1});
         TensorD rho=gs.C*gs.C.t();
         TensorD eval=rho.EigenDecomposition(1).at(1);
-        for(int j=0;j<qs.size();j++)
+        for(uint j=0;j<qs.size();j++)
             s[{i,j}]=EntropyRenyi(eval.data(),eval.size(),qs[j]);
     }
 
-    for(int j=0;j<qs.size();j++)
+    for(uint j=0;j<qs.size();j++)
     {
         TensorD sj=s.Subtensor(j);
         CalculaFFT(&s[{0,j}],s.dim[0],&sk[{0,j}]);

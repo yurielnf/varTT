@@ -62,8 +62,8 @@ void Parameters::ReadParameters(const char filename[])
         }
         else if(param=="freeFermionLx")
             in>>freeFermionLx;
-        else if(param=="muHall")
-            in>>muHall;
+        else if(param=="muHall" || param=="mu")
+            in>>mu;
         in.ignore(1000,'\n');
     }
 }

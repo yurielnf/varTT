@@ -39,7 +39,8 @@ HEADERS += \
     dmrg_krylov_gs.h \
     cg.h \
     gmres.h \
-    dmrg_jacobi_davidson_gs.h
+    dmrg_jacobi_davidson_gs.h \
+    krylovdecomp.h
 
 DISTFILES +=
 

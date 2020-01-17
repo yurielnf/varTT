@@ -3,6 +3,7 @@
 
 #include<iostream>
 #include<vector>
+#include<array>
 #include<stdexcept>
 
 #ifndef MKL
@@ -12,6 +13,7 @@
 #endif
 
 using std::vector;
+using std::array;
 
 struct LEigenPair
 {
@@ -33,6 +35,8 @@ void Orthogonalize(Ket &t,const std::vector<Ket>& basis,int size)
 }
 
 LEigenPair GSTridiagonal(double *a, double *b, int size, double tol=0);
+array<stdvec,2> EigenFullTridiagonal(double *a,double *b,int n,double tol=0);
+vector<vector<cmpx>> CorrectionVTrid(const vector<cmpx>& ws,double *a,double *b, int n);
 
 
 template<class LinearOperator, class Ket>
@@ -86,6 +90,23 @@ struct Lanczos
         return x;
     }
 
+    vector<array<Ket,2>> CorrectionV(const vector<cmpx>& ws)  // 1/(z-H) |a> where a=r0
+    {
+        vector<array<Ket,2>> cvs;
+
+        for(const auto& coeff:CorrectionVTrid(ws,a.data(),b.data()+1,a.size()) )
+        {
+            Ket x=v[0]-v[0], y=x;
+            for(int i=0;i<iter;i++)
+            {
+                x+=v[i]*coeff[i].real();
+                y+=v[i]*coeff[i].imag();
+            }
+            cvs.push_back({x*b[0],y*b[0]});
+        }
+        return cvs;
+    }
+
     void DoIt(int nIter, double tol)
     {
 //        tol=std::max(tol,nIter*std::numeric_limits<double>::epsilon());
@@ -135,6 +156,35 @@ inline LEigenPair GSTridiagonal(double *a, double *b, int size, double tol)
     return eigen;
 }
 
+inline array<stdvec,2> EigenFullTridiagonal(double *a,double *b,int n,double tol)
+{
+    stdvec eval(n), evec(n*n);
+    int M;
+    vector<int> ifail(n);
+    int info=LAPACKE_dstevx(LAPACK_COL_MAJOR,'V','A', n, a, b,
+                   0.0, 0.0,0,0,tol,&M,eval.data(),evec.data(),n,ifail.data());
+    if (info!=0)
+        throw std::runtime_error("GSTridiagonal: LAPACKE_dstevx info!=0");
+//        std::cout<<"GSTridiagonal: LAPACKE_dstevx info!=0\n";
+    return {eval,evec};
+}
+
+inline vector<vector<cmpx>> CorrectionVTrid(const vector<cmpx>& ws,double *a,double *b, int n)
+{
+    auto eigen=EigenFullTridiagonal(a,b,n);
+    auto eval=eigen[0];
+    auto evec=eigen[1];
+    vector<vector<cmpx>> cvs;
+    for (const cmpx& z:ws)
+    {
+        vector<cmpx> cv(n,0.0);
+        for(int i=0;i<n;i++)
+            for(int k=0;k<n;k++)
+                cv[i]+=evec[i+n*k]*evec[0+n*k]/(z-eval[k]);
+        cvs.push_back(cv);
+    }
+    return cvs;
+}
 
 
 #endif // LANCZOS_H

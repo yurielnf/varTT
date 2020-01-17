@@ -77,12 +77,15 @@ public:
     {
         auto Heff=sb.Oper(nsite);
         auto aeff=sb_ya.Oper(nsite)* a.CentralMat(nsite);
+        vector<cmpx> zs(n);
+        for(int i=0;i<n;i++) zs[i]={wR[i]+ener,wI[i]};
+        auto sol=FindCVL(Heff,aeff,zs,nIterMax);
         for(int i=0;i<n;i++)
         {
-            auto sol=FindCV(Heff,aeff,cvI[i],wR[i]+ener,wI[i],nIterMax);
-            cvR[i]=sol.xR;
-            cvI[i]=sol.xI;
-            iter=sol.cIter;
+//            auto sol=FindCV(Heff,aeff,cvI[i],wR[i]+ener,wI[i],nIterMax);
+            cvR[i]=sol[i].xR;
+            cvI[i]=sol[i].xI;
+            iter=sol[i].cIter;
         }
         cvy.setCentralMat(cvI[0]);
         cvy2.setCentralMat(cvI[1]);
@@ -153,24 +156,27 @@ public:
             Solve();
             Print();
         }
-        auto cI0=cvy.CentralMat(nsite);
+//        auto cI0=cvy.CentralMat(nsite);
         auto Heff=sb.Oper(nsite);
         auto aeff=sb_ya.Oper(nsite)*a.CentralMat(nsite);
         auto beff=sb_yb.Oper(nsite)*b.CentralMat(nsite);
-        for(cmpx z:vz)
+
+        auto zc=vz;
+        for(auto& z:zc) z+=ener;
+        for( const auto& cv:FindCVL(Heff,aeff,zc,nIterMax) )
         {
-            double w=z.real(), eta=z.imag();
-            auto cv=FindCV(Heff,aeff,cI0,w+ener,eta,2*nIterMax);
-            std::cout<<cv.cIter<<" green VC iter; ";
+//            double w=z.real(), eta=z.imag();
+//            auto cv=FindCV(Heff,aeff,cI0,w+ener,eta,nIterMax);
+            std::cout<<cv.cIter<<" green VCL iter; ";
             res.push_back( cmpx(Dot(beff,cv.xR),Dot(beff,cv.xI)) );
-            cI0=cv.xI;
+//            cI0=cv.xI;
         }
         return res;
     }
     void Print() const
     {
         sb.Print();
-        std::cout<<"; "<<iter<<" VC iter\n";
+        std::cout<<"; "<<iter<<" VCL iter\n";
         std::cout.flush();
     }
 };

@@ -11,8 +11,7 @@ struct CorrectionVector  // To obtain the Im[c] for the problem: (w + i eta - H)
 {
     const Operator& H;
     Ket a,xI,xR;
-    double w,eta,greenI,greenR, tol=1e-4
-            ;
+    double w,eta,greenI,greenR, tol=1e-4;
     int cIter=0,nInner=512;
 
     CorrectionVector(const Operator& H,const Ket& a)
@@ -135,6 +134,30 @@ CorrectionVector<Hamiltonian,Ket> FindCV(const Hamiltonian& H,const Ket& a,const
     cv.Solve(w,eta,cI0,nIter);
     return cv;
 }
+
+#include"lanczos.h"
+template<class Hamiltonian, class Ket>                                      //Portal method
+vector<CorrectionVector<Hamiltonian,Ket>> FindCVL(const Hamiltonian& H,const Ket& a,
+                                         vector<cmpx> ws,int nIter,double tol=1e-6)
+{
+    Lanczos<Hamiltonian,Ket> lan(H,a);
+    lan.DoIt(nIter, tol);
+    typedef CorrectionVector<Hamiltonian,Ket> CV;
+    vector<CV> cvs;
+    for ( const auto& x:lan.CorrectionV(ws) )
+    {
+        CV cv(H,a);
+        cv.cIter=lan.iter;
+        cv.xR=x[0];
+        cv.xI=x[1];
+        cvs.push_back(cv);
+    }
+
+//    cv.Solve(w,eta,x[1],nIter);
+//    cv.cIter+=lan.iter;
+    return cvs;
+}
+
 
 template<class Hamiltonian, class Ket>                                      //Portal method
 CorrectionVectorC<Hamiltonian,Ket> FindCVC(const Hamiltonian& H,const Ket& ar,const Ket& ai,

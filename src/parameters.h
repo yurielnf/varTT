@@ -20,7 +20,7 @@ struct Parameters
     std::string hallW_file="W.dat";
     std::vector<double> renyi_q;
     int freeFermionLx=100;
-    double muHall=0;
+    double mu=0;
     Parameters(){}
     Parameters(const char file_name[]) {ReadParameters(file_name);}
 

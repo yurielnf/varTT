@@ -114,14 +114,14 @@ struct DMRG_Jacobi_Davidson_gs
     void Solve_res()
     {
         int i=ck-1;
-        TensorD cO,cH;
-        for(int j=0;j<i;j++)
-        {
-            cO+=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
-            cH+=sb_h[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
-        }
-        auto beff= cH+cO*(-eval[0]);
-//        auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
+//        TensorD cO,cH;
+//        for(int j=0;j<i;j++)
+//        {
+//            cO+=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
+//            cH+=sb_h[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid)*evec[j];
+//        }
+//        auto beff= cH+cO*(-eval[0]);
+        auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
         gs[i].setCentralMat( beff );
         gs[i].Normalize();
         if (nsite_resid)

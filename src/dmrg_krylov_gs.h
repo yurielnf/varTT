@@ -232,8 +232,10 @@ struct DMRG_krylov_gs
                 hm[i+j*ck]=hmat[i+j*nk];
                 om[i+j*ck]=omat[i+j*nk];
             }
-        for(auto x:hm) std::cout<<x<<" "; std::cout<<"\n";
-        for(auto x:om) std::cout<<x<<" "; std::cout<<"\n";
+        for(auto x:hm) std::cout<<x<<" ";
+        std::cout<<"\n";
+        for(auto x:om) std::cout<<x<<" ";
+        std::cout<<"\n";
         eval.resize(ck);
         evec.resize(ck*ck);
         MatFullDiagGen(hm.data(), om.data(), ck, evec.data(), eval.data());

@@ -43,7 +43,7 @@ cx_mat GreenOfHamiltonian0(const mat& ham,std::complex<double> z,const vector<in
 
 MPO HamTb1(int L,bool periodic)
 {
-    const int m=20;
+    const int m=1;
     MPSSum h(m,MatSVDFixedTol(1e-13));
     for(int i=0;i<L-1+periodic; i++)
     {
@@ -56,7 +56,7 @@ MPO HamTb1(int L,bool periodic)
 
 MPO NParticle(int L)
 {
-    int m=4;
+    int m=1;
     MPSSum npart(m,MatSVDFixedTol(1e-13));
     for(int i=0;i<L; i++)
         npart += Fermi(i,L,true)*Fermi(i,L,false) ;
@@ -66,10 +66,11 @@ MPO NParticle(int L)
 
 //---------------------------- Test DMRG basico -------------------------------------------
 
+
 void TestDMRGBasico(const Parameters &par)
 {
     int len=par.length;
-    auto op=HamTb1(len,false); op.Sweep(); op.PrintSizes("Hamtb=");
+    auto op=HamTb1(len,par.periodic); op.Sweep(); op.PrintSizes("Hamtb=");
     op.decomposer=MatQRDecomp;
     auto nop=NParticle(len);
     DMRG_krylov_gs sol(op,par.m,par.nkrylov);
@@ -82,10 +83,37 @@ void TestDMRGBasico(const Parameters &par)
         sol.DoIt_gs();
         cout<<" nT="<<Superblock({&sol.gs[0],&nop,&sol.gs[0]}).value()<<endl;
     }
-    cout<<"exact="<<ExactEnergyTB(len,len/2,false);
+    cout<<"exact="<<ExactEnergyTB(len,len/2,par.periodic);
     ofstream out("gs.dat");
     sol.gs[0].Save(out);
 }
+
+/*
+void TestDMRGBasico(const Parameters &par)
+{
+    int len=par.length;
+    auto op=HamTb1(len,par.periodic); op.Sweep(); op.PrintSizes("Hamtb=");
+    op.decomposer=MatQRDecomp;
+    auto nop=NParticle(len);
+    DMRG1_wse_gs sol(op,par.m);
+    sol.tol_diag=1e-4;
+    for(int k=0;k<par.nsweep;k++)
+    {
+        if (k==par.nsweep-1) sol.tol_diag=1e-10;
+        for(auto p : MPS::SweepPosSec(op.length))
+        {
+            sol.SetPos(p);
+            sol.Solve();
+            if ((p.i+1) % (op.length/10) ==0) sol.Print();
+        }
+        std::cout<<"sweep "<<k+1<<" --------------------------------------\n";
+        cout<<" nT="<<Superblock({&sol.gs,&nop,&sol.gs}).value()<<endl;
+        cout<<"exact="<<ExactEnergyTB(len,len/2,par.periodic)<<"\n";
+    }
+    ofstream out("gs.dat");
+    sol.gs.Save(out);
+}
+*/
 
 //---------------------------- Test DMRG-CV ---------------------------------------------
 
@@ -96,7 +124,7 @@ vector<cmpx> ReadWFile(const string& name)
     complex<double> z;
     ifstream in(name);
     if (!in.is_open())
-        throw invalid_argument("TestDMRGCV_Impuritynn::ReadWFile file not found");
+        throw invalid_argument("TestDMRGCV::ReadWFile file not found");
     while (!in.eof())
     {
         in>>x>>y; z={x,y};

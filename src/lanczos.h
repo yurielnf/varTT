@@ -25,13 +25,23 @@ struct LEigenPair
 template<class Ket>
 void Orthogonalize(Ket &t,const std::vector<Ket>& basis,int size)
 {
-    const double k=0.25;
+    const double k=0.25, tol=1e-14;
     double tauin=Norm(t);
     for (int i = 0; i < size; ++i)
-        t+=basis[i]*(-Dot(basis[i],t));
+    {
+        auto d=-Dot(basis[i],t);
+        if (fabs(d)>tol)
+//        t+=basis[i]*(-Dot(basis[i],t));
+            t.pexa(basis[i],d);
+    }
     if ( Norm(t)/tauin > k ) return;
     for (int i = 0; i < size; ++i)
-        t+=basis[i]*(-Dot(basis[i],t));
+    {
+        auto d=-Dot(basis[i],t);
+        if (fabs(d)>tol)
+//        t+=basis[i]*(-Dot(basis[i],t));
+            t.pexa(basis[i],d);
+    }
 }
 
 LEigenPair GSTridiagonal(double *a, double *b, int size, double tol=0);
@@ -70,9 +80,9 @@ struct Lanczos
         }
         v.push_back( r*(1.0/b[iter]) );
         r=A*v[iter];
-        if (iter>0) r+=v[iter-1]*(-b[iter]);
+        if (iter>0) r.pexa(v[iter-1],-b[iter]);
         a.push_back( Dot(v[iter],r) );
-        r+=v[iter]*(-a[iter]);
+        r.pexa(v[iter],-a[iter]);
         Orthogonalize(r,v,iter);
         b.push_back( Norm(r) );
         LEigenPair eigen=GSTridiagonal(a.data(),b.data()+1,iter+1);
@@ -86,7 +96,7 @@ struct Lanczos
     {
         Ket x=v[0]*evec[0];
         for(int i=1;i<iter;i++)
-            x+=v[i]*evec[i];
+            x.pexa(v[i],evec[i]);
         return x;
     }
 
@@ -128,12 +138,13 @@ Lanczos<LinearOperator,Ket> create_Lanczos(const LinearOperator& A, const Ket& r
     return Lanczos<LinearOperator,Ket>(A,r0);
 }
 
+#include"utils.h"
 template<class Hamiltonian, class Ket>                                      //Portal method
-Lanczos<Hamiltonian,Ket> Diagonalize(const Hamiltonian& H,const Ket& wf,int nIter,double tol)
+EigenSystem0<Ket> Diagonalize(const Hamiltonian& H,const Ket& wf,int nIter,double tol)
 {
     Lanczos<Hamiltonian,Ket> lan(H,wf);
     lan.DoIt(nIter, tol);
-    return lan;
+    return {lan.lambda0,lan.GetState(),lan.iter};
 }
 
 

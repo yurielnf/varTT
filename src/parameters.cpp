@@ -44,6 +44,8 @@ void Parameters::ReadParameters(const char filename[])
             in>>op1Pos;
         else if(param=="op2Pos")
             in>>op2Pos;
+        else if(param=="opProj")
+            in>>opProj;
         else if(param=="etaFactor")
             in>>etaFactor;
         else if(param=="DSz2")

@@ -48,6 +48,16 @@ public:
     Tensor(const Index& dim,T* dat)
         :dim(dim),dim_prod(DimProd(dim)),n(Prod(dim)),mem(dat) {}
 
+    void redim(const Index &dim2)
+    {
+        if (dim!=dim2) return;
+        if (mem!=nullptr)
+            throw std::invalid_argument("redim of reshape");
+        dim=dim2;
+        dim_prod=DimProd(dim);
+        n=Prod(dim);
+        _vec.resize(n);
+    }
     /*friend void swap(Tensor& t1,Tensor& t2)
     {
         std::swap(t1.dim,t2.dim);
@@ -160,6 +170,14 @@ public:
             throw std::invalid_argument("Tensor::operator+= incompatible");
 
         VecPlusInplace(data(),t2.data(),size());
+    }
+    void pexa(const Tensor& t,double a) //t+=t*a
+    {
+        if(rank()==0) {*this=t; return;}
+        if (dim!=t.dim)
+            throw std::invalid_argument("Tensor::operator+=x a incompatible");
+
+        Vec_xa_Inplace(data(),t.data(),a,size());
     }
     void operator-=(const Tensor& t2)
     {
@@ -313,17 +331,60 @@ public:
     {
         return Multiply(t2,1);
     }
-    Tensor Multiply(const Tensor& t2, int nIdCommon) const
+    void Multiply(const Tensor& t2, int nIdCommon,Tensor &t3) const
     {
         const Tensor& t1=*this;
         Index dim_r=IndexMul(t1.dim,t2.dim,nIdCommon);
-        Tensor t3(dim_r);
+        //Tensor t3(dim_r);
+        if (t3.dim!=dim_r)
+            throw std::invalid_argument("Tensor::Multiply");
 
         auto m1=t1.ReShape(t1.rank()-nIdCommon);  //Matrix operation
         auto m2=t2.ReShape(nIdCommon);
         auto m3=t3.ReShape(t1.rank()-nIdCommon);
         MatMul(m1.data(),m2.data(),m3.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
+        //return t3;
+    }
+    Tensor Multiply(const Tensor& t2, int nIdCommon) const
+    {
+        const Tensor& t1=*this;
+        Index dim_r=IndexMul(t1.dim,t2.dim,nIdCommon);
+        Tensor t3(dim_r);
+        Multiply(t2,nIdCommon,t3);
         return t3;
+    }
+
+    void MultiplyT(const Tensor& t2,int splitPos,int nIdCommon,Tensor &t3) const
+    // t1.Mult(t2.t(splitPos),nIdC)
+    {
+        const Tensor& t1=*this;
+        auto dim2=TransposeIndex(t2.dim,splitPos);
+        Index dim_r=IndexMul(t1.dim,dim2,nIdCommon);
+        //Tensor t3(dim_r);
+        if (t3.dim!=dim_r)
+            throw std::invalid_argument("Tensor::MultiplyT");
+
+        auto m1=t1.ReShape(t1.rank()-nIdCommon);  //Matrix operation
+        auto m2=t2.ReShape(t2.rank()-nIdCommon);
+        auto m3=t3.ReShape(t1.rank()-nIdCommon);
+        MatMulT(m1.data(),m2.data(),m3.data(),m1.dim[0],m1.dim[1],m2.dim[0]);
+        //return t3;
+    }
+    void TMultiply(const Tensor& t2,int splitPos,int nIdCommon,Tensor &t3) const
+    // t1.Mult(t2.t(splitPos),nIdC)
+    {
+        const Tensor& t1=*this;
+        auto dim1=TransposeIndex(t1.dim,splitPos);
+        Index dim_r=IndexMul(dim1,t2.dim,nIdCommon);
+        //Tensor t3(dim_r);
+        if (t3.dim!=dim_r)
+            throw std::invalid_argument("Tensor::TMultiply");
+
+        auto m1=t1.ReShape(nIdCommon);  //Matrix operation
+        auto m2=t2.ReShape(nIdCommon);
+        auto m3=t3.ReShape(t1.rank()-nIdCommon);
+        MatTMul(m1.data(),m2.data(),m3.data(),m1.dim[0],m1.dim[1],m2.dim[1]);
+        //return t3;
     }
 
 //    friend Tensor DirectSum(const Tensor& t1,const Tensor& t2,bool left)
@@ -588,6 +649,7 @@ std::vector<T> flat(const std::vector<Tensor<T>> &vt)
 template<class T>
 using TransferTensor=std::vector<const Tensor<T>*>;
 
+/*
 template<class T>
 Tensor<T> operator*(const Tensor<T>& t,TransferTensor<T> transfer)
 {
@@ -595,14 +657,70 @@ Tensor<T> operator*(const Tensor<T>& t,TransferTensor<T> transfer)
     const Tensor<T> &t0=*transfer[0];
     const Tensor<T> &t1=*transfer[1];
     if(transfer.size()==2)
-        ts("IJ")=t0("ipI")*t("ij")*t1("jpJ");
+        //ts("IJ")=t0("ipI")*t("ij")*t1("jpJ");
+        ts=t0.Transpose(2).Multiply(t*t1,2);
     else if (transfer.size()==3)
     {
         const Tensor<T> &t2=*transfer[2];
-        ts("IJK")=t0("ipI")*t("ijk")*t2("kqK")*t1("jpqJ");
+//        ts("IJK")=t0("ipI")*t("ijk")*t2("kqK")*t1("jpqJ");
+        auto a=t*t2; //ijqK
+        auto b=a.Transpose(3).Multiply(t1.Reorder("jpqJ","jqpJ"),2); //KipJ
+        ts=t0.Transpose(2).Multiply(b.Transpose(1),2);
+    }
+    return ts;
+}*/
+
+template<class T>
+Tensor<T> operator*(const Tensor<T>& t,TransferTensor<T> transfer)
+{
+    Tensor<T> ts;
+    const Tensor<T> &t0=*transfer[0];
+    const Tensor<T> &t1=*transfer[1];
+    if(transfer.size()==2)
+    {
+        //ts("IJ")=t0("ipI")*t("ij")*t1("jpJ");
+        //ts("JI")=t1("jpJ")*( t("ji")*t0("ipI") );
+        ts=TensorD({t1.dim.back(),t0.dim.back()});
+        t1.TMultiply(t*t0,2,2,ts);
+    }
+    else if (transfer.size()==3)
+    {
+        const Tensor<T> &t2=*transfer[2];
+//        ts("IJK")=t0("ipI")*t("ijk")*t2("kqK")*t1("jpqJ");
+//        ts("KJI")=t2("kqK")*(  t("kji")*t0("ipI")*t1("jpqJ")  );
+        auto a=t*t0; //kjpI
+        TensorD b=TensorD({a.dim[0], t1.dim[2], t1.dim[3], a.dim[3]}); //kqJI
+        for(int i=0;i<b.dim.back();i++)
+        {
+            auto bi=b.Subtensor(i);
+            a.Subtensor(i).Multiply(t1,2,bi);
+        }
+        ts=TensorD({t2.dim.back(),t1.dim.back(),t0.dim.back()});
+        t2.TMultiply(b,2,2,ts); //KJI
     }
     return ts;
 }
+
+/*
+template<class T>
+Tensor<T> operator*(TransferTensor<T> transfer,const Tensor<T>& t)
+{
+    Tensor<T> ts;
+    const Tensor<T> &t0=*transfer[0];
+    const Tensor<T> &t1=*transfer[1];
+    if(transfer.size()==2)
+//        ts("IJ")=t0("Ipi")*t("ij")*t1("Jpj");
+        ts=(t0*t).Multiply(t1.Transpose(1),2);
+    else if (transfer.size()==3)
+    {
+        const Tensor<T> &t2=*transfer[2];
+//        ts("IJK")=t0("Ipi")*t("ijk")*t2("Kqk")*t1("Jpqj");
+        auto a=t0*t; //Ipjk
+        auto b=a.Transpose(3).Multiply(t1.Reorder("Jpqj","pjJq"),2);     //kIJq
+        ts=b.Transpose(1).Multiply(t2.Transpose(1),2);  //IJK
+    }
+    return ts;
+}*/
 
 template<class T>
 Tensor<T> operator*(TransferTensor<T> transfer,const Tensor<T>& t)
@@ -611,11 +729,27 @@ Tensor<T> operator*(TransferTensor<T> transfer,const Tensor<T>& t)
     const Tensor<T> &t0=*transfer[0];
     const Tensor<T> &t1=*transfer[1];
     if(transfer.size()==2)
-        ts("IJ")=t0("Ipi")*t("ij")*t1("Jpj");
+    {
+//        ts("IJ")=t0("Ipi")*t("ij")*t1("Jpj");
+//        ts("JI")=t1("Jpj")*t("ji")*t0("Ipi");
+        ts=TensorD({t1.dim[0],t0.dim[0]});
+        (t1*t).MultiplyT(t0,1,2,ts);
+    }
     else if (transfer.size()==3)
     {
         const Tensor<T> &t2=*transfer[2];
-        ts("IJK")=t0("Ipi")*t("ijk")*t2("Kqk")*t1("Jpqj");
+//        ts("IJK")=t0("Ipi")*t("ijk")*t2("Kqk")*t1("Jpqj");    //viejo
+//        ts("KJI")=t2("Kqk")*t("kji")*t1("Jpqj")*t0("Ipi");
+
+        auto a=t2*t; //Kqji
+        auto b=TensorD({a.dim[0],t1.dim[0],t1.dim[1],a.dim[3]}); //KJpi
+        for(int i=0;i<b.dim.back();i++)
+        {
+            auto bi=b.Subtensor(i);
+            a.Subtensor(i).MultiplyT(t1,2,2,bi);
+        }
+        ts=TensorD({t2.dim[0],t1.dim[0],t0.dim[0]});
+        b.MultiplyT(t0,1,2,ts);  //KJI
     }
     return ts;
 }

@@ -41,7 +41,7 @@ public:
         cvy.PrintSizes("cvy=");
         cvy2.Sweep();
         sb=Superblock( {&cvy,&mpo,&cvy} );
-        sb_ya=Superblock( {&a,&cvy} );
+        sb_ya=Superblock( {&cvy,&a} );
         cvI[0]=cvy.CentralMat(nsite);
         cvI[1]=cvy2.CentralMat(nsite);
     }
@@ -148,7 +148,7 @@ public:
     std::vector<cmpx> Green(MPS& b,std::vector<cmpx> vz)
     {
         vector<cmpx> res;
-        auto sb_yb=Superblock( {&b,&cvy} );
+        auto sb_yb=Superblock( {&cvy,&b} );
         for(int i=0;i<sb.length/2;i++)
         {
             SetPos({i,1});

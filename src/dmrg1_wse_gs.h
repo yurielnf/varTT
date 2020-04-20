@@ -58,11 +58,13 @@ struct DMRG1_wse_gs
         if (z2_sym.length>0)
             sb_sym=Superblock({&gs,&z2_sym,&gs});
     }
-    void Solve()
+    void Solve(bool use_arpack=true)
     {
         double Eini=sb.value();
         double errord=std::max(std::min(1.0,error),tol_diag);
-        auto lan=Diagonalize(sb.Oper(1), gs.CentralMat(1), nIterMax, errord);  //Lanczos
+        auto lan=use_arpack?DiagonalizeArn(sb.Oper(1), gs.CentralMat(1), nIterMax, errord):
+                            Diagonalize   (sb.Oper(1), gs.CentralMat(1), nIterMax, errord);//Lanczos
+
         double Eopt=lan.lambda0;
         iter=lan.iter;
 //        if (lan.lambda0 > ener) return;
@@ -73,18 +75,47 @@ struct DMRG1_wse_gs
         TensorD P;
         if (sb.pos.vx==1)
         {
-            P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
+//            P("kbJI")=M("iaI")*sb.Left(1)("ijk")*sb.mps[1]->CentralMat(1)("jabJ");
+//            P("iaKJ")=M("kbK")*sb.Left(1)("kji")*sb.mps[1]->CentralMat(1)("jabJ");
+            const TensorD &L=sb.Left(1); //kji
+            const TensorD &W=sb.mps[1]->CentralMat(1); //"jabJ";
+            TensorD a=TensorD({M.dim[0],L.dim[1],W.dim[1],M.dim.back(),W.dim.back()}); //kjaKJ
+            for(int j=0;j<a.dim.back();j++)
+            {
+                auto aj=a.Subtensor(j);
+                auto Wj=W.Subtensor(j);
+                for(int k=0;k<M.dim.back();k++)
+                {
+                    auto Mk=M.Subtensor(k);
+                    auto akj=aj.Subtensor(k);
+                    Mk.MultiplyT(Wj,2,1,akj);
+                }
+            }
+            P=TensorD({L.dim[2],W.dim[1],M.dim[2],W.dim.back()}); //iaKJ
+            L.TMultiply(a,2,2,P);
+
 //            P=P.ReShape({1,2}).Clone();
-//            P*=1.0/Norm(P);
-            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,(P*(alpha/Norm(P))).vec()));
+            P*=alpha/Norm(P);
+            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,P.vec()));
             A=AC[0]; C=AC[1];
         }
         else
         {
-            P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
+//            P("ijbK")=M("iaI")*sb.Right(1)("IJK")*sb.mps[1]->CentralMat(1)("jabJ");
+//            P("kjaI")=M("kbK")*sb.Right(1)("KJI")*sb.mps[1]->CentralMat(1)("jabJ");
+            const TensorD &R=sb.Right(1); //KJI
+            const TensorD &W=sb.mps[1]->CentralMat(1);
+            TensorD a=M*R; //kbJI
+            P=TensorD({a.dim[0],W.dim[0],W.dim[1],R.dim.back()});
+            for(int i=0;i<a.dim.back();i++)
+            {
+                auto ai=a.Subtensor(i);
+                auto Pi=P.Subtensor(i);
+                ai.MultiplyT(W,2,2,Pi);
+            }
 //            P=P.ReShape({2,3}).Clone();
-            P*=1.0/Norm(P);
-            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,(P*(alpha/Norm(P))).vec()));
+            P*=alpha/Norm(P);
+            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,P.vec()));
             C=CB[0]; B=CB[1];
         }
         sb.UpdateBlocks();
@@ -108,5 +139,27 @@ struct DMRG1_wse_gs
         std::cout.flush();
     }
 };
+
+inline void TypicalRunWSE(MPO op,int nsweep,int m)
+{
+    std::cout<<std::setprecision(15);
+    op.PrintSizes("Ham=");
+    op.decomposer=MatQRDecomp;  //MatChopDecompFixedTol(0);
+    DMRG1_wse_gs sol(op,m);
+    sol.tol_diag=1e-12;
+    for(int k=0;k<=nsweep;k++)
+    {
+        for(auto p : MPS::SweepPosSec(op.length))
+        {
+            sol.SetPos(p);
+            sol.Solve();
+            if ((p.i+1) % (op.length/10) ==0) sol.Print();
+        }
+        std::cout<<"sweep "<<k+1<<"\n";
+//        if (k>=3) {sol.tol_diag=1e-9; }
+//        if (k>=8) {sol.tol_diag=1e-11; }
+//        if (k>=12){sol.tol_diag=1e-13; }
+    }
+}
 
 #endif // DMRG1_WSE_GS_H

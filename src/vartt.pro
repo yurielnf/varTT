@@ -12,7 +12,8 @@ SOURCES +=\
     dmrg_se_gs.cpp \
     dmrg_oe_gs.cpp \
     dmrg_wse_gs.cpp \
-    parameters.cpp
+    parameters.cpp \
+    spectrawrapper.cpp
 
 HEADERS += \
     tensor.h \
@@ -40,7 +41,14 @@ HEADERS += \
     cg.h \
     gmres.h \
     dmrg_jacobi_davidson_gs.h \
-    krylovdecomp.h
+    lanczoscv.h \
+    spectrawrapper.h
 
 DISTFILES +=
 
+#QMAKE_CFLAGS+=-pg
+#QMAKE_CXXFLAGS+=-pg
+#QMAKE_LFLAGS+=-pg
+
+INCLUDEPATH += /home/yurielnf/lib/spectra/include
+INCLUDEPATH += /usr/local/include/eigen3

@@ -11,6 +11,15 @@
 typedef std::vector<double> stdvec;
 typedef std::complex<double> cmpx;
 
+template<class Ket>
+struct EigenSystem0
+{
+    double lambda0;
+    Ket state;
+    int iter;
+    const Ket& GetState() const {return state;}
+};
+
 template<class T>
 T VecReduce(T* v,int n)
 {
@@ -63,14 +72,15 @@ void VecLoad(T* vec, int nelem, std::istream& in, bool binary=true)
     }
 }
 
-template<class T>
-double VecNorm( T* const vec, int nelem)
-{
-    double sum=0;
-    for(int i=0;i<nelem;i++)
-        sum+=std::norm(vec[i]);
-    return sqrt(sum);
-}
+//template<class T>
+//double VecNorm( T* const vec, int nelem)
+//{
+//    double sum=0;
+//    for(int i=0;i<nelem;i++)
+//        sum+=std::norm(vec[i]);
+//    return sqrt(sum);
+//}
+double VecNorm(const double* vec, int nelem);
 
 template<class T>
 void VecProd(T* vec, int n, T c)
@@ -79,12 +89,15 @@ void VecProd(T* vec, int n, T c)
         vec[i]*=c;
 }
 
-template<class T>
-void VecPlusInplace(T* vec,const T* vec2,int n)
-{
-    for(int i=0;i<n;i++)
-        vec[i]+=vec2[i];
-}
+//template<class T>
+//void VecPlusInplace(T* vec,const T* vec2,int n)
+//{
+//    for(int i=0;i<n;i++)
+//        vec[i]+=vec2[i];
+//}
+
+void VecPlusInplace(double *vec, const double* vec2, int n);
+void Vec_xa_Inplace(double* x,const double* y,double a,int n);
 
 template<class T>
 void VecMinusInplace(T* vec,const T* vec2,int n)
@@ -131,6 +144,8 @@ void MatFillEye(T *dat, int n)
 }
 void MatTranspose(const double*  X, double *result, int nrow, int ncol);
 void MatMul(const double*  mat1,const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
+void MatMulT(const double*  mat1, const double*  mat2, double *result, int nrow1, int ncol1, int nrow2);
+void MatTMul(const double*  mat1, const double*  mat2, double *result, int nrow1, int ncol1, int ncol2);
 void MatFullDiag(double * const X, int n, double *evec, double *eval);
 void MatFullDiagGen(double * const X, double * const O, int n, double *evec, double *eval);
 

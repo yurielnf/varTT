@@ -15,6 +15,7 @@ struct Parameters
     char opType='C';
     int op1Pos=0,
          op2Pos=0;
+    std::string opProj="";
     double etaFactor=1,
            DSz2=0, BF=0;
     std::string hallW_file="W.dat";

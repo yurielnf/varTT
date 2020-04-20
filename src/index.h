@@ -42,6 +42,9 @@ int OffsetP(const Index& id,const Index& dimp,const std::vector<int>& posMap);
 Index ToIndex(int pos, const Index& dim);
 
 std::vector<Index> SplitIndex(const Index& dim,int splitPos);
+
+Index TransposeIndex(const Index& dim,int splitPos);
+
 std::vector<Index> SplitIndex(const Index& dim,
                               const std::vector<int>& splitPos);
 

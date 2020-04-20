@@ -3,7 +3,10 @@ CONFIG -= qt
 
 INCLUDEPATH += ../../src
 LIBS += -L../../src -lvartt
-LIBS += -llapacke -larmadillo -lfftw3
+LIBS += -llapacke -lopenblas -larmadillo -lfftw3
+
+INCLUDEPATH += /home/yurielnf/lib/spectra/include
+INCLUDEPATH += /usr/local/include/eigen3
 
 SOURCES +=\
     freefermions.cpp \
@@ -12,3 +15,8 @@ SOURCES +=\
 HEADERS += \
     freefermions.h \
     hamhall.h
+
+
+QMAKE_CFLAGS+=-pg
+QMAKE_CXXFLAGS+=-pg
+QMAKE_LFLAGS+=-pg

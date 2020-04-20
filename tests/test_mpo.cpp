@@ -36,7 +36,7 @@ TEST_CASE("auto mpo","[mpo]")
         MPSSum sum(50,MatSVDFixedTol(1e-14));
         for(int i=0;i<50;i++)
             sum+=s;
-        REQUIRE( sum.toMPS().norm()==Approx(50*nr) );
+        REQUIRE( sum.toMPS().Canonicalize().norm()==Approx(50*nr) );
         REQUIRE( sum.toMPS().Sweep().MaxVirtDim()==s.MaxVirtDim() );
     }
     SECTION( "MPO for TB Hamiltonian" )

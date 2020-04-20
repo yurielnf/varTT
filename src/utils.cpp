@@ -4,6 +4,26 @@
 using namespace std;
 using namespace arma;
 
+double VecNorm(const double*  x, int nelem)
+{
+    const vec mx((double* const)x,nelem,false);
+    return arma::norm(mx);
+}
+
+void VecPlusInplace(double* x,const double* y,int n)
+{
+    vec mx(x,n,false,true);
+    const vec my((double* const)y,n,false);
+    mx+=my;
+}
+
+void Vec_xa_Inplace(double* x,const double* y,double a,int n)
+{
+    vec mx(x,n,false,true);
+    const vec my((double* const)y,n,false);
+    mx+=my*a;
+}
+
 void MatTranspose(const double*  X, double *result, int nrow, int ncol)
 {
     const mat mX((double* const)X,nrow,ncol,false);
@@ -17,6 +37,22 @@ void MatMul(const double*  mat1, const double*  mat2, double *result, int nrow1,
     const mat m2((double* const)mat2,ncol1,ncol2,false);
     mat res(result,nrow1,ncol2,false);
     res=m1*m2;
+}
+
+void MatMulT(const double*  mat1, const double*  mat2, double *result, int nrow1, int ncol1, int nrow2)
+{
+    const mat m1((double* const)mat1,nrow1,ncol1,false);
+    const mat m2((double* const)mat2,nrow2,ncol1,false);
+    mat res(result,nrow1,nrow2,false,true);
+    res=m1*m2.t();
+}
+
+void MatTMul(const double*  mat1, const double*  mat2, double *result, int nrow1, int ncol1, int ncol2)
+{
+    const mat m1((double* const)mat1,nrow1,ncol1,false);
+    const mat m2((double* const)mat2,nrow1,ncol2,false);
+    mat res(result,ncol1,ncol2,false,true);
+    res=m1.t()*m2;
 }
 
 void MatFullDiag(double* const X,int n,double *evec,double *eval)

@@ -38,7 +38,7 @@ public:
         bool operator>(Pos p) const { return p<(*this); }
         bool operator==(Pos p) const { return id()==p.id(); }
     private:
-        int id() const {return i*2+vx;}
+        int id() const {return i*2+(vx+1)/2;}
     };
 
     Pos pos={0,-1};
@@ -70,6 +70,15 @@ public:
         C=TensorD({n0,n0});
         C.FillEye(1);
     }
+    MPS Reflect() const
+    {
+        MPS R(length,m);
+        for(int i=0;i<length;i++)
+            R.at(i)=M[length-1-i].t();
+        R.C=C.t();
+        R.pos={length-2-pos.i,-pos.vx};
+        return R;
+    }
     MPS& FillRandu() { for(TensorD &x:M) x.FillRandu(); return *this; }
     MPS& FillRandu(Index dim) { FillNone(dim); return FillRandu(); }
     const TensorD& at(int i) const { return M[i]; }
@@ -98,7 +107,7 @@ public:
     }
     void Save(std::ostream& out) const
     {
-        out<<length<<" "<<pos.i<<"\n";
+        out<<length<<" "<<pos.i<<" "<<norm_n<<"\n";
         for(int i=0;i<length;i++)
         {
             M[i].Save(out);
@@ -109,7 +118,7 @@ public:
     {
         if (!in)
             throw std::invalid_argument("I couldn't open file to read tensor");
-        in>>length>>pos.i;
+        in>>length>>pos.i>>norm_n;
         pos.vx=1;
         M.resize(length);
         for(int i=0;i<length;i++)
@@ -194,6 +203,7 @@ public:
             throw std::invalid_argument("SB::SetPos out of range");
         while(pos<p) SweepRight();
         while(pos>p) SweepLeft();
+        while(pos<p) SweepRight();
     }
 
     /*    TensorD WaveFunction() const { return C*norm_factor(); }
@@ -328,6 +338,7 @@ public:
             if (mps2.M[i].rank()==3)
             {
                 tr("iIjlL")=mps1.M[i]("ijkl")*mps2.M[i]("IkL");
+
                 mps1.M[i]=tr.ReShape({2,3}).Clone();
             }
             else if (mps2.M[i].rank()==4)
@@ -430,6 +441,7 @@ struct MPO_MPS
     MPO mpo;
     MPS mps;
 
+    /*
     MPS toMPS(int m,double tol=1e-13) const
     {
         std::vector<TensorD> R(mps.length);
@@ -444,6 +456,51 @@ struct MPO_MPS
             R[i-1]=ac[0];
             TensorD M;
             M("iIjlL")=mpo.at(i)("ijkl")*mps.at(i)("IkL");
+            auto Mn=M.ReShape({2,3}).Clone();
+            R[i]=ac[1]*Mn;
+        }
+        for(int i=mps.length-2;i>=0;i--)
+        {
+            auto cb=R[i+1].Decomposition(true,MatSVDAdaptative(tol,m));
+            R[i+1]=cb[1];
+            R[i]=R[i]*cb[0];
+        }
+        return MPS(R,m);
+    }*/
+
+    static TensorD mpo_mps_local(const TensorD& mh,const TensorD& ms)
+    {
+        TensorD M({ms.dim[0],mh.dim[0],mh.dim[1],
+                   ms.dim.back(),mh.dim.back()});
+        //        M("kjaKJ")=ms("kbK")*mh("jabJ");
+        for(int j=0;j<M.dim.back();j++)
+        {
+            auto tj=M.Subtensor(j);
+            auto bj=mh.Subtensor(j);  //jab
+            for(int k=0;k<ms.dim.back();k++)
+            {
+                auto ak=ms.Subtensor(k);  //kb
+                auto tkj=tj.Subtensor(k);
+                ak.MultiplyT(bj,2,1,tkj);
+            }
+        }
+        return M;
+    }
+
+    MPS toMPS(int m,double tol=1e-13) const
+    {
+        std::vector<TensorD> R(mps.length);
+        auto mh=mpo.at(0)*mpo.C*mpo.norm_factor();
+        auto ms=mps.at(0)*mps.C*mps.norm_factor();
+        auto M=mpo_mps_local(mh,ms);
+        R[0]=M.ReShape({2,3}).Clone();
+        for(int i=1;i<mps.length;i++)
+        {
+            auto ac=R[i-1].Decomposition(false,MatSVDAdaptative(tol,m));
+            R[i-1]=ac[0];
+//            TensorD M;
+//            M("iIjlL")=mpo.at(i)("ijkl")*mps.at(i)("IkL");
+            auto M=mpo_mps_local(mpo.at(i),mps.at(i));
             auto Mn=M.ReShape({2,3}).Clone();
             R[i]=ac[1]*Mn;
         }

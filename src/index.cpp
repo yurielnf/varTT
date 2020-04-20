@@ -44,6 +44,18 @@ vector<Index> SplitIndex(const Index &dim, int splitPos)
     return dim_v;
 }
 
+Index TransposeIndex(const Index& dim,int splitPos)
+{
+
+    auto dim_v=SplitIndex(dim,splitPos);
+    std::swap(dim_v[0],dim_v[1]);
+    Index dim2;
+    for(Index d:dim_v)
+        for(auto x:d)
+            dim2.push_back(x);
+    return dim2;
+}
+
 vector<Index> SplitIndex(const Index &dim, const std::vector<int> &splitPos)
 {
     vector<Index> dim_v(splitPos.size()+1);
@@ -95,8 +107,8 @@ bool ArePermutation(std::string str1,std::string str2)
 std::vector<int> Permutation(std::string ini,std::string fin)
 {
     if (ini==fin) return {};
-    if (!ArePermutation(ini,fin))
-        throw std::invalid_argument("Permutation: str1,str2 is not a permutation");
+//    if (!ArePermutation(ini,fin))
+//        throw std::invalid_argument("Permutation: str1,str2 is not a permutation");
     std::vector<int> pos(ini.size());
     for(uint i=0;i<ini.size();i++)
         pos[i]=fin.find(ini[i]);

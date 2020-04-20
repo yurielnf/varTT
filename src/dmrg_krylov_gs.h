@@ -3,6 +3,7 @@
 
 #include"superblock.h"
 #include"lanczos.h"
+//#include"spectrawrapper.h"
 
 struct DMRG_krylov_gs
 {
@@ -46,10 +47,10 @@ struct DMRG_krylov_gs
             gs[i]=ExactRes(i);
             if (gs[i].norm()<tol_diag) gs[i].FillRandu().Canonicalize();
             gs[i].Normalize();
-            sb_h[i+(i-1)*nk]=Superblock({&gs[i-1],&mpo,&gs[i]});  //reverse list
+            sb_h[i+(i-1)*nk]=Superblock({&gs[i],&mpo,&gs[i-1]});  //reverse list, cambie
         }
         for(int j=0;j<i;j++)
-                sb_o[i+j*nk]=Superblock({&gs[j],&gs[i]});
+                sb_o[i+j*nk]=Superblock({&gs[i],&gs[j]}); //cambie
         ck++;
     }
 /*    MPS ExactRes(int i)
@@ -108,7 +109,7 @@ struct DMRG_krylov_gs
     void Solve_gs()
     {
         double errord=std::max(error/mpo.length,tol_diag);
-        auto lan=Diagonalize(sb_h[0].Oper(nsite_gs), gs[0].CentralMat(nsite_gs), nIterMax, errord);  //Lanczos
+        auto lan=DiagonalizeArn(sb_h[0].Oper(nsite_gs), gs[0].CentralMat(nsite_gs), nIterMax, errord);  //Lanczos
         iter=lan.iter;
         gs[0].setCentralMat(lan.GetState());
         gs[0].Normalize();
@@ -146,13 +147,13 @@ struct DMRG_krylov_gs
         int i=ck-1;
         auto beff= sb_h[i+(i-1)*nk].Oper(nsite_resid)*gs[i-1].CentralMat(nsite_resid);
         //auto cH=beff;
-//        for(int j=0;j<i;j++)
-//        {
-//            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
-//            beff -= cO*hmat[j+(i-1)*nk];
-//        }
-//        if (Norm(beff)<tol_diag)
-//            beff.FillRandu();
+        for(int j=0;j<i;j++)
+        {
+            auto cO=sb_o[i+j*nk].Oper(nsite_resid)*gs[j].CentralMat(nsite_resid);
+            beff -= cO*hmat[j+(i-1)*nk];
+        }
+        if (Norm(beff)<tol_diag)
+            beff.FillRandu();
         gs[i].setCentralMat( beff );
         gs[i].Normalize();
         if (nsite_resid)
@@ -221,8 +222,8 @@ struct DMRG_krylov_gs
         for(int i=0;i<ck;i++)
             for(j=0;j<=i;j++)
             {
-                hmat[i+j*nk]=hmat[j+i*nk]=Superblock({&gs[j],&mpo,&gs[i]}).value();
-                omat[i+j*nk]=omat[j+i*nk]=(j<i)?Superblock({&gs[j],&gs[i]}).value():1;
+                hmat[i+j*nk]=hmat[j+i*nk]=Superblock({&gs[i],&mpo,&gs[j]}).value();  //cambie
+                omat[i+j*nk]=omat[j+i*nk]=(j<i)?Superblock({&gs[i],&gs[j]}).value():1; //cambie
             }
 
         stdvec hm(ck*ck), om(ck*ck);

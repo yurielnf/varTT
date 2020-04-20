@@ -84,27 +84,6 @@ TEST_CASE( "dmrg S=1", "[dmrg_s1]" )
 
 //---------------------------------- Subspace expansion -----------------------------
 
-void TypicalRunWSE(MPO op,int nsweep,int m)
-{
-    std::cout<<std::setprecision(15);
-    op.PrintSizes("Ham=");
-    op.decomposer=MatQRDecomp;  //MatChopDecompFixedTol(0);
-    DMRG1_wse_gs sol(op,m);
-    sol.tol_diag=1e-12;
-    for(int k=0;k<=nsweep;k++)
-    {
-        for(auto p : MPS::SweepPosSec(op.length))
-        {
-            sol.SetPos(p);
-            sol.Solve();
-            if ((p.i+1) % (op.length/10) ==0) sol.Print();
-        }
-        std::cout<<"sweep "<<k+1<<"\n";
-//        if (k>=3) {sol.tol_diag=1e-9; }
-//        if (k>=8) {sol.tol_diag=1e-11; }
-//        if (k>=12){sol.tol_diag=1e-13; }
-    }
-}
 
 TEST_CASE( "dmrg with White subspace-expansion tight-binding", "[dmrg_wse_tb]" )
 {

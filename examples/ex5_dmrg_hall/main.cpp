@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include"dmrg_krylov_gs.h"
 #include"dmrg_jacobi_davidson_gs.h"
+#include"dmrg1_wse_gs.h"
 #include"parameters.h"
 #include"hamhall.h"
 #include"freefermions.h"
@@ -23,7 +24,7 @@ MPO NParticle(int L)
 
 //---------------------------- Test DMRG basico -------------------------------------------
 
-void TestDMRGBasico(const Parameters &par)
+MPO HamiltonianHall(const Parameters &par)
 {
     int len=par.length;
     auto hh=HamHall(len);
@@ -32,28 +33,90 @@ void TestDMRGBasico(const Parameters &par)
     hh.periodic=par.periodic;
     hh.Load();
     hh.d_cut_exp=len; hh.d_cut_Fourier=len; hh.tol=1e-6;
-    auto op=hh.Hamiltonian(); op.Sweep(); op.PrintSizes("HamHall=");
-    op.decomposer=MatQRDecomp;
-    auto nop=NParticle(len), eh_op=ElectronHoleMPO(len);
-    DMRG_krylov_gs sol(op,par.m,par.nkrylov);
+    auto mpo=hh.Hamiltonian(); mpo.Sweep(); mpo.PrintSizes("HamHall=");
+    mpo.decomposer=MatQRDecomp;
+    mpo.Save("ham.dat");
+    return mpo;
+}
+/*
+void TestDMRGBasico(const Parameters &par)
+{    
+    int len=par.length;
+    MPO ham; //=HamiltonianHall(par);
+    ham.Load("ham.dat");
+    ham.PrintSizes();
+//    auto nop=NParticle(len);
+    auto eh_op=ElectronHoleMPO(len);
+    DMRG_krylov_gs sol(ham,par.m,par.nkrylov);
     sol.nsite_gs=par.nsite_gs;
     sol.nsite_resid=par.nsite_resid;
 //    sol.nsite_jd=par.nsite_jd;
     sol.error=1e-5;
     sol.DoIt_gs();
-    MPS Proj=eh_op+MPOIdentity(len,2), gss; Proj.Canonicalize();
+    MPO Proj=eh_op+MPOIdentity(len,2), gss, gsr, gsrr;
+    Proj.Canonicalize();
     for(int k=0;k<par.nsweep;k++)
     {
         sol.DoIt_res(par.nsweep_resid);
         std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<" --------------------------------------\n";
         sol.reset_states();
         sol.DoIt_gs();
-        gss=(par.mu!=0)? sol.gs[0] : MPO_MPS{Proj,sol.gs[0]}.toMPS(sol.m).Normalize();
+        gss=(par.mu!=0)? sol.gs[0] : MPO_MPS{Proj,sol.gs[0]}.toMPS(2*sol.m).Normalize();
+        {// symmetrize under reflexion
+            MPSSum sr(2*sol.m,MatSVDFixedDim(2*sol.m));
+            sr += sol.gs[0];
+            MPS xr=sol.gs[0].Reflect(); xr.SetPos(sol.gs[0].pos);
+            sr += xr;
+            gsr=sr.toMPS().Canonicalize().Normalize();
+            gsrr=gsr.Reflect(); gsrr.SetPos(sol.gs[0].pos);
+        }
+        //Superblock np({&gss,&nop,&gss});
+        Superblock eh({&gss,&eh_op,&gss});
+        Superblock rf({&gsrr,&gsr});
+        cout<<" nT="<<np.value()<<", eh="<<eh.value()<<" Reflect="<<rf.value()<<endl;
+    }
+    gsr.Save("gs.dat");
+}
+*/
+
+void TestDMRGBasico(const Parameters &par)
+{
+    int len=par.length;
+    MPO ham=HamiltonianHall(par);
+    ham.PrintSizes();
+    auto nop=NParticle(len);
+    auto eh_op=ElectronHoleMPO(len);
+    MPO Proj=eh_op+MPOIdentity(len,2), gss, gsr, gsrr;
+    Proj.Canonicalize();
+    DMRG1_wse_gs sol(ham,par.m);
+    sol.tol_diag=1e-8;
+    for(int k=0;k<par.nsweep;k++)
+    {
+        bool use_arpack= k==par.nsweep-1;
+        if (use_arpack) sol.tol_diag=1e-10;
+        use_arpack=true;
+        std::cout<<"sweep "<<k+1<<" --------------------------------------\n";
+        for(auto p : MPS::SweepPosSec(len))
+        {
+            sol.SetPos(p);
+            sol.Solve(use_arpack);
+            if ((p.i+1) % (len/10) ==0) sol.Print();
+        }
+        gss=(par.mu!=0)? sol.gs : MPO_MPS{Proj,sol.gs}.toMPS(2*par.m).Normalize();
+        {// symmetrize under reflexion
+            MPSSum sr(2*par.m,MatSVDFixedDim(2*par.m));
+            sr += sol.gs;
+            MPS xr=sol.gs.Reflect(); xr.SetPos(sol.gs.pos);
+            sr += xr;
+            gsr=sr.toMPS().Canonicalize().Normalize();
+            gsrr=gsr.Reflect(); gsrr.SetPos(sol.gs.pos);
+        }
         Superblock np({&gss,&nop,&gss});
         Superblock eh({&gss,&eh_op,&gss});
-        cout<<" nT="<<np.value()<<", eh="<<eh.value()<<endl;
+        Superblock rf({&gsrr,&gsr});
+        cout<<" nT="<<np.value()<<", eh="<<eh.value()<<" Reflect="<<rf.value()<<endl;
     }
-    gss.Save("gs.dat");
+    gsr.Save("gs.dat");
 }
 
 void SimetrizeOldGs()
@@ -64,6 +127,22 @@ void SimetrizeOldGs()
     Proj.Canonicalize();
     MPS gss=MPO_MPS{Proj,gs}.toMPS(gs.m).Normalize();
     gss.Save("gs.dat");
+}
+void SimetrizeOldGsR()
+{
+    MPS gs;
+    gs.Load("gs.dat");
+    gs.PrintSizes("gs=");
+    cout<<"pos="<<gs.pos.i<<" "<<gs.pos.vx<<"\n";
+    MPSSum sr(gs.m,MatSVDFixedTol(1e-10));
+    sr += gs;
+    MPS xr=gs.Reflect();
+    cout<<"pos="<<xr.pos.i<<" "<<xr.pos.vx<<"\n";
+    xr.SetPos(gs.pos);
+    cout<<"pos="<<xr.pos.i<<" "<<xr.pos.vx<<"\n";
+    sr += xr;
+    auto gsr=sr.toMPS();//.Sweep();//.Canonicalize().Normalize();
+    gsr.Save("gs.dat");
 }
 
 void CalculaFFT(double ft[], size_t N, double Pk[])
@@ -109,23 +188,24 @@ void CalculateS(const Parameters &par)
     MPS gs;
     gs.Load("gs.dat");
     const auto &qs=par.renyi_q;
-    TensorD s({ gs.length/2, int(qs.size()) }), sk=s;
+    TensorD s({ gs.length/2, int(qs.size()) });
     for(int i=0;i<gs.length/2;i++)
     {
         gs.SetPos({i,1});
         TensorD rho=gs.C*gs.C.t();
         TensorD eval=rho.EigenDecomposition(1).at(1);
-        for(uint j=0;j<qs.size();j++)
+        for(int j=0;j<qs.size();j++)
             s[{i,j}]=EntropyRenyi(eval.data(),eval.size(),qs[j]);
     }
-
-    for(uint j=0;j<qs.size();j++)
-    {
-        TensorD sj=s.Subtensor(j);
-        CalculaFFT(&s[{0,j}],s.dim[0],&sk[{0,j}]);
-    }
+    TensorD rsp({s.dim[0]-1, s.dim[1]}), sk=rsp;
+    for(int i=0;i<gs.length/2-1;i++)
+        for(int j=0;j<qs.size();j++)
+            rsp[{i,j}]=(i+1)*( s[{i+1,j}]-s[{i,j}] );   //r*S'(r)
+    for(int j=0;j<qs.size();j++)
+        CalculaFFT(&rsp[{0,j}],rsp.dim[0],&sk[{0,j}]);
 
     ExportSTable("entropy.dat",qs,s);
+    ExportSTable("entropy_rSp.dat",qs,rsp);
     ExportSTable("entropy_fourier.dat",qs,sk);
 }
 
@@ -145,7 +225,7 @@ void CalculateRhoRhok(const Parameters par)
     gs.Load("gs.dat");
     ofstream out("rho_rho.dat");
     int N=par.length, x1=N/2;
-//    double Ly=10, factor=2*M_PI/Ly;
+    //    double Ly=10, factor=2*M_PI/Ly;
     for(int mn=-N/2; mn<N/2; mn++)
     {
         int m=mn<0 ? mn+N : mn;
@@ -153,7 +233,7 @@ void CalculateRhoRhok(const Parameters par)
         for(int k=0;k<N;k++)
         {
             MPO rr=Fermi(x1,N,true)*Fermi((x1+m)%N,N,false)*
-                   Fermi((x1+k+m)%N,N,true)*Fermi((x1+k)%N,N,false);
+                    Fermi((x1+k+m)%N,N,true)*Fermi((x1+k)%N,N,false);
             corr[k]=Superblock({&gs,&rr,&gs}).value();
         }
         vector<cmpx> ck(N);
@@ -182,6 +262,25 @@ void CalculateNi(const Parameters par)
     }
 }
 
+void CalculateNiN0(const Parameters par)
+{
+    MPS gs;
+    gs.Load("gs.dat");
+    ofstream out("nin0.dat");
+    int N=par.length;
+    MPO rr0=Fermi(N/2-1,N,true)*Fermi(N/2-1,N,false);
+    double n_0=Superblock({&gs,&rr0,&gs}).value();
+    for(int i=0; i<N; i++)
+    {
+        MPO rri=Fermi(i,N,true)*Fermi(i,N,false);
+        double n_i=Superblock({&gs,&rri,&gs}).value();
+        MPO rr=Fermi(i,N,true)*Fermi(i,N,false)*Fermi(N/2-1,N,true)*Fermi(N/2-1,N,false);
+        double nin0=Superblock({&gs,&rr,&gs}).value()-n_i*n_0;
+        out<<i+1<<" "<<nin0<<endl;
+    }
+}
+
+
 int main(int argc, char *argv[])
 {
     cout << "Hello World!" << endl;
@@ -194,7 +293,15 @@ int main(int argc, char *argv[])
         Parameters param;
         param.ReadParameters(argv[1]);
         TestDMRGBasico(param);
-        CalculateNi(param);
+        //        CalculateNi(param);
+        //        CalculateNiN0(param);
+    }
+    else if (argc==4 && string(argv[2])=="hall"     // ./a.out parameters.dat hall ham
+             && string(argv[3])=="ham")
+    {
+        Parameters param;
+        param.ReadParameters(argv[1]);
+        HamiltonianHall(param);
     }
     else if (argc==4 && string(argv[2])=="hall"
              && string(argv[3])=="renyi"         )  // ./a.out parameters.dat hall renyi
@@ -204,17 +311,29 @@ int main(int argc, char *argv[])
         CalculateS(param);
     }
     else if (argc==4 && string(argv[2])=="hall"
-             && string(argv[3])=="rhorho"         )  // ./a.out parameters.dat hall renyi
+             && string(argv[3])=="nin0"         )  // ./a.out parameters.dat hall nin0
     {
         Parameters param;
         param.ReadParameters(argv[1]);
         CalculateNi(param);
+        CalculateNiN0(param);
+    }
+    else if (argc==4 && string(argv[2])=="hall"
+             && string(argv[3])=="rhorho"         )  // ./a.out parameters.dat hall rhorho
+    {
+        Parameters param;
+        param.ReadParameters(argv[1]);
         CalculateRhoRhok(param);
     }
     else if (argc==4 && string(argv[2])=="hall"
              && string(argv[3])=="eh"         )  // ./a.out parameters.dat hall eh
     {
         SimetrizeOldGs();
+    }
+    else if (argc==4 && string(argv[2])=="hall"
+             && string(argv[3])=="Reflect"         )  // ./a.out parameters.dat hall Reflect
+    {
+        SimetrizeOldGsR();
     }
     else if (argc==4 && string(argv[2])=="hall"
              && string(argv[3])=="free1d"         )  // ./a.out parameters.dat hall free1d

@@ -76,10 +76,12 @@ class Superblock
 //    }
     SuperTensor Oper(int nSites=0) const
     {
+        Index ix=mps[0]->CentralMat(nSites).dim;
         if(mps.size()==3)
-            return { Left(nSites), Right(nSites), {mps[1]->CentralMat(nSites)} };
+            return { Left(nSites), Right(nSites), ix,
+                {mps[1]->CentralMat(nSites)} };
         else // size()==2
-            return { Left(nSites), Right(nSites) };
+            return { Left(nSites), Right(nSites), ix };
     }
     double value() const
     {

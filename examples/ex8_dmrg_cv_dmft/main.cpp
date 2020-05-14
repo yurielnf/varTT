@@ -121,6 +121,15 @@ void SetExcitation(const Parameters &par,vector<int> impPos,int L,
                     Fermi(impPos[1+nI],L,false)*Fermi(impPos[1+nI],L,true)*gs;
             b=Fermi(impPos[0],L,true)*gs;
         }
+        else if (par.opProj=="hdhd") //holon-doblon
+        {
+            int nI=impPos.size()/2;
+            a=Fermi(impPos[0],L,true)*
+                    Fermi(impPos[nI],L,true)*Fermi(impPos[nI],L,false)*
+                    Fermi(impPos[1],L,false)*Fermi(impPos[1],L,true)*
+                    Fermi(impPos[1+nI],L,false)*Fermi(impPos[1+nI],L,true)*gs;
+            b=a;
+        }
         else if (par.opProj=="bwneg") //banda w<0 y otras
         {
             int nI=impPos.size()/2;
@@ -155,6 +164,15 @@ void SetExcitation(const Parameters &par,vector<int> impPos,int L,
                     Fermi(impPos[1],L,false)*Fermi(impPos[1],L,true)*
                     Fermi(impPos[1+nI],L,false)*Fermi(impPos[1+nI],L,true)*gs;
             b=Fermi(impPos[0],L,false)*gs;
+        }
+        else if (par.opProj=="hdhd")
+        {
+            int nI=impPos.size()/2;
+            a=Fermi(impPos[0],L,false)*
+                    Fermi(impPos[nI],L,true)*Fermi(impPos[nI],L,false)*
+                    Fermi(impPos[1],L,false)*Fermi(impPos[1],L,true)*
+                    Fermi(impPos[1+nI],L,false)*Fermi(impPos[1+nI],L,true)*gs;
+            b=a;
         }
         else if (par.opProj=="bwneg") //banda w<0
         {
@@ -221,6 +239,7 @@ void TestDMRGCV(const Parameters& par,int id, int n_id)
     SetExcitation(par,sysNN.impPos,len,gs,a,b);
 
     DMRG_0_cv solcv(hnn,m,a,ener,{w1,w2},{eta1,eta2});
+    solcv.useLanczosCv=par.useLanczosCv;
     std::cout<<"\n\n\nstarting CV\n\n";
     for(int k=0;k<par.nsweep;k++)
     {

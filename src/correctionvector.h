@@ -37,8 +37,8 @@ struct CorrectionVector  // To obtain the Im[c] for the problem: (w + i eta - H)
         double error=tol;
         xI=x0;
 //        CG(*this,xI,a*(-eta),cIter,error);
-        GMRES(*this,xI,a*(-eta),nIter,cIter,error);
-
+        GMRES(*this,xI,a,nIter,cIter,error);
+        xI*=(-eta);
         xR=(H*xI-xI*w)*(1.0/eta);
         greenR=Dot(a,xR);
         greenI=Dot(a,xI);
@@ -133,6 +133,25 @@ CorrectionVector<Hamiltonian,Ket> FindCV(const Hamiltonian& H,const Ket& a,const
     CorrectionVector<Hamiltonian,Ket> cv(H,a);
     cv.Solve(w,eta,cI0,nIter);
     return cv;
+}
+template<class Hamiltonian, class Ket>                                      //Portal method
+vector<CorrectionVector<Hamiltonian,Ket>> FindCV(const Hamiltonian& H,const Ket& a,
+                                                 const vector<Ket>& cI0,
+                                         vector<cmpx> ws,int nIter,double tol=1e-2)
+{
+    typedef CorrectionVector<Hamiltonian,Ket> CV;
+    vector<CV> cvs;
+    auto x0=cI0[0];
+    for (uint i=0;i<ws.size();i++)
+    {
+        auto z=ws[i];
+        CV cv(H,a);
+        cv.tol=tol;
+        cv.Solve(z.real(),z.imag(),x0,nIter);
+        cvs.push_back(cv);
+        x0= (i+1>=cI0.size()) ? cv.xI : cI0.at(i+1);
+    }
+    return cvs;
 }
 
 #include"lanczos.h"

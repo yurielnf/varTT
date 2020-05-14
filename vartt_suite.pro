@@ -8,7 +8,7 @@ SUBDIRS = \
 #    examples/ex3_dmrg_tb \
 #    examples/ex4_dmrg_cv_imp\
     examples/ex5_dmrg_hall\
-#    examples/ex6_dmrg_cv_hernan\
+    examples/ex6_dmrg_cv_hernan\
     examples/ex7_dmrg_cv_aligia\
     examples/ex8_dmrg_cv_dmft
 

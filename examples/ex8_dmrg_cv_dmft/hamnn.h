@@ -43,7 +43,10 @@ public:
         {
             std::ifstream in(in_Vijkl);
             if (!in.is_open())
-                throw std::invalid_argument("HamiltonianNN: Vijkl file not found");
+            {
+                std::cout<<"HamiltonianNN: Vijkl file not found\n";
+                return;
+            }
             int i,j,k,l;
             double x;
             in>>i>>j>>k>>l>>x;

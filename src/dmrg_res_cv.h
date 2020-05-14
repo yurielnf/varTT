@@ -16,6 +16,7 @@ struct DMRG_0_cv
     MPS cvy, cvy2;
     vector<TensorD> cvR, cvI;
     Superblock sb,sb_ya;
+    bool useLanczosCv=true;
 private:
     TensorD rot;
 public:
@@ -79,7 +80,8 @@ public:
         auto aeff=sb_ya.Oper(nsite)* a.CentralMat(nsite);
         vector<cmpx> zs(n);
         for(int i=0;i<n;i++) zs[i]={wR[i]+ener,wI[i]};
-        auto sol=FindCVL(Heff,aeff,zs,nIterMax);
+        auto sol= useLanczosCv ? FindCVL(Heff,aeff,zs,nIterMax)
+                               : FindCV(Heff,aeff,cvI,zs,nIterMax);
         for(int i=0;i<n;i++)
         {
 //            auto sol=FindCV(Heff,aeff,cvI[i],wR[i]+ener,wI[i],nIterMax);
@@ -156,14 +158,16 @@ public:
             Solve();
             Print();
         }
-//        auto cI0=cvy.CentralMat(nsite);
+        auto cI0=cvy.CentralMat(nsite);
         auto Heff=sb.Oper(nsite);
         auto aeff=sb_ya.Oper(nsite)*a.CentralMat(nsite);
         auto beff=sb_yb.Oper(nsite)*b.CentralMat(nsite);
 
         auto zc=vz;
         for(auto& z:zc) z+=ener;
-        for( const auto& cv:FindCVL(Heff,aeff,zc,nIterMax) )
+        auto cvs= useLanczosCv ? FindCVL(Heff,aeff,zc,nIterMax)
+                               : FindCV(Heff,aeff,{cI0},zc,nIterMax);
+        for( const auto& cv: cvs )
         {
 //            double w=z.real(), eta=z.imag();
 //            auto cv=FindCV(Heff,aeff,cI0,w+ener,eta,nIterMax);

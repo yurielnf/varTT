@@ -11,7 +11,8 @@ struct Parameters
         nkrylov=2,
         nsite_gs=0, nsite_resid=1, nsite_jd=0,
         spin=1,
-        periodic=0;
+        periodic=0,
+        useLanczosCv=1;
     char opType='C';
     int op1Pos=0,
          op2Pos=0;

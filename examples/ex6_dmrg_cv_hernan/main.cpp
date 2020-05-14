@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
     time_t t0=time(NULL);
     srand(time(NULL));
 
-    if (false)
+    if (true)
     {
         ofstream out("greenE.dat");
         int L=100;

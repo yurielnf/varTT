@@ -38,6 +38,8 @@ void Parameters::ReadParameters(const char filename[])
             in>>spin;
         else if (param=="periodic")
             in>>periodic;
+        else if(param=="useLanczosCv")
+            in>>useLanczosCv;
         else if(param=="opType")
             in>>opType;
         else if(param=="op1Pos")

@@ -1,8 +1,8 @@
 #include "supertensor.h"
 
 //#define EIGEN_USE_MKL_ALL
-#define EIGEN_USE_LAPACKE
-#define EIGEN_USE_BLAS
+//#define EIGEN_USE_LAPACKE
+//#define EIGEN_USE_BLAS
 
 #include <Eigen/Core>
 #include<Spectra/SymEigsSolver.h>

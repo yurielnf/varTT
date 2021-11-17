@@ -29,7 +29,7 @@ EigenSystem0<TensorD> DiagonalizeArn(SuperTensor H, const TensorD& wf, int nIter
             auto  evec=TensorD(wf.dim,x);
             //        std::cout<<eval<< " Eigenvalues found:\n" << eigs.eigenvalues() << std::endl;
             return {eval,evec,
-                        eigs.num_operations()};
+                        int(eigs.num_operations())};
         }
         ncv_default*=2;
     }

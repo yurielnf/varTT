@@ -11,188 +11,70 @@
 using namespace std;
 using namespace arma;
 
-
-MPO HamSIAMTBStar(int L)
+/// L qubits, interaction U, hybridization V1
+mat KinMatrixTB(int L,double U,double V1)
 {
-    int m=2;
-    double U=4;
-    double epsilon=-2;
-    //---interaccion-QD-bandas
-    double V=0.6;
-    double V1=1.5*V;
+    int nbath=L/2-1;
+    mat kinBath(nbath,nbath,fill::zeros); // matriz de energia cinetica del banho
+    for(int i=0;i<nbath-1;i++)
+        kinBath(i,i+1)=kinBath(i+1,i)=1;
+
+    mat kin(L,L,fill::zeros); // energia cinetica total
+    kin(nbath-1,nbath)=kin(nbath,nbath-1)=kin(nbath+1,nbath+2)=kin(nbath+2,nbath+1)=V1; // impurity at the center ---------->  oooxxooo for L=8
+    for(int i=0;i<nbath;i++)
+        for(int j=0;j<nbath;j++)
+            kin(nbath-1-i,nbath-1-j)=kin(nbath+2+i,nbath+2+j)=kinBath(i,j);
+    kin(L/2-1,L/2-1)=kin(L/2,L/2)=-0.5*U;
+    return kin;
+}
 
 
-    MPSSum h(m,MatSVDFixedTol(1e-12));
+/// L qubits, interaction U, hybridization V1
+MPO HamSiamTB(int L, double U, double V1)
+{
+    mat kin=KinMatrixTB(L,U,V1);
 
-    //-------------------------impurezas----------------------------------
-    //-----------------------CANALES-ESTRELLA-----------------------------
+    MPSSum h(1,MatSVDFixedTol(1e-12));  // writing the Hamiltonian
+    for(int i=0; i<L;i++)
+        for(int j=0; j<L;j++)
+            if( fabs( kin(i,j) ) > 1e-13 )
+                h += Fermi(i,L,true)*Fermi(j,L,false)*kin(i,j);
 
-    mat kin = zeros<mat>(L,L);
+    h += Fermi(L/2-1,L,true)*Fermi(L/2-1,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*U;
+    return h.toMPS().Sweep();
+}
 
-    //-------------ENERGIAS-DIAGONALES-NIVELES-QD---------------------
 
-    kin(0,0)=epsilon;
-    kin(L/2,L/2)=epsilon;
+/// L qubits, interaction U, hybridization V1
+MPO HamSiamTBStar(int L, double U, double V1)
+{
+    mat k=KinMatrixTB(L,U,V1);
 
-    //-----------------------canales------------------------------
-    //----------------------hoppings -----------------------------
-
-    for(int i=1;i<L/2-1;i++)
-        for(int j=0;j<2;j++)
-        {
-            int d=j*L/2;
-            kin(i+d,i+1+d)=kin(i+1+d,i+d)=1.0;
-        }
-
-    //---------------------------hibridizacion------------------------
-
-    kin(0,1)=kin(1,0)=V1;
-    kin(L/2,L/2+1)=kin(L/2+1,L/2)=V1;
-
-    //----------------------------formaestrella-----------------------
-
-    mat u = zeros<mat>(L,L);
-
-    //----------------------------sitiosimpurezas---------------------
-
-    u(0,0)=1.0;
-    u(L/2,L/2)=1.0;
-
-    //---------------------------hamiltoniano-banda-------------------
-
-    mat h22 = zeros<mat>(L/2-1,L/2-1);
-    for(int i=0;i<L/2-2;i++)
-        h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
-
-    //--------------------------matriz-que-diagonaliza-h22------------
-
+    // diagonalize the bath to compute the rotation
     vec eigval;
     mat eigvec;
+    k.submat(0,0,L/2-2,L/2-2).print("bath=");
+    eig_sym(eigval,eigvec,k.submat(0,0,L/2-2,L/2-2));
 
-    eig_sym(eigval,eigvec,h22);
-
-    //-----------------------------K-----------------------------------
-
+    mat rot(k.n_rows,k.n_cols,fill::eye);
     for(int i=0; i<L/2-1;i++)
-    {
         for(int j=0; j<L/2-1; j++)
-        {
-            u(i+1,j+1)=u(i+L/2+1,j+L/2+1)=eigvec(i,j);
-        }
-    }
-    mat udaga = u.t();
-    mat k;
-    k = udaga*kin*u;
+            rot(L/2-2-i,L/2-2-j)=rot(i+L/2+1,j+L/2+1)=eigvec(i,j);              // configuration oooxxooo for L=8
 
+    mat kin = rot.t()*k*rot;
+
+    MPSSum h(1,MatSVDFixedTol(1e-12));  // writing the Hamiltonian
     for(int i=0; i<L;i++)
         for(int j=0; j<L;j++)
             if( fabs( k(i,j) ) > 1e-13 )
                 h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
 
-
-    //-----------------Termino---U--------------------------------------
-
-    h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*U;
-
+    h += Fermi(L/2-1,L,true)*Fermi(L/2-1,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*U;
     return h.toMPS().Sweep();
 }
 
 
-MPO HamSIAMNRGStar(int L, double BF)
-{
-    int m=2;
-    double lambda=2;
-    double U=4;
-    double B=BF;
-    double epsilon=-2;
-    //---interaccion-QD-bandas
-    double V=0.6;
-    double V2=-V;
-
-
-    MPSSum h(m,MatSVDFixedTol(1e-12));
-
-    //--------------------------------------------------------------------
-    //-------------------------impurezas----------------------------------
-    //-----------------------CANALES-ESTRELLA-----------------------------
-
-    mat kin = zeros<mat>(L,L);
-
-    //-------------ENERGIAS-DIAGONALES-NIVELES-QD---------------------
-
-    kin(0,0)=epsilon-0.5*B;
-    kin(L/2,L/2)=epsilon+0.5*B;
-
-
-    //---------------------------canales------------------------------
-    //-----------------------hoppings NRG-----------------------------
-
-    for(int i=1;i<L/2-1;i++)
-        for(int j=0;j<2;j++)
-        {
-            int d=j*L/2;
-            kin(i+d,i+1+d)=kin(i+1+d,i+d)=pow((1.0/lambda),(i-1)/2.0);
-        }
-
-    //---------------------------hibridizacion------------------------
-
-    kin(0,1)=V2;
-    kin(1,0)=V2;
-    kin(L/2,L/2+1)=V2;
-    kin(L/2+1,L/2)=V2;
-
-    //----------------------------formaestrella-----------------------
-
-    mat u = zeros<mat>(L,L);
-
-    //----------------------------sitiosimpurezas---------------------
-
-    u(0,0)=1.0;
-    u(L/2,L/2)=1.0;
-
-    //---------------------------hamiltoniano-banda-------------------
-
-    mat h22 = zeros<mat>(L/2-1,L/2-1);
-    for(int i=0;i<L/2-2;i++)
-        h22(i,i+1)=h22(i+1,i)=kin(i+1,i+2);
-
-    //--------------------------matriz-que-diagonaliza-h22------------
-
-    vec eigval;
-    mat eigvec;
-
-    eig_sym(eigval,eigvec,h22);
-
-    //-----------------------------K-----------------------------------
-
-    for(int i=0; i<L/2-1;i++)
-    {
-        for(int j=0; j<L/2-1; j++)
-        {
-            u(i+1,j+1)=u(i+L/2+1,j+L/2+1)=eigvec(i,j);
-        }
-    }
-    mat udaga = u.t();
-    mat k;
-    k = udaga*kin*u;
-
-    for(int i=0; i<L;i++)
-        for(int j=0; j<L;j++)
-            if( fabs( k(i,j) ) > 1e-13 )
-                h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
-
-
-    //-----------------Termino---U--------------------------------------
-
-    h += Fermi(0,L,true)*Fermi(0,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*U;
-
-
-
-    return h.toMPS().Sweep();
-}
-
-
-
+//------------------------ Measurements -------
 
 MPO NParticle(int L)
 {
@@ -218,12 +100,47 @@ void CalculateNi(const Parameters par)
 }
 
 
+void ExportSTable(string filename,const stdvec& qs,const TensorD& s)
+{
+    ofstream out(filename.c_str());
+    out<<"r ";
+    for(auto q:qs) out<<"q="<<q<<" ";
+    out<<endl;
+    for(int i=0;i<s.dim[0];i++)
+    {
+        out<<i<<" ";
+        for(int j=0;j<int(qs.size());j++)
+            out<<s[{i,j}]<<" ";
+        out<<endl;
+    }
+}
+
+void CalculateS()
+{
+    MPS gs;
+    gs.Load("gs.dat");
+    vector<double> qs={0.5, 1, 1.5, 2, 5, 10};
+    TensorD s({ gs.length-1, int(qs.size()) });
+    for(int i=0;i<gs.length-1;i++)
+    {
+        gs.SetPos({i,1});
+        TensorD rho=gs.C*gs.C.t();
+        TensorD eval=rho.EigenDecomposition(1).at(1);
+        for(int j=0;j<int(qs.size());j++)
+            s[{i,j}]=EntropyRenyi(eval.data(),eval.size(),qs[j]);
+    }
+
+    ExportSTable("entropy.dat",qs,s);
+}
+
 //---------------------------- Test DMRG basico -------------------------------------------
 
 void TestDMRGBasico(const Parameters &par)
 {
     int len=par.length;
-    auto op=HamSIAMTBStar(len); op.Sweep(); op.PrintSizes("HamSiamMPO=");
+//    auto op=HamSiamTB(len,1,1);
+    auto op=HamSiamTBStar(len,1,1);
+    op.Sweep(); op.PrintSizes("HamMPO=");
     op.decomposer=MatQRDecomp;
     auto nop=NParticle(len);
 
@@ -239,7 +156,7 @@ void TestDMRGBasico(const Parameters &par)
             sol.Solve();
             if ((p.i+1) % (op.length/10) ==0) sol.Print();
         }
-        cout<<" nT="<<Superblock({&sol.gs,&nop,&sol.gs}).value()<<endl;
+        cout<<"nT="<<Superblock({&sol.gs,&nop,&sol.gs}).value()<<endl;
     }
     ofstream out("gs.dat");
     sol.gs.Save(out);
@@ -259,6 +176,7 @@ int main(int argc, char *argv[])
         param.ReadParameters(argv[1]);
         TestDMRGBasico(param);
         CalculateNi(param);
+        CalculateS();
     }
     cout<<"\nDone in "<<difftime(time(NULL),t0)<<"s"<<endl;
     return 0;

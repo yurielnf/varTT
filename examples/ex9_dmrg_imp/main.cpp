@@ -66,8 +66,8 @@ MPO HamSiamTBStar(int L, double U, double V1)
     MPSSum h(1,MatSVDFixedTol(1e-12));  // writing the Hamiltonian
     for(int i=0; i<L;i++)
         for(int j=0; j<L;j++)
-            if( fabs( k(i,j) ) > 1e-13 )
-                h += Fermi(i,L,true)*Fermi(j,L,false)*k(i,j);
+            if( fabs( kin(i,j) ) > 1e-13 )
+                h += Fermi(i,L,true)*Fermi(j,L,false)*kin(i,j);
 
     h += Fermi(L/2-1,L,true)*Fermi(L/2-1,L,false)*Fermi(L/2,L,true)*Fermi(L/2,L,false)*U;
     return h.toMPS().Sweep();
@@ -138,8 +138,8 @@ void CalculateS()
 void TestDMRGBasico(const Parameters &par)
 {
     int len=par.length;
-//    auto op=HamSiamTB(len,1,1);
-    auto op=HamSiamTBStar(len,1,1);
+    auto op=HamSiamTB(len,1,1);
+//    auto op=HamSiamTBStar(len,1,1);
     op.Sweep(); op.PrintSizes("HamMPO=");
     op.decomposer=MatQRDecomp;
     auto nop=NParticle(len);
@@ -149,12 +149,11 @@ void TestDMRGBasico(const Parameters &par)
     for(int k=0;k<par.nsweep;k++)
     {
         std::cout<<"sweep "<<k+1<<" --------------------------------------\n";
-        if (k==par.nsweep-1) sol.tol_diag=1e-7;
         for(auto p : MPS::SweepPosSec(op.length))
         {
             sol.SetPos(p);
             sol.Solve();
-            if ((p.i+1) % (op.length/10) ==0) sol.Print();
+            sol.Print();
         }
         cout<<"nT="<<Superblock({&sol.gs,&nop,&sol.gs}).value()<<endl;
     }

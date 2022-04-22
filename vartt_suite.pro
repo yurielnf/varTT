@@ -11,7 +11,8 @@ SUBDIRS = \
 #    examples/ex6_dmrg_cv_hernan\
 #    examples/ex7_dmrg_cv_aligia\
     examples/ex8_dmrg_cv_dmft \
-    examples/ex9_dmrg_imp
+    examples/ex9_dmrg_imp \
+    examples/ex10_ignacio
 
 #tests.depends = vartt
 #ex1_tensor.depends = vartt
@@ -23,6 +24,7 @@ ex5_dmrg_hall.depends = vartt
 #ex7_dmrg_cv_aligia.depends = vartt
 ex8_dmrg_cv_dmft.depends = vartt
 ex9_dmrg_cv_dmft.depends = vartt
+ex10_ignacio.depends = vartt
 
 
 DISTFILES += \

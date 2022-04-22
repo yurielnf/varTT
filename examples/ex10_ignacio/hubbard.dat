@@ -1,0 +1,10 @@
+U 1
+t 1.0
+space ON
+boundary OBC
+mu 0.5
+order 4
+GetON 0
+//lx=filas, ly=columnas
+lx 4
+ly 2

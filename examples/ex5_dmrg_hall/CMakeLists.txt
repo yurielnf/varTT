@@ -9,4 +9,3 @@ add_executable(ex5_hall
 target_link_libraries(ex5_hall vartt)
 target_link_libraries(ex5_hall fftw3)
 
-

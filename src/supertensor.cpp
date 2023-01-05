@@ -18,10 +18,10 @@ EigenSystem0<TensorD> DiagonalizeArn(SuperTensor H, const TensorD& wf, int nIter
     while (ncv_default<=nIter)
     {
         int ncv=min(max(2*nev+1,ncv_default),wf.size());
-        Spectra::SymEigsSolver<double, Spectra::SMALLEST_ALGE, SuperTensor> eigs(&H, nev, ncv);
+        Spectra::SymEigsSolver<SuperTensor> eigs(H, nev, ncv);
         eigs.init(wf.data());
-        eigs.compute(nIter/ncv,tol,SMALLEST_ALGE);
-        if(eigs.info() == Spectra::SUCCESSFUL)
+        eigs.compute(Spectra::SortRule::SmallestAlge, nIter/ncv, tol, Spectra::SortRule::SmallestAlge);
+        if(eigs.info() == CompInfo::Successful)
         {
             double eval=eigs.eigenvalues()(0);
             auto v0=eigs.eigenvectors(1);

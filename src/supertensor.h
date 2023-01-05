@@ -31,6 +31,8 @@ struct SuperTensor
 //        if (A.rank()==3 && !C.empty())
 //            b=TensorD({a.dim[0],C[0].dim[0],C[0].dim[1],a.dim[3]}); //kjaI
     }
+
+    using Scalar = double;  // A typedef named "Scalar" is required
     int rows() const { return Prod(ix); }
     int cols() const { return Prod(ix); }
     void perform_op(const double *x_in, double *y_out) const

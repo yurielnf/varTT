@@ -205,7 +205,8 @@ struct MatSVDFixedDimSE
 {
     int d;
     stdvec P;
-    MatSVDFixedDimSE(int d,stdvec P):d(d),P(P){}
+    double tol;
+    MatSVDFixedDimSE(int d, stdvec P, double tol=1e-10):d(d), P(P), tol(tol){}
     std::array<stdvec,2> operator()(bool is_right, const double*  X, int n1,int n2) const
     {
         std::array<stdvec,2> AB;
@@ -221,7 +222,7 @@ struct MatSVDFixedDimSE
                 for(int j=0;j<n2;j++)
                     Xb[i+n1+j*n1xb]=P[i+j*n1p];    //col-major
 
-            AB=MatSVD(is_right,Xb.data(),n1xb,n2,-1,d);
+            AB=MatSVD(is_right,Xb.data(),n1xb,n2,tol,d);
             int m=AB[0].size()/n1xb;
             stdvec a(n1*m);
             for(int i=0;i<n1;i++)
@@ -235,7 +236,7 @@ struct MatSVDFixedDimSE
             std::copy(P.begin(),P.end(),Xb.begin()+n1*n2);
             int n2p=P.size()/n1;
             int n2xb=n2+n2p;
-            AB=MatSVD(is_right,Xb.data(),n1,n2xb,-1,d);
+            AB=MatSVD(is_right,Xb.data(),n1,n2xb,tol,d);
             AB[1].resize(AB[1].size()*n2/n2xb);
         }
         return AB;

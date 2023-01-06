@@ -6,18 +6,19 @@
 
 struct DMRG1_wse_gs
 {
-    int nIterMax=1024,iter;
+    int nIterMax=256,iter;
     double error=1,alpha=1,tol_diag=1e-13;
 
     MPS gs,mpo,z2_sym;
     Superblock sb,sb_sym;
 
-    DMRG1_wse_gs(const MPO& ham,int m,MPO z2_sym=MPO())
+    DMRG1_wse_gs(const MPO& ham,int m,int m0=-1,MPO z2_sym=MPO())
         :mpo(ham),z2_sym(z2_sym)
     {
+        if (m0<0) m0=m;
         int d=mpo.at(0).dim[1];
         gs= MPS(mpo.length,m)
-                      .FillRandu({m,d,m})
+                      .FillRandu({m0,d,m0})
                       .Canonicalize()
                       .Normalize() ;
         Reset_gs();
@@ -96,7 +97,7 @@ struct DMRG1_wse_gs
 
 //            P=P.ReShape({1,2}).Clone();
             P*=alpha/Norm(P);
-            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,P.vec()));
+            auto AC=M.Decomposition(false,MatSVDFixedDimSE(gs.m,P.vec(),tol_diag));
             A=AC[0]; C=AC[1];
         }
         else
@@ -115,7 +116,7 @@ struct DMRG1_wse_gs
             }
 //            P=P.ReShape({2,3}).Clone();
             P*=alpha/Norm(P);
-            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,P.vec()));
+            auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,P.vec(),tol_diag));
             C=CB[0]; B=CB[1];
         }
         sb.UpdateBlocks();

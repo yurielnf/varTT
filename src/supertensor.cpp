@@ -33,7 +33,6 @@ EigenSystem0<TensorD> DiagonalizeArn(SuperTensor H, const TensorD& wf, int nIter
         }
         ncv_default*=2;
     }
-//        throw std::runtime_error("Spectra::diagonalize info="+std::to_string(eigs.info()));
-    std::cout<<"Spectra::diagonalize info!=0\n";
+    throw std::runtime_error("Spectra::diagonalize info=");
 }
 

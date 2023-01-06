@@ -1,10 +1,9 @@
 ﻿#include <iostream>
-#include"dmrg_krylov_gs.h"
-#include"dmrg_jacobi_davidson_gs.h"
-#include"dmrg1_wse_gs.h"
-#include"parameters.h"
-#include"hamhall.h"
-#include"freefermions.h"
+#include "dmrg1_wse_gs.h"
+#include "dmrg1_wse_gs.h"
+#include "parameters.h"
+#include "hamhall.h"
+#include "freefermions.h"
 
 #include <fftw3.h>
 // en terminal: gcc main.c -lfftw3 -lm
@@ -38,46 +37,7 @@ MPO HamiltonianHall(const Parameters &par)
     mpo.Save("ham.dat");
     return mpo;
 }
-/*
-void TestDMRGBasico(const Parameters &par)
-{    
-    int len=par.length;
-    MPO ham; //=HamiltonianHall(par);
-    ham.Load("ham.dat");
-    ham.PrintSizes();
-//    auto nop=NParticle(len);
-    auto eh_op=ElectronHoleMPO(len);
-    DMRG_krylov_gs sol(ham,par.m,par.nkrylov);
-    sol.nsite_gs=par.nsite_gs;
-    sol.nsite_resid=par.nsite_resid;
-//    sol.nsite_jd=par.nsite_jd;
-    sol.error=1e-5;
-    sol.DoIt_gs();
-    MPO Proj=eh_op+MPOIdentity(len,2), gss, gsr, gsrr;
-    Proj.Canonicalize();
-    for(int k=0;k<par.nsweep;k++)
-    {
-        sol.DoIt_res(par.nsweep_resid);
-        std::cout<<"sweep "<<k+1<< "  error="<<sol.error<<" --------------------------------------\n";
-        sol.reset_states();
-        sol.DoIt_gs();
-        gss=(par.mu!=0)? sol.gs[0] : MPO_MPS{Proj,sol.gs[0]}.toMPS(2*sol.m).Normalize();
-        {// symmetrize under reflexion
-            MPSSum sr(2*sol.m,MatSVDFixedDim(2*sol.m));
-            sr += sol.gs[0];
-            MPS xr=sol.gs[0].Reflect(); xr.SetPos(sol.gs[0].pos);
-            sr += xr;
-            gsr=sr.toMPS().Canonicalize().Normalize();
-            gsrr=gsr.Reflect(); gsrr.SetPos(sol.gs[0].pos);
-        }
-        //Superblock np({&gss,&nop,&gss});
-        Superblock eh({&gss,&eh_op,&gss});
-        Superblock rf({&gsrr,&gsr});
-        cout<<" nT="<<np.value()<<", eh="<<eh.value()<<" Reflect="<<rf.value()<<endl;
-    }
-    gsr.Save("gs.dat");
-}
-*/
+
 
 void TestDMRGBasico(const Parameters &par)
 {
@@ -177,7 +137,7 @@ void ExportSTable(string filename,const stdvec& qs,const TensorD& s)
     for(int i=0;i<s.dim[0];i++)
     {
         out<<i<<" ";
-        for(uint j=0;j<qs.size();j++)
+        for(int j=0;j<qs.size();j++)
             out<<s[{i,j}]<<" ";
         out<<endl;
     }

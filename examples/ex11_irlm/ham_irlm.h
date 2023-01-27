@@ -20,7 +20,6 @@ public:
         tmat.load(tFile);
         Pmat.load(PFile);
 
-        cout<<"P*P.t()-1 = "<< arma::norm(Pmat*Pmat.t()-arma::mat(length(),length(), arma::fill::eye)) << endl;
     }
 
     int length() const { return tmat.n_rows; }
@@ -31,7 +30,7 @@ public:
     {
         cout<<"Building Hamiltonian MPO ...\n";
         int L=length();
-        auto h=MPSSum(10,MatSVDFixedTol(tol));;
+        auto h=MPSSum(10,MatSVDFixedTol(tol));
         // kinetic energy bath
         for(int i=0;i<L; i++)
             for(int j=0;j<L; j++)
@@ -40,16 +39,25 @@ public:
             h += Create(i)*Destroy(j)*tmat(i,j) ;
         }
 
-        //interaction
-        for(int a=0;a<L; a++) { cout<<a<<" "; cout.flush();
-            for(int b=0;b<L; b++)
-                for(int c=0;c<L; c++)
-                    for(int d=0;d<L; d++) {
-                        double coeff=U*Pmat(0,a)*Pmat(1,b)*Pmat(1,c)*Pmat(0,d);
-                        if (c==d || a==b || fabs(coeff)<1e-5) continue;
-                        h += Create(a)*Create(b)*Destroy(c)*Destroy(d)* coeff;
-                    }
-        }
+        // interaction
+        auto d0=MPSSum(2,MatSVDFixedTol(tol));
+        for(int a=0;a<L; a++)
+            d0 += Destroy(a) * Pmat(0,a);
+
+        auto d0d=MPSSum(2,MatSVDFixedTol(tol));
+        for(int a=0;a<L; a++)
+            d0d += Create(a) * Pmat(0,a);
+
+        auto c0=MPSSum(2,MatSVDFixedTol(tol));
+        for(int a=0;a<L; a++)
+            c0 += Destroy(a) * Pmat(1,a);
+
+        auto c0d=MPSSum(2,MatSVDFixedTol(tol));
+        for(int a=0;a<L; a++)
+            c0d += Create(a) * Pmat(1,a);
+
+        h += d0d.toMPS() * d0.toMPS() * c0d.toMPS() * c0.toMPS() * U;
+
         cout<<"Done sum\n"; cout.flush();
         auto H=h.toMPS().Sweep();
         cout<<"Done Ham\n"; cout.flush();

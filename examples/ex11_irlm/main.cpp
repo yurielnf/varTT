@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include "dmrg1_wse_gs.h"
 #include "dmrg1_wse_gs.h"
+#include "dmrg_krylov_gs.h"
 #include "parameters.h"
 #include "ham_irlm.h"
 
@@ -23,22 +24,32 @@ void TestDMRGBasico(const MPO& ham, const Parameters &par)
     int len=ham.length;
     ham.PrintSizes();
     auto nop=NParticle(len);
-    DMRG1_wse_gs sol(ham,par.m,1);
-    sol.tol_diag=1e-8;
-    for(int k=0;k<par.nsweep;k++)
+//    DMRG1_wse_gs sol(ham,par.m,1);
+    DMRG_krylov_gs sol(ham,par.m,1);
+    sol.tol_diag=1e-12;
+    sol.nIterMax=32;
+//    sol.gs.decomposer=MatSVDFixedTol(sol.tol_diag);
+    for(int k=0;k<3*par.nsweep;k++)
     {
+        if (k>=8) sol.nIterMax=64;
         std::cout<<"sweep "<<k+1<<" --------------------------------------\n";
-        for(auto p : MPS::SweepPosSec(len))
-        {
-            sol.SetPos(p);
-            sol.Solve(false);
+//        for(auto p : MPS::SweepPosSec(len))
+//        {
+//            sol.SetPos(p);
+//            if (k>=par.nsweep) { sol.tol_diag=1e-13; sol.SolveNoWSE(false); }
+            sol.DoIt_gs();
+            sol.DoIt_res();
             sol.Print();
-        }
+//        }
 
-        Superblock np({&sol.gs,&nop,&sol.gs});
+        Superblock np({&sol.gs[0],&nop,&sol.gs[0]});
         cout<<" nT="<<np.value()<<endl;
     }
-    sol.gs.Save("gs.dat");
+
+//    sol.gs.Save("gs.dat");
+//    sol.gs.decomposer=MatSVDAdaptative(1e-3, par.m);
+//    sol.gs.Sweep();
+//    sol.gs.PrintSizes("gs=");
 }
 
 
@@ -69,9 +80,10 @@ int main(int argc, char *argv[])
         Parameters param;
         param.ReadParameters("parameters.txt");
         auto ham=HamIRLM(argv[1], argv[2], atof(argv[3]));
-        ham.tol=1e-8;
+        ham.tol=1e-14;
+        t0=time(nullptr);
         TestDMRGBasico(ham.Ham(), param);
-        CalculateNiN0();
+//        CalculateNiN0();
     }
     else
         cout<<"usage: ./irlm <tfile> <Pfile> U\n";

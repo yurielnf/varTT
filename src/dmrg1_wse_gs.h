@@ -6,7 +6,7 @@
 
 struct DMRG1_wse_gs
 {
-    int nIterMax=256,iter;
+    int nIterMax=512,iter;
     double error=1,alpha=1,tol_diag=1e-13;
 
     MPS gs,mpo,z2_sym;
@@ -17,10 +17,10 @@ struct DMRG1_wse_gs
     {
         if (m0<0) m0=m;
         int d=mpo.at(0).dim[1];
-        gs= MPS(mpo.length,m)
+        gs= MPS(mpo.length,m, MatSVDAdaptative(tol_diag,m))
                       .FillRandu({m0,d,m0})
                       .Canonicalize()
-                      .Normalize() ;
+                      .Normalize();
         Reset_gs();
     }
     static double AdaptAlpha(double alpha,double Eini,double Eopt,double Etrunc)
@@ -119,13 +119,26 @@ struct DMRG1_wse_gs
             auto CB=M.Decomposition(true,MatSVDFixedDimSE(gs.m,P.vec(),tol_diag));
             C=CB[0]; B=CB[1];
         }
+        gs.Normalize();
         sb.UpdateBlocks();
         if (z2_sym.length>0) sb_sym.UpdateBlocks();
-        gs.Normalize();
         double Etrunc=sb.value();
         error=fabs(Etrunc-Eopt);
         alpha=AdaptAlpha(alpha,Eini,Eopt,Etrunc);
     }
+
+    void SolveNoWSE(bool use_arpack=true)
+    {
+        double errord=std::max(std::min(1.0,error),tol_diag);
+        auto lan=use_arpack?DiagonalizeArn(sb.Oper(1), gs.CentralMat(1), nIterMax, errord):
+                            Diagonalize   (sb.Oper(1), gs.CentralMat(1), nIterMax, errord);//Lanczos
+        iter=lan.iter;
+        gs.setCentralMat(lan.GetState());
+        gs.Normalize();
+        sb.UpdateBlocks();
+        if (sb_sym.length>0) sb_sym.UpdateBlocks();
+    }
+
     void SetPos(MPS::Pos p)
     {
         sb.SetPos(p);

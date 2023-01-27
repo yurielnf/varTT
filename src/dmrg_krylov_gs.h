@@ -109,7 +109,8 @@ struct DMRG_krylov_gs
     void Solve_gs()
     {
         double errord=std::max(error/mpo.length,tol_diag);
-        auto lan=DiagonalizeArn(sb_h[0].Oper(nsite_gs), gs[0].CentralMat(nsite_gs), nIterMax, errord);  //Lanczos
+//        auto lan=DiagonalizeArn(sb_h[0].Oper(nsite_gs), gs[0].CentralMat(nsite_gs), nIterMax, errord);
+        auto lan=Diagonalize   (sb_h[0].Oper(nsite_gs), gs[0].CentralMat(nsite_gs), nIterMax, tol_diag); //Lanczos
         iter=lan.iter;
         gs[0].setCentralMat(lan.GetState());
         gs[0].Normalize();

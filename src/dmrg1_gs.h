@@ -6,18 +6,19 @@
 
 struct DMRG1_gs
 {
-    int nIterMax=128,iter;
+    int nIterMax=256, iter;
     double tol_diag=1e-13;
 public:
     MPS gs,mpo,z2_sym;
     Superblock sb,sb_sym;
 
-    DMRG1_gs(const MPO& ham,int m,MPO z2_sym=MPO())
+    DMRG1_gs(const MPO& ham,int m,int m0=-1, MPO z2_sym=MPO())
         :mpo(ham), z2_sym(z2_sym)
     {
+        if (m0<0) m0=m;
         int d=mpo.at(0).dim[1];
         gs= MPS(mpo.length,m)
-                      .FillRandu({m,d,m})
+                      .FillRandu({m0,d,m0})
                       .Canonicalize()
                       .Normalize() ;
         Reset_gs();

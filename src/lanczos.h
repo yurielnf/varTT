@@ -127,8 +127,8 @@ struct Lanczos
             Iterate();
             if (error<tol) break;
         }
-        if (error>tol)
-            std::cout<<"lanczos failed, residual_norm = "<<error<<std::endl;
+//        if (error>tol)
+//            std::cout<<"lanczos failed, residual_norm = "<<error<<std::endl;
     }
 };
 

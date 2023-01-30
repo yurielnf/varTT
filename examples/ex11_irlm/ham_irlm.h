@@ -3,6 +3,7 @@
 
 #include<armadillo>
 #include"mps.h"
+#include"superblock.h"
 
 using namespace std;
 
@@ -66,6 +67,28 @@ public:
         auto H=h.toMPS().Sweep();
         cout<<"Done Ham\n"; cout.flush();
         return H;
+    }
+
+    MPO NParticle() const
+    {
+        int L=length();
+        int m=4;
+        MPSSum npart(m,MatSVDFixedTol(1e-13));
+        for(int i=0;i<L; i++)
+            npart += Fermi(i,L,true)*Fermi(i,L,false) ;
+        return npart.toMPS();
+    }
+
+    arma::mat CalculateCiCj(MPS& gs) const
+    {
+        int N=length();
+        arma::mat cicj(N,N);
+        for(int i=0;i<N;i++)
+            for(int j=0;j<N;j++) {
+                MPO cc=Fermi(i,N,true)*Fermi(j,N,false);
+                cicj(i,j)=Superblock({&gs,&cc,&gs}).value();
+            }
+        return cicj;
     }
 };
 

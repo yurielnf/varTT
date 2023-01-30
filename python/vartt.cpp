@@ -19,25 +19,44 @@ using namespace pybind11::literals;
 //---------------------------------- start python module ------------------
 
 
-PYBIND11_MODULE(vartt, m) {
+PYBIND11_MODULE(varttpy, m) {
   m.doc() = "Python interface for vartt";
 
-  py::class_<DMRG>(m,"DMRG")
+  py::class_<MPS>(m,"MPS")
           .def(py::init<>())
-          .def_readwrite("m",&DMRG::m)
-          .def_readwrite("nIterMaxLanczos",&DMRG::nIterMaxLanczos)
-          .def_readwrite("nsweep",&DMRG::nsweep)
-          .def_readwrite("toldiag",&DMRG::toldiag)
-          .def_readonly("energy",&DMRG::energy)
-          .def("calculateCiCj",&DMRG::CalculateCiCj)
-          .def("runDMRG0",&DMRG::runDMRG0)
-          .def("runDMRG1",&DMRG::runDMRG1)
+          .def("printSizes",&MPS::PrintSizes)
+          ;
+
+  py::class_<DMRG_base>(m,"DMRG_base")
+          .def(py::init<MPO>())
+          .def_readwrite("bond_dim",&DMRG_base::m)
+          .def_readwrite("nIter_diag",&DMRG_base::nIter_diag)
+          .def_readwrite("tol_diag",&DMRG_base::tol_diag)
+          .def_readwrite("use_arpack",&DMRG_base::use_arpack)
+          .def("Expectation",&DMRG_base::Expectation)
+          .def_readonly("sweep",&DMRG_base::sweep)
+          .def_readonly("energy",&DMRG_base::energy)
+          .def_readonly("ham",&DMRG_base::ham)
+          .def_readonly("gs",&DMRG_base::gs)
+          ;
+
+  py::class_<DMRG,DMRG_base>(m,"DMRG")
+          .def(py::init<MPO>())
+          .def("iterate",&DMRG::iterate)
+          ;
+
+  py::class_<DMRG0,DMRG_base>(m,"DMRG0")
+          .def(py::init<MPO>())
+          .def("iterate",&DMRG0::iterate)
           ;
 
   py::class_<HamIRLM>(m,"IRLM")
-          .def(py::init<arma::mat,arma::mat,double>())
+          .def(py::init<arma::mat,arma::mat,double>(),
+               "tmat"_a, "Pmat"_a, "U"_a)
+          .def("Ham",&HamIRLM::Ham)
+          .def("NParticle",&HamIRLM::NParticle)
+          .def("CalculateCiCj",&HamIRLM::CalculateCiCj)
           ;
 
-  m.def("set_IRLM_Ham",[](DMRG &sol, HamIRLM const& irlm){});
 
 }

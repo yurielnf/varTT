@@ -14,13 +14,17 @@ public:
     double U;
     double tol=1e-10;
 
-    HamIRLM(string tFile,string PFile, double U_)
+    HamIRLM(const char tFile[],const char PFile[], double U_)
         :U(U_)
     {
         tmat.load(tFile);
         Pmat.load(PFile);
 
     }
+
+    HamIRLM(arma::mat const& tmat_, arma::mat const& Pmat_, double U_)
+        :tmat(tmat_), Pmat(Pmat_), U(U_)
+    {}
 
     int length() const { return tmat.n_rows; }
     MPO Create(int i) const { return Fermi(i,length(),true); }

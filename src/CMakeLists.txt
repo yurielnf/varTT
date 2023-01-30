@@ -13,6 +13,7 @@ set(SOURCES
 )
 
 set(HEADERS
+    dmrg.h
     tensor.h 
     utils.h 
     index.h 
@@ -49,12 +50,16 @@ add_library(${PROJECT_NAME}
 
 #---------- external dependencies ---------
 
-find_package(Armadillo REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${ARMADILLO_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${ARMADILLO_LIBRARIES})
+#find_package(Armadillo REQUIRED)
+#target_include_directories(${PROJECT_NAME} PRIVATE ${ARMADILLO_INCLUDE_DIRS})
+#target_link_libraries(${PROJECT_NAME} PRIVATE ${ARMADILLO_LIBRARIES})
 
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+target_link_libraries(${PROJECT_NAME} PRIVATE armadillo)
+
+#find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries (${PROJECT_NAME} PRIVATE Eigen3::Eigen)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Spectra)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE lapacke)
 

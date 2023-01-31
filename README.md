@@ -20,12 +20,10 @@ TypicalRunDMRG0(h,nsweep,m);
 
 ### External dependencies
 
-- lapack
-- lapacke
-- blas
+- lapack, blas and lapacke
+- python-numpy for the python library
 
-All the other dependencies are automatically downloaded by `cmake`. They are: `armadillo`, `eigen3`, `Spectra`, `Catch2` and `pybind11`.
-To build the python library, `python` and `numpy` should be installed.
+The other dependencies are automatically downloaded by `cmake`. They are: `armadillo`, `carma`, `eigen3`, `Spectra`, `Catch2` and `pybind11`.
 
 ### Compiling the library
 

@@ -6,11 +6,14 @@
 #include<array>
 #include<stdexcept>
 
-#ifndef MKL
- #include<lapacke.h>
-#else
- #include<mkl_lapacke.h>
-#endif
+//#ifndef MKL
+// #include<lapacke.h>
+//#else
+// #include<mkl_lapacke.h>
+//#endif
+
+#define EIGEN_USE_LAPACKE
+#include<eigen3/Eigen/src/misc/lapacke.h>
 
 using std::vector;
 using std::array;

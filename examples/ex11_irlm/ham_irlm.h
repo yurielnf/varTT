@@ -33,7 +33,6 @@ public:
 
     MPO Ham() const
     {
-        cout<<"Building Hamiltonian MPO ...\n";
         int L=length();
         auto h=MPSSum(10,MatSVDFixedTol(tol));
         // kinetic energy bath
@@ -63,9 +62,7 @@ public:
 
         h += d0d.toMPS() * d0.toMPS() * c0d.toMPS() * c0.toMPS() * U;
 
-        cout<<"Done sum\n"; cout.flush();
         auto H=h.toMPS().Sweep();
-        cout<<"Done Ham\n"; cout.flush();
         return H;
     }
 

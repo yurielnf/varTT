@@ -15,7 +15,8 @@ struct DMRG_base {
     double tol_diag=1e-12;
     bool use_arpack=false;
 
-    DMRG_base(MPO const& ham_): ham(ham_) { ham.PrintSizes("ham"); }
+    DMRG_base(MPO const& ham_): ham(ham_) {}
+    DMRG_base(MPO const& ham_, MPS const& gs_): ham(ham_), gs(gs_) {}
 
     double Expectation(MPO &O) { return  Superblock({&gs,&O,&gs}).value(); }
 
@@ -27,6 +28,7 @@ struct DMRG_base {
 
 struct DMRG: public DMRG_base {
     DMRG(MPO const& ham_) : DMRG_base(ham_), sol(ham_,m,1) {}
+    DMRG(MPO const& ham_, MPS const& gs_) : DMRG_base(ham_,gs_), sol(ham_,gs_,m) {}
 
     void iterate()
     {
@@ -34,12 +36,10 @@ struct DMRG: public DMRG_base {
         sol.gs.decomposer=MatSVDFixedTol(sol.tol_diag);
         sol.nIterMax=nIter_diag;
 
-        std::cout<<"sweep "<<++sweep<<" --------------------------------------\n";
         for(auto p : MPS::SweepPosSec(ham.length))
         {
             sol.SetPos(p);
             sol.Solve(use_arpack);
-            sol.Print();
         }
 
         energy=sol.sb.value();
@@ -53,16 +53,15 @@ private:
 struct DMRG0: public DMRG_base {
 
     DMRG0(MPO const& ham_) : DMRG_base(ham_), sol(ham_,m,1) {}
+    DMRG0(MPO const& ham_, MPS const& gs_) : DMRG_base(ham_,gs_), sol(ham_,gs_,m,1) {}
 
     void iterate()
     {
         sol.tol_diag=tol_diag;
         sol.nIterMax=nIter_diag;
         {
-            std::cout<<"sweep "<<++sweep<<" --------------------------------------\n";
             sol.DoIt_gs();
             sol.DoIt_res();
-            sol.Print();
         }
 
         energy=sol.eval[0];

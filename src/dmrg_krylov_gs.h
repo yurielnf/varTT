@@ -29,6 +29,22 @@ struct DMRG_krylov_gs
         ck=0;
         add_MPS();
     }
+
+    DMRG_krylov_gs(const MPO& mpo_, const MPS& gs_,int m,int n_krylov)
+        :mpo(mpo_)
+        ,m(m)
+        ,nk(n_krylov)
+        ,gs(n_krylov)
+        ,sb_h(n_krylov * n_krylov)
+        ,sb_o(n_krylov * n_krylov)
+        ,hmat(n_krylov * n_krylov,0.0)
+        ,omat(n_krylov * n_krylov,0.0)
+    {
+        gs[0]=gs_;
+        sb_h[0]=Superblock({&gs[0],&mpo,&gs[0]});
+        ck=1;
+    }
+
     void add_MPS()
     {
         int i=ck;
@@ -180,7 +196,7 @@ struct DMRG_krylov_gs
         {
             SetPos(p);
             Solve_gs();
-            if (mpo.length<10 || (p.i+1) % (mpo.length/10)==0) Print();
+//            if (mpo.length<10 || (p.i+1) % (mpo.length/10)==0) Print();
         }
     }
     void DoIt_res(int nsweep=1)

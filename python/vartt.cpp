@@ -28,7 +28,6 @@ PYBIND11_MODULE(varttpy, m) {
           ;
 
   py::class_<DMRG_base>(m,"DMRG_base")
-          .def(py::init<MPO>())
           .def_readwrite("bond_dim",&DMRG_base::m)
           .def_readwrite("nIter_diag",&DMRG_base::nIter_diag)
           .def_readwrite("tol_diag",&DMRG_base::tol_diag)
@@ -42,11 +41,13 @@ PYBIND11_MODULE(varttpy, m) {
 
   py::class_<DMRG,DMRG_base>(m,"DMRG")
           .def(py::init<MPO>())
+          .def(py::init<MPO,MPS>())
           .def("iterate",&DMRG::iterate)
           ;
 
   py::class_<DMRG0,DMRG_base>(m,"DMRG0")
           .def(py::init<MPO>())
+          .def(py::init<MPO,MPS>())
           .def("iterate",&DMRG0::iterate)
           ;
 

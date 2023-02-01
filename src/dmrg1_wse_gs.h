@@ -23,6 +23,11 @@ struct DMRG1_wse_gs
                       .Normalize();
         Reset_gs();
     }
+
+    DMRG1_wse_gs(const MPO& ham, const MPS& gs_,int m,MPO z2_sym=MPO())
+        : mpo(ham), gs(gs_), z2_sym(z2_sym)
+    { Reset_gs(); }
+
     static double AdaptAlpha(double alpha,double Eini,double Eopt,double Etrunc)
     {
         const double epsilon=1e-9;

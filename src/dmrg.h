@@ -20,6 +20,15 @@ struct DMRG_base {
 
     double Expectation(MPO &O) { return  Superblock({&gs,&O,&gs}).value(); }
 
+    double sigma(int bond_dim)
+    {
+        double ener=Superblock({&gs,&ham,&gs}).value();
+        MPO Heff=ham + MPOIdentity(ham.length, ham.at(0).dim[1])*(-ener);
+        return MPO_MPS{Heff,gs}.toMPS(bond_dim).norm();
+    }
+
+    double H2(int bond_dim) { return std::pow(MPO_MPS{ham,gs}.toMPS(bond_dim).norm(), 2); }
+
     int sweep=0;
     double energy=0;
     MPO ham;
@@ -67,6 +76,7 @@ struct DMRG0: public DMRG_base {
         energy=sol.eval[0];
         gs=sol.gs[0];
     }
+
 private:
     DMRG_krylov_gs sol;
 };

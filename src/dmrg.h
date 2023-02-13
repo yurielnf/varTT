@@ -42,8 +42,10 @@ struct DMRG: public DMRG_base {
     void iterate()
     {
         sol.tol_diag=tol_diag;
-        sol.gs.decomposer=MatSVDFixedTol(sol.tol_diag);
+        sol.gs.m=m;
+        sol.gs.decomposer=MatSVDAdaptative(tol_diag,m);
         sol.nIterMax=nIter_diag;
+
 
         for(auto p : MPS::SweepPosSec(ham.length))
         {
@@ -61,20 +63,24 @@ private:
 
 struct DMRG0: public DMRG_base {
 
-    DMRG0(MPO const& ham_) : DMRG_base(ham_), sol(ham_,m,1) {}
-    DMRG0(MPO const& ham_, MPS const& gs_) : DMRG_base(ham_,gs_), sol(ham_,gs_,m,1) {}
+    DMRG0(MPO const& ham_, int nKrylov=2) : DMRG_base(ham_), sol(ham_,m,nKrylov) {}
+    DMRG0(MPO const& ham_, MPS const& gs_, int nKrylov=2) : DMRG_base(ham_,gs_), sol(ham_,gs_,m,nKrylov) {}
 
     void iterate()
     {
+        static int c=0;
+
         sol.tol_diag=tol_diag;
+        sol.gs[0].m=m;
+        sol.gs[0].decomposer=MatSVDAdaptative(tol_diag,m);
         sol.nIterMax=nIter_diag;
-        {
+
+            if (c++ > 0) sol.reset_states();
             sol.DoIt_gs();
             sol.DoIt_res();
-        }
 
-        energy=sol.eval[0];
         gs=sol.gs[0];
+        energy=Superblock({&gs,&ham,&gs}).value();
     }
 
 private:

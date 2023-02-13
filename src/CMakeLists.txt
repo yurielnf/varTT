@@ -41,6 +41,7 @@ set(HEADERS
     dmrg_jacobi_davidson_gs.h 
     lanczoscv.h 
     spectrawrapper.h
+    model/fermionic.h
 )
 
 add_library(${PROJECT_NAME} 

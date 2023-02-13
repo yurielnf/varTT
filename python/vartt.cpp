@@ -8,6 +8,7 @@
 
 #include "../examples/ex11_irlm/ham_irlm.h"
 #include "dmrg.h"
+#include "model/fermionic.h"
 
 using namespace std;
 namespace py = pybind11;
@@ -22,9 +23,12 @@ using namespace pybind11::literals;
 PYBIND11_MODULE(varttpy, m) {
   m.doc() = "Python interface for vartt";
 
+  py::class_<TensorD>(m,"Tensor")
+          .def_readonly("shape",&TensorD::dim)
+          ;
+
   py::class_<MPS>(m,"MPS")
-          .def(py::init<>())
-          .def("printSizes",&MPS::PrintSizes)
+          .def_readonly("cores",&MPS::M)
           ;
 
   py::class_<DMRG_base>(m,"DMRG_base")
@@ -48,9 +52,17 @@ PYBIND11_MODULE(varttpy, m) {
           ;
 
   py::class_<DMRG0,DMRG_base>(m,"DMRG0")
-          .def(py::init<MPO>())
-          .def(py::init<MPO,MPS>())
+          .def(py::init<MPO,int>(), "Ham"_a, "nKrylov"_a=2)
+          .def(py::init<MPO,MPS,int>(), "Ham"_a, "gs"_a,"nKrylov"_a=2)
           .def("iterate",&DMRG0::iterate)
+          ;
+
+  py::class_<Fermionic>(m,"Fermionic")
+          .def(py::init<arma::mat,arma::mat, std::map<std::array<int,4>,double>>(),
+               "Kij"_a, "Uij"_a, "Vijkl"_a)
+          .def("Ham",&Fermionic::Ham, "tol"_a=1e-14)
+          .def("NParticle",&Fermionic::NParticle)
+          .def("CidCj",&Fermionic::CidCj)
           ;
 
   py::class_<HamIRLM>(m,"IRLM")

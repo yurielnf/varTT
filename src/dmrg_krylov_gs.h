@@ -90,7 +90,7 @@ struct DMRG_krylov_gs
         double errord=std::max(error,tol_diag)*fabs(hmat[0]);
         MPS x=MPO_MPS{mpo,gs[i-1]}.toMPS(2*m,errord);//tol_diag*fabs(hmat[0])
 //        MPS x=mpo*gs[i-1];
-        x.PrintSizes("residual");
+//        x.PrintSizes("residual");
         MPSSum sum(m,MatSVDFixedDim(m));
         for(int j=0;j<i;j++)
             sum += gs[j] * ( -hmat[j+(i-1)*nk] );
@@ -216,7 +216,7 @@ struct DMRG_krylov_gs
                     Solve_res();
                 }
                 CalculateEner();
-                Print_res();
+//                Print_res();
             }
             error=errort;
         }
@@ -250,10 +250,10 @@ struct DMRG_krylov_gs
                 hm[i+j*ck]=hmat[i+j*nk];
                 om[i+j*ck]=omat[i+j*nk];
             }
-        for(auto x:hm) std::cout<<x<<" ";
-        std::cout<<"\n";
-        for(auto x:om) std::cout<<x<<" ";
-        std::cout<<"\n";
+//        for(auto x:hm) std::cout<<x<<" ";
+//        std::cout<<"\n";
+//        for(auto x:om) std::cout<<x<<" ";
+//        std::cout<<"\n";
         eval.resize(ck);
         evec.resize(ck*ck);
         MatFullDiagGen(hm.data(), om.data(), ck, evec.data(), eval.data());

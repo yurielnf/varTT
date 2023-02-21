@@ -14,11 +14,17 @@ class Fermionic
 public:
     arma::mat Kmat, Umat;
     std::map<std::array<int,4>, double> Vijkl;
+    arma::mat Rot;
 
 
 
     Fermionic(arma::mat const& Kmat_, arma::mat const& Umat_, std::map<std::array<int,4>, double> const& Vijkl_)
         :Kmat(Kmat_), Umat(Umat_), Vijkl(Vijkl_)
+    {}
+
+    Fermionic(arma::mat const& Kmat_, arma::mat const& Umat_,
+              arma::mat const& Rot_)
+        :Kmat(Rot_.t()*Kmat_*Rot_), Umat(Umat_), Rot(Rot_)
     {}
 
     int length() const { return Kmat.n_rows; }
@@ -43,6 +49,8 @@ public:
 
     MPO Interaction(double tol=1e-14) const
     {
+        if (!Rot.empty()) return InteractionRot(tol);
+
         int L=length();
         auto h=MPSSum(10,MatSVDFixedTol(tol));
         // Uij ni nj
@@ -59,6 +67,38 @@ public:
             auto coeff=it.second;
             h += Create(pos[0])*Destroy(pos[1])*Create(pos[2])*Destroy(pos[3]) * coeff;
         }
+        return h.toMPS().Sweep();
+    }
+
+    MPO InteractionRot(double tol=1e-14) const
+    {
+        int L=length();
+        auto h=MPSSum(10,MatSVDFixedTol(tol));
+        // Uij ni nj
+        for(int i=0;i<L; i++)
+            for(int j=0;j<L; j++)
+        {
+            if (fabs(Umat(i,j))<tol) continue;
+
+            auto ci=MPSSum(2,MatSVDFixedTol(tol));
+            for(int a=0;a<L; a++)
+                ci += Destroy(a) * Rot(i,a);
+
+            auto cid=MPSSum(2,MatSVDFixedTol(tol));
+            for(int a=0;a<L; a++)
+                cid += Create(a) * Rot(i,a);
+
+            auto cj=MPSSum(2,MatSVDFixedTol(tol));
+            for(int a=0;a<L; a++)
+                cj += Destroy(a) * Rot(j,a);
+
+            auto cjd=MPSSum(2,MatSVDFixedTol(tol));
+            for(int a=0;a<L; a++)
+                cjd += Create(a) * Rot(j,a);
+
+            h += cid.toMPS() * ci.toMPS() * cjd.toMPS() * cj.toMPS() * Umat(i,j);
+        }
+
         return h.toMPS().Sweep();
     }
 

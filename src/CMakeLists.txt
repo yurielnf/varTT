@@ -19,6 +19,7 @@ set(HEADERS
     index.h 
     mps.h 
     superblock.h 
+    superblock_corr.h
     dmrg_gs.h 
     supertensor.h 
     lanczos.h 

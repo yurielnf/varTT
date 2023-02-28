@@ -3,6 +3,7 @@
 
 #include "dmrg1_wse_gs.h"
 #include "dmrg_krylov_gs.h"
+#include "superblock_corr.h"
 
 #include<iostream>
 #include<armadillo>
@@ -19,6 +20,12 @@ struct DMRG_base {
     DMRG_base(MPO const& ham_, MPS const& gs_): ham(ham_), gs(gs_) {}
 
     double Expectation(MPO &O) { return  Superblock({&gs,&O,&gs}).value(); }
+
+    double correlation(const MPO& Oij, int i, int j)
+    {
+        static SuperBlock_Corr sb(gs);
+        return sb.value(Oij,i,j);
+    }
 
     double sigma(int bond_dim)
     {

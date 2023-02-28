@@ -37,6 +37,7 @@ PYBIND11_MODULE(varttpy, m) {
           .def_readwrite("tol_diag",&DMRG_base::tol_diag)
           .def_readwrite("use_arpack",&DMRG_base::use_arpack)
           .def("Expectation",&DMRG_base::Expectation)
+          .def("correlation",&DMRG_base::correlation)
           .def("sigma",&DMRG_base::sigma)
           .def("H2",&DMRG_base::H2)
           .def_readonly("sweep",&DMRG_base::sweep)

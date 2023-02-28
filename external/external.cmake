@@ -15,7 +15,7 @@ FetchContent_Declare(
 FetchContent_Declare(
   Eigen3
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-  GIT_TAG        master
+  GIT_TAG        3.4
 )
 
 FetchContent_Declare(

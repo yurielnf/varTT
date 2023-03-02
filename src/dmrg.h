@@ -21,9 +21,9 @@ struct DMRG_base {
 
     double Expectation(MPO &O) { return  Superblock({&gs,&O,&gs}).value(); }
 
-    double correlation(const MPO& Oij, int i, int j)
+    double correlation(MPO& Oij, int i, int j)
     {
-        static SuperBlock_Corr sb(gs);
+        SuperBlock_Corr sb(gs);
         return sb.value(Oij,i,j);
     }
 

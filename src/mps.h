@@ -56,7 +56,7 @@ public:
         int n0=M[0].dim.back();
         C=TensorD({n0,n0});
         C.FillEye(1);
-        Canonicalize();
+        //Canonicalize();
     }
     void FillNone(Index dim)
     {

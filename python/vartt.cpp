@@ -6,7 +6,6 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
-#include "../examples/ex11_irlm/ham_irlm.h"
 #include "dmrg.h"
 #include "model/fermionic.h"
 
@@ -67,14 +66,4 @@ PYBIND11_MODULE(varttpy, m) {
           .def("NParticle",&Fermionic::NParticle)
           .def("CidCj",&Fermionic::CidCj)
           ;
-
-  py::class_<HamIRLM>(m,"IRLM")
-          .def(py::init<arma::mat,arma::mat,double>(),
-               "tmat"_a, "Pmat"_a, "U"_a)
-          .def("Ham",&HamIRLM::Ham)
-          .def("NParticle",&HamIRLM::NParticle)
-          .def("CalculateCiCj",&HamIRLM::CalculateCiCj)
-          ;
-
-
 }

@@ -13,25 +13,29 @@ public:
         : gs(gs_)
     {}
 
-    void computeLeft(const MPO& mpo,int i, int j)
+    void computeLeft(MPO& mpo,int i, int j)
     {
         gs.SetPos({i,1});
+//        mpo.SetPos({i,1});
         left=TensorD({gs.at(i).dim[0], 1, gs.at(i).dim[0]});
         left.FillEye(2);
+
         for(auto p=i; p<j; p++)
             left= left * Transfer(mpo,p);
     }
 
-    void updateLeft(const MPO& mpo,int j)
+    void updateLeft(MPO& mpo,int j)
     {
         for(auto p=j0; p<j; p++)
             left= left * Transfer(mpo,p);
     }
 
-    double value(const MPO& mpo, int i, int j)
+    double value(MPO& mpo, int i, int j)
     {
-        if (i0!=i) computeLeft(mpo,i,j);
-        else updateLeft(mpo,j);
+        if (i0!=i)
+            computeLeft(mpo,i,j);
+        else
+            updateLeft(mpo,j);
         i0=i;
         j0=j;
         auto oneR=TensorD({gs.at(j).dim[2], 1, gs.at(j).dim[2]});
@@ -42,9 +46,15 @@ public:
     }
 
  private:
+    mutable std::array<TensorD,2> M;
 
-    std::vector<const TensorD*> Transfer(const MPO& mpo,int i) const
+    std::vector<const TensorD*> Transfer(MPO& mpo,int i) const
     {
+        if (i==gs.pos.i) {
+            M[0]=gs.at(i)*gs.C;
+            M[1]=mpo.at(i)*mpo.C;
+            return {&M[0], &M[1], &M[0]};
+        }
         return {&gs.at(i), &mpo.at(i), &gs.at(i)};
     }
 };

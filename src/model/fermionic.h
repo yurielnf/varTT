@@ -18,7 +18,7 @@ public:
 
 
 
-    Fermionic(arma::mat const& Kmat_, arma::mat const& Umat_, std::map<std::array<int,4>, double> const& Vijkl_)
+    Fermionic(arma::mat const& Kmat_, arma::mat const& Umat_, std::map<std::array<int,4>, double> const& Vijkl_={})
         :Kmat(Kmat_), Umat(Umat_), Vijkl(Vijkl_)
     {}
 

@@ -21,9 +21,9 @@ struct DMRG_base {
 
     double Expectation(MPO &O) { return  Superblock({&gs,&O,&gs}).value(); }
 
-    double correlation(MPO& Oij, int i, int j)
+    double correlation(const MPO& Oij, int i, int j)
     {
-        SuperBlock_Corr sb(gs);
+        static SuperBlock_Corr sb(gs);
         return sb.value(Oij,i,j);
     }
 
@@ -31,10 +31,10 @@ struct DMRG_base {
     {
         double ener=Superblock({&gs,&ham,&gs}).value();
         MPO Heff=ham + MPOIdentity(ham.length, ham.at(0).dim[1])*(-ener);
-        return MPO_MPS{Heff,gs}.toMPS(bond_dim).norm();
+        return MPO_MPS{Heff,gs}.toMPS(bond_dim).Canonicalize().norm();
     }
 
-    double H2(int bond_dim) { return std::pow(MPO_MPS{ham,gs}.toMPS(bond_dim).norm(), 2); }
+    double H2(int bond_dim) { return std::pow(MPO_MPS{ham,gs}.toMPS(bond_dim).Canonicalize().norm(), 2); }
 
     int sweep=0;
     double energy=0;

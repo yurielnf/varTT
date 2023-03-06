@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     std::cout<<std::setprecision(15);
     time_t t0=time(nullptr);
 
-    auto model=IRLM{.L=1000}.model();
+    auto model=IRLM{.L=100}.model();
     auto sol=DMRG(model.Ham());
     sol.m=32;
     sol.nIter_diag=32;
@@ -30,6 +30,9 @@ int main(int argc, char *argv[])
         for(auto j=i;j<sol.gs.length;j++)
             auto vnew=sol.correlation(model.CidCj(i,j),i,j);
     }
+
+    sol.iterate(false);
+    sol.gs.PrintSizes();
 
     cout<<"\nDone in "<<difftime(time(nullptr),t0)<<"s"<<endl;
     return 0;

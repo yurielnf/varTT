@@ -48,7 +48,7 @@ PYBIND11_MODULE(varttpy, m) {
   py::class_<DMRG,DMRG_base>(m,"DMRG")
           .def(py::init<MPO>())
           .def(py::init<MPO,MPS>())
-          .def("iterate",&DMRG::iterate)
+          .def("iterate",&DMRG::iterate,"useEnrichment"_a=true)
           ;
 
   py::class_<DMRG0,DMRG_base>(m,"DMRG0")

@@ -10,7 +10,7 @@ struct IRLM {
     int L=100;
     double t=0.5;
     double V=0.15;
-    double U=-0.15;
+    double U=-0.5;
 
     Fermionic model() const
     {

@@ -46,18 +46,19 @@ struct DMRG: public DMRG_base {
     DMRG(MPO const& ham_) : DMRG_base(ham_), sol(ham_,m,1) {}
     DMRG(MPO const& ham_, MPS const& gs_) : DMRG_base(ham_,gs_), sol(ham_,gs_,m) {}
 
-    void iterate()
+    void iterate(bool useEnrichment=true)
     {
         sol.tol_diag=tol_diag;
         sol.gs.m=m;
-        sol.gs.decomposer=MatSVDAdaptative(tol_diag,m);
+        sol.gs.decomposer=MatSVDFixedTol(tol_diag);
         sol.nIterMax=nIter_diag;
 
 
         for(auto p : MPS::SweepPosSec(ham.length))
         {
             sol.SetPos(p);
-            sol.Solve(use_arpack);
+            if(useEnrichment) sol.Solve(use_arpack);
+            else sol.SolveNoWSE(use_arpack);
         }
 
         energy=sol.sb.value();

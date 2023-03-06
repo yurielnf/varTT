@@ -12,7 +12,7 @@ class Superblock
     TensorD one;
  public:
     std::vector<MPS*> mps;
-    int length;
+    int length=0;
     MPS::Pos pos={0,-1};
     std::vector<TensorD> b1,b2;
 

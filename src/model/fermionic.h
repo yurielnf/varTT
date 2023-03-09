@@ -23,8 +23,9 @@ public:
     {}
 
     Fermionic(arma::mat const& Kmat_, arma::mat const& Umat_,
-              arma::mat const& Rot_)
-        :Kmat(Rot_.t()*Kmat_*Rot_), Umat(Umat_), Rot(Rot_)
+              arma::mat const& Rot_, bool rotateKin=true)
+        : Kmat(rotateKin ? Rot_.t()*Kmat_*Rot_ : Kmat_)
+        , Umat(Umat_), Rot(Rot_)
     {}
 
     int length() const { return Kmat.n_rows; }
@@ -75,8 +76,8 @@ public:
         int L=length();
         auto h=MPSSum(10,MatSVDFixedTol(tol));
         // Uij ni nj
-        for(int i=0;i<L; i++)
-            for(int j=0;j<L; j++)
+        for(int i=0;i<Rot.n_rows; i++)
+            for(int j=0;j<Rot.n_rows; j++)
         {
             if (fabs(Umat(i,j))<tol) continue;
 

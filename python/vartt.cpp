@@ -60,8 +60,8 @@ PYBIND11_MODULE(varttpy, m) {
   py::class_<Fermionic>(m,"Fermionic")
           .def(py::init<arma::mat,arma::mat, std::map<std::array<int,4>,double>>(),
                "Kij"_a, "Uij"_a, "Vijkl"_a)
-          .def(py::init<arma::mat,arma::mat,arma::mat>(),
-               "Kij"_a, "Uij"_a, "Rot"_a)
+          .def(py::init<arma::mat,arma::mat,arma::mat,bool>(),
+               "Kij"_a, "Uij"_a, "Rot"_a, "rotateKin"_a=true)
           .def("Ham",&Fermionic::Ham, "tol"_a=1e-14)
           .def("NParticle",&Fermionic::NParticle)
           .def("CidCj",&Fermionic::CidCj)
